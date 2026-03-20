@@ -1,0 +1,23 @@
+# 1. 깃이 아예 쳐다보지도 말아야 할 폴더들 (블랙리스트)
+.metadata/
+Servers/
+.settings/
+.classpath
+.project
+target/
+bin/
+
+# 2. 하지만 이 확장자들은 어느 폴더에 있든 허용 (화이트리스트)
+!*.java
+!*.xml
+!*.jsp
+!*.css
+!*.js
+!*.sql
+!*.properties
+!*.png
+!*.jpg
+
+# 3. 메이븐 설정 파일과 깃 설정은 필수
+!pom.xml
+!.gitignore
