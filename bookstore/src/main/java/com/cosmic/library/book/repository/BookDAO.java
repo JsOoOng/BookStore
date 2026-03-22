@@ -26,5 +26,11 @@ public interface BookDAO {
 
     // 도서 데이터 DELETE
     int delete(int id);
+
+    // 도서 페이지 기능
+	List<BookVO> selectPaged(int limit, int offset);
+
+	// 도서 전체 갯수
+	int countAll();
 }
 
