@@ -14,8 +14,7 @@
                     <th class="ps-4">ID</th>
                     <th>분류</th>
                     <th>제목</th>
-                    <th>발신 대원</th>
-                    <th class="text-center">상태</th>
+                    <th>발신 대원</th> <th class="text-center">상태</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,7 +23,9 @@
                         <td class="ps-4 text-muted">${qna.id}</td>
                         <td><span class="badge bg-light text-dark border">${qna.inquiry}</span></td>
                         <td class="fw-bold">${qna.title}</td>
-                        <td>${qna.mail}</td>
+                        
+                        <td>${qna.name}</td>
+
                         <td class="text-center">
                             <c:choose>
                                 <c:when test="${empty qna.answer}">

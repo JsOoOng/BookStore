@@ -14,7 +14,7 @@
                 <small class="text-muted">No. ${inquiry.id}</small>
             </div>
             <h4 class="mt-2 fw-bold">${inquiry.title}</h4>
-            <div class="text-muted small">발신 대원: <strong>${inquiry.mail}</strong></div>
+            <div class="text-muted small">발신 대원: <strong>${inquiry.name}</strong></div>
         </div>
         <div class="card-body p-4" style="min-height: 200px; background-color: #f8f9fa;">
             <p class="card-text" style="white-space: pre-wrap;">${inquiry.detail}</p>

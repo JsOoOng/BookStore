@@ -1,13 +1,10 @@
 package com.cosmic.library.qnamail.repository;
 
 import java.util.List;
-
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-
 import com.cosmic.library.qnamail.model.QnAMailVO;
-
 
 @Repository
 public class QnAMailDAOH2 implements QnAMailDAO {
@@ -19,25 +16,25 @@ public class QnAMailDAOH2 implements QnAMailDAO {
     }
     
     @Override
-    public List<QnAMailVO> getInquiriesByMail(String mail) {
-        // 🛰️ 특정 이메일로 발신된 모든 신호를 역순(최신순)으로 긁어옵니다.
-        String sql = "SELECT * FROM qna_mail WHERE mail = ? ORDER BY id DESC";
-        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(QnAMailVO.class), mail);
+    public List<QnAMailVO> getInquiriesByName(String name) {
+        // 🛰️ 'name' 컬럼을 기준으로 해당 대원의 모든 신호를 가져옵니다.
+        String sql = "SELECT * FROM qna_mail WHERE name = ? ORDER BY id DESC";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(QnAMailVO.class), name);
     }
     
     @Override
     public void updateAnswer(int id, String answer) {
-        // 🛰️ 문의 사항에 관리자의 답변을 새깁니다.
         String sql = "UPDATE qna_mail SET answer = ? WHERE id = ?";
         jdbcTemplate.update(sql, answer, id);
     }
 
     @Override
     public void createInquiry(QnAMailVO qnamailvo) {
-        String sql = "INSERT INTO qna_mail (title, mail, inquiry, detail) VALUES (?, ?, ?, ?)";
+        // 🚀 컬럼명을 mail에서 name으로 변경했습니다.
+        String sql = "INSERT INTO qna_mail (title, name, inquiry, detail) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 qnamailvo.getTitle(),
-                qnamailvo.getMail(),
+                qnamailvo.getName(), // VO에서도 getName()을 호출해야 합니다.
                 qnamailvo.getInquiry(),
                 qnamailvo.getDetail());
     }
@@ -61,9 +58,8 @@ public class QnAMailDAOH2 implements QnAMailDAO {
     }
 
     @Override
-    public void sendInquiryMail(String title, String mail, String inquiry, String detail) {
-        // 실제 메일 발송 로직은 여기서 구현
-        // 예: JavaMailSender 사용
-        System.out.println("메일 발송 시뮬레이션: " + title + ", " + mail);
+    public void sendInquiryMail(String title, String name, String inquiry, String detail) {
+        // 시뮬레이션 로그 출력 시 name으로 표시
+        System.out.println("메일 발송 시뮬레이션: [제목]" + title + ", [발신자]" + name);
     }
 }

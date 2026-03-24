@@ -9,7 +9,7 @@
     </div>
 
     <form action="${pageContext.request.contextPath}/user/submitInquiry" method="post" class="cosmic-form">
-        <input type="hidden" name="mail" value="${sessionScope.loginMember.id}" />
+        <input type="hidden" name="name" value="${sessionScope.loginMember.id}" />
 
         <div class="input-group-cosmic">
             <label>문의 제목 <span class="text-danger">*</span></label>

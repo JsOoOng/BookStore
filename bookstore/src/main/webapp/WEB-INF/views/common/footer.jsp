@@ -6,7 +6,7 @@
         <div class="row align-items-center">
             <div class="col-md-6 text-center text-md-start">
                 <h5 class="fw-bold">🚀 Cosmic Library</h5>
-                <p class="text-muted small mb-0">지식의 은하계를 탐험하는 대원들을 위한 안식처입니다.</p>
+                <p class="small mb-0" style="color: #DCDCDC;">지식의 은하계를 탐험하는 대원들을 위한 안식처입니다.</p>
             </div>
             <div class="col-md-6 text-center text-md-end mt-4 mt-md-0">
                 
@@ -21,7 +21,7 @@
                     </div>
                 </c:if>
                 
-                <p class="text-muted small mt-2">© 2026 Cosmic Library Project. All Rights Reserved.</p>
+                <p class="small mt-2" style="color: #DCDCDC;">© 2026 Cosmic Library Project. All Rights Reserved.</p>
             </div>
         </div>
     </div>

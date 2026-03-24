@@ -1,12 +1,10 @@
 package com.cosmic.library.qnamail.repository;
 
 import java.util.List;
-
 import com.cosmic.library.qnamail.model.QnAMailVO;
 
-
 public interface QnAMailDAO {
-	 // 문의 등록 (DB 저장 + 메일 발송까지 포함 가능)
+    // 문의 등록
     void createInquiry(QnAMailVO qnamailvo);
 
     // 전체 문의 조회 (관리자용)
@@ -18,10 +16,12 @@ public interface QnAMailDAO {
     // 문의 삭제 (관리자용)
     void deleteInquiry(int id);
      
-    // 관리자에게 문의 메일 발송
-    void sendInquiryMail(String title, String mail, String inquiry, String detail);
+    // 관리자에게 문의 메일 발송 (매개변수 mail -> name 변경)
+    void sendInquiryMail(String title, String name, String inquiry, String detail);
 
-	void updateAnswer(int id, String answer);
+    // 답변 업데이트
+    void updateAnswer(int id, String answer);
 
-	List<QnAMailVO> getInquiriesByMail(String mail);
+    // 특정 작성자 이름으로 문의 조회 (메소드명 명확화: getInquiriesByName)
+    List<QnAMailVO> getInquiriesByName(String name);
 }

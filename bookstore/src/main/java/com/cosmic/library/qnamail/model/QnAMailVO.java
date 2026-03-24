@@ -12,7 +12,7 @@ import lombok.ToString;
 public class QnAMailVO {
     private int id;
     private String title;
-    private String mail;
+    private String name;
     private String inquiry; // 문의 종류
     private String detail;  // 문의 내용
     private String answer;  // 🔍 [추가] 관리자 답변 내용
