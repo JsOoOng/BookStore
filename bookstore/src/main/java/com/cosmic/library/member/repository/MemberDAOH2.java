@@ -1,12 +1,15 @@
 package com.cosmic.library.member.repository;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
 import com.cosmic.library.member.model.MemberVO;
+import com.cosmic.library.qnamail.model.QnAMailVO;
 
 @Repository
 public class MemberDAOH2 implements MemberDAO {
@@ -15,7 +18,7 @@ public class MemberDAOH2 implements MemberDAO {
     private JdbcTemplate jdbcTemplate;
 
     private RowMapper<MemberVO> rowMapper = new BeanPropertyRowMapper<>(MemberVO.class);
-
+    
     @Override
     public MemberVO selectMemberById(String id) {
         String sql = "SELECT * FROM MEMBER WHERE id = ?";
