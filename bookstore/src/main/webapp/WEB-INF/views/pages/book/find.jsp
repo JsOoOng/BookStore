@@ -40,6 +40,24 @@
     </c:choose>
 </div>
 
+<c:if test="${not empty bookList}">
+    <nav aria-label="Cosmic Search Navigation" class="mt-5">
+        <ul class="pagination justify-content-center cosmic-pagination">
+            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                <a class="page-link" href="?title=${searchKeyword}&page=${currentPage - 1}">&laquo; 이전</a>
+            </li>
+            <c:forEach var="i" begin="1" end="${totalPages}">
+                <li class="page-item ${currentPage == i ? 'active' : ''}">
+                    <a class="page-link" href="?title=${searchKeyword}&page=${i}">${i}</a>
+                </li>
+            </c:forEach>
+            <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="?title=${searchKeyword}&page=${currentPage + 1}">다음 &raquo;</a>
+            </li>
+        </ul>
+    </nav>
+</c:if>
+
 <div class="text-center my-5">
     <a href="${pageContext.request.contextPath}/" class="btn btn-secondary rounded-pill px-5">메인 본부로 돌아가기</a>
 </div>

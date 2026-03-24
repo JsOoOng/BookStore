@@ -67,4 +67,18 @@ public class BookServiceImple implements BookService {
         // 전체 개수가 23개면 3페이지가 나와야 함 (23 / 10 = 2.3 -> 올림해서 3)
         return (int) Math.ceil((double) totalCount / size);
     }
+    
+    @Override
+    public List<BookVO> searchBooksPaged(String keyword, int page, int size) {
+        int offset = (page - 1) * size;
+        return bookDAO.selectByKeywordPaged(keyword, size, offset);
+    }
+
+    @Override
+    public int getSearchPageCount(String keyword, int size) {
+        int totalCount = bookDAO.countByKeyword(keyword);
+        // 검색 결과가 0개여도 최소 1페이지는 나오게 하거나, 0을 반환하도록 처리
+        if (totalCount == 0) return 1;
+        return (int) Math.ceil((double) totalCount / size);
+    }
 }

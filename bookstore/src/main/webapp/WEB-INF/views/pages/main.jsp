@@ -28,3 +28,37 @@
         </div>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function() {
+        // 1. 현재 주소창의 파라미터 분석
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 2. 정보 수정 성공 시 (MemberController에서 보낸 신호)
+        if (urlParams.get('editSuccess') === 'true') {
+            Swal.fire({
+                title: '✨ 프로필 동기화 완료',
+                text: '대원님의 정보가 성공적으로 업데이트되었습니다.',
+                icon: 'success',
+                confirmButtonColor: '#5d5fef',
+                confirmButtonText: '확인'
+            });
+            // 알림 후 URL 깔끔하게 정리 (새로고침 시 다시 뜨는 것 방지)
+            history.replaceState({}, null, location.pathname);
+        }
+
+        // 3. 회원가입 성공 시
+        if (urlParams.get('joinSuccess') === 'true') {
+            Swal.fire({
+                title: '🚀 신규 대원 입성!',
+                text: '성공적으로 가입되었습니다. 이제 로그인을 진행해 주세요.',
+                icon: 'info',
+                confirmButtonColor: '#5d5fef',
+                confirmButtonText: '확인'
+            });
+            history.replaceState({}, null, location.pathname);
+        }
+    });
+</script>

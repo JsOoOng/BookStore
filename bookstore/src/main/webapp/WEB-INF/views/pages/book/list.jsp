@@ -2,15 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<h2 class="mb-4 text-center fw-bold">✨ 지식 탐험하기</h2>
-
-<div class="mb-5">
-    <form action="${pageContext.request.contextPath}/book/find" class="d-flex justify-content-center gap-2">
-	    <input type="text" name="title" class="form-control rounded-pill w-50" placeholder="어떤 지식을 탐험하고 싶으신가요?">
-	    <button type="submit" class="btn btn-cosmic btn-search">검색</button>
-	</form>
-</div>
-
 <div class="book-list">
     <c:forEach var="book" items="${bookList}">
         <div class="book-item" onclick="location.href='${pageContext.request.contextPath}/book/view?id=${book.id}'">

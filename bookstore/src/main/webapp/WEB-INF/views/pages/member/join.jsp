@@ -8,16 +8,15 @@
         <p class="text-muted">새로운 탐사대원으로 등록하여 지식을 공유하세요.</p>
     </div>
 
-    <c:if test="${param.error == 'id_exists'}">
-        <div class="alert alert-warning border-0 mb-4 text-center" style="border-radius: 15px;">
-            🛸 이미 사용 중인 대원 ID입니다. 다른 ID를 선택하세요.
-        </div>
-    </c:if>
-
-    <form action="${pageContext.request.contextPath}/member/join" method="POST" onsubmit="return validateForm()">
+    <form id="joinForm" action="${pageContext.request.contextPath}/member/join" method="POST" onsubmit="return validateForm()">
+        
         <div class="input-group-cosmic">
             <label for="id">대원 식별 ID</label>
-            <input type="text" id="id" name="id" placeholder="사용할 ID를 입력하세요" required>
+            <div class="d-flex gap-2">
+                <input type="text" id="id" name="id" placeholder="사용할 ID를 입력하세요" required autocomplete="off">
+                <button type="button" id="btn_check" class="btn btn-outline-info rounded-pill" style="min-width: 110px; font-weight: bold;">중복 확인</button>
+            </div>
+            <small id="id_msg" class="mt-2 d-block" style="font-weight: bold; color: #747d8c;">아이디 중복 확인이 필요합니다.</small>
         </div>
 
         <div class="input-group-cosmic">
@@ -33,11 +32,11 @@
         <div class="input-group-cosmic">
             <label for="pw_confirm">보안 코드 확인</label>
             <input type="password" id="pw_confirm" placeholder="비밀번호를 한 번 더 입력하세요" required>
-            <small id="pw_error" class="text-danger" style="display:none;">비밀번호가 일치하지 않습니다.</small>
+            <small id="pw_error" class="text-danger mt-2" style="display:none; font-weight: bold;">⚠️ 보안 코드가 일치하지 않습니다.</small>
         </div>
 
         <div class="mt-4">
-            <button type="submit" class="btn-confirm w-100 shadow-lg">대원 등록 신청</button>
+            <button type="submit" id="btn_submit" class="btn-confirm w-100 shadow-lg" disabled>대원 등록 신청</button>
         </div>
 
         <div class="text-center mt-4">
@@ -46,8 +45,51 @@
     </form>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-    // 자바스크립트를 이용한 간단한 폼 검증
+    $(document).ready(function() {
+        // 아이디 입력값이 변경되면 즉시 가입 버튼을 다시 잠그고 확인 메시지를 초기화합니다.
+        // (확인 버튼 누른 후 아이디를 살짝 바꾸는 행위를 방지)
+        $("#id").on("input", function() {
+            $("#btn_submit").attr("disabled", true); 
+            $("#id_msg").text("아이디 중복 확인이 필요합니다.").css("color", "#747d8c");
+        });
+
+        // [아이디 중복 확인] 버튼 클릭 이벤트
+        $("#btn_check").click(function() {
+            const userId = $("#id").val().trim();
+            
+            if(userId === "") {
+                alert("아이디를 먼저 입력해주세요.");
+                $("#id").focus();
+                return;
+            }
+
+            // 컨트롤러로 비동기 신호 전송
+            $.ajax({
+                url: "${pageContext.request.contextPath}/member/checkId",
+                type: "GET",
+                data: { "id": userId },
+                success: function(res) {
+                    if(res === "Y") {
+                        // 사용 가능할 때 (Green Light)
+                        $("#id_msg").text("사용 가능한 멋진 ID입니다! ✨").css("color", "#10ac84");
+                        $("#btn_submit").attr("disabled", false); // 🔓 등록 버튼 활성화
+                    } else {
+                        // 중복일 때 (Red Light)
+                        $("#id_msg").text("이미 은하계에 존재하는 ID입니다. ⛔").css("color", "#ff4757");
+                        $("#btn_submit").attr("disabled", true);  // 🔒 버튼 유지
+                    }
+                },
+                error: function() {
+                    alert("통신 관제소(서버) 응답에 실패했습니다.");
+                }
+            });
+        });
+    });
+
+    // 폼 제출 전 최종 관문 (비밀번호 일치 여부 확인)
     function validateForm() {
         const pw = document.getElementById('pw').value;
         const pwConfirm = document.getElementById('pw_confirm').value;
@@ -55,8 +97,11 @@
 
         if (pw !== pwConfirm) {
             errorMsg.style.display = 'block';
+            document.getElementById('pw_confirm').focus();
             return false; // 폼 전송 중단
         }
-        return true; // 폼 전송 승인
+        
+        errorMsg.style.display = 'none';
+        return true; // 최종 승인
     }
 </script>

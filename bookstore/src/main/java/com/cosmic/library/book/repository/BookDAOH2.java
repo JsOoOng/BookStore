@@ -95,4 +95,21 @@ public class BookDAOH2 implements BookDAO {
         String sql = "SELECT COUNT(*) FROM BOOK";
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
+    
+    // 1. 검색어 기준 페이징 조회
+    @Override
+    public List<BookVO> selectByKeywordPaged(String keyword, int limit, int offset) {
+        String sql = "SELECT * FROM BOOK WHERE title LIKE ? OR writer LIKE ? OR genre LIKE ? OR publisher LIKE ? " +
+                     "ORDER BY id DESC LIMIT ? OFFSET ?";
+        String search = "%" + keyword + "%";
+        return jdbcTemplate.query(sql, rowMapper, search, search, search, search, limit, offset);
+    }
+
+    // 2. 검색된 결과의 총 개수 조회
+    @Override
+    public int countByKeyword(String keyword) {
+        String sql = "SELECT COUNT(*) FROM BOOK WHERE title LIKE ? OR writer LIKE ? OR genre LIKE ? OR publisher LIKE ?";
+        String search = "%" + keyword + "%";
+        return jdbcTemplate.queryForObject(sql, Integer.class, search, search, search, search);
+    }
 }

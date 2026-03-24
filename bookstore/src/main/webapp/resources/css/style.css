@@ -290,3 +290,38 @@ body::before {
     font-size: 0.85rem;
     letter-spacing: 0.5px;
 }
+
+
+/* --- [10] 네비게이션 검색창 커스텀 --- */
+.navbar .form-control {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+
+.navbar .form-control:focus {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: #5d5fef !important;
+    box-shadow: 0 0 15px rgba(93, 95, 239, 0.3) !important;
+}
+
+.navbar .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* 검색 버튼 보강 */
+.navbar .btn-search-nav {
+    border: 1px solid #5d5fef;
+    color: #5d5fef;
+    background: transparent;
+    border-radius: 20px;
+    padding: 5px 20px;
+    font-weight: bold;
+}
+
+.navbar .btn-search-nav:hover {
+    background: #5d5fef;
+    color: white;
+    box-shadow: 0 0 15px rgba(93, 95, 239, 0.4);
+}
