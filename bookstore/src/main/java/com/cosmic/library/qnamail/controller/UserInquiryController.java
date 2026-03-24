@@ -38,24 +38,31 @@ public class UserInquiryController {
     public String submitInquiry(QnAMailVO qnamailvo, HttpSession session) {
         try {
             qnAMailService.createInquiry(qnamailvo);
+            
+            // 🚀 도착지를 '내 문의 내역'으로 변경하고 성공 파라미터를 붙입니다.
+            return "redirect:/user/myInquiries?sendSuccess=true"; 
         } catch (Exception e) {
             e.printStackTrace();
             return "redirect:/user/inquiry?error=true";
         }
-        return "redirect:/"; // 제출 후 메인으로 복귀
     }
     
     // 3. 내 문의 내역 리스트 (문제 1 해결용)
     @GetMapping("/myInquiries")
     public String myInquiries(HttpSession session, Model model) {
         MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
+        
+        // 🛡️ 로그인 체크
+        if (loginMember == null) return "redirect:/member/login";
 
-        // 가입 시 아이디를 기반으로 생성된 메일 주소로 검색 (또는 VO에 맞춰 조정)
-        String userMail = loginMember.getId() + "@cosmic.com"; 
-        List<QnAMailVO> myInquiries = qnAMailService.getMyInquiries(userMail);
+        // 🚀 [수정] @cosmic.com을 붙이지 않고 순수 ID만 가져옵니다.
+        // JSP에서 <input type="hidden" name="name" value="${loginMember.id}"> 로 보냈기 때문입니다.
+        String userName = loginMember.getId(); 
+        
+        // 서비스 호출 (바뀐 규격에 맞춰 name으로 조회)
+        List<QnAMailVO> myInquiries = qnAMailService.getMyInquiries(userName);
         
         model.addAttribute("myList", myInquiries);
-        // 🚀 좌표 설정: pages/QnA/userInquiryList
         model.addAttribute("pageName", "pages/QnA/userInquiryList");
         return "common/layout";
     }

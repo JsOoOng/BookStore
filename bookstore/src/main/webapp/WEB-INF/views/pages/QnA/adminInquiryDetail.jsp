@@ -26,13 +26,24 @@
             <h5 class="fw-bold mb-3">📡 사령부 응답 (Reply)</h5>
             <form action="${pageContext.request.contextPath}/admin/replyInquiry" method="post">
                 <input type="hidden" name="id" value="${inquiry.id}">
-                <textarea name="answer" class="form-control mb-3 border-0" rows="6" 
+                
+                <textarea id="answerArea" name="answer" class="form-control mb-3 border-0" rows="6" 
                           placeholder="대원에게 보낼 답변을 입력하세요..." 
-                          style="background: rgba(255,255,255,0.1); color: white; border-radius: 12px;">${inquiry.answer}</textarea>
+                          ${not empty inquiry.answer ? 'readonly' : ''}
+                          style="background: rgba(255,255,255,0.1); color: white; border-radius: 12px; transition: 0.3s;">${inquiry.answer}</textarea>
                 
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <button type="submit" class="btn btn-primary px-4 rounded-pill">답변 저장 및 전송</button>
+                        <c:choose>
+                            <c:when test="${not empty inquiry.answer}">
+                                <button type="button" id="editBtn" class="btn btn-info px-4 rounded-pill me-2" onclick="enableEdit()">수정하기</button>
+                                <button type="submit" id="saveBtn" class="btn btn-primary px-4 rounded-pill" style="display: none;">답변 갱신 및 저장</button>
+                            </c:when>
+                            <c:otherwise>
+                                <button type="submit" class="btn btn-primary px-4 rounded-pill">답변 저장 및 전송</button>
+                            </c:otherwise>
+                        </c:choose>
+                        
                         <button type="button" class="btn btn-link text-white-50 text-decoration-none ms-2" 
                                 onclick="location.href='${pageContext.request.contextPath}/admin/inquiries'">취소</button>
                     </div>
@@ -44,7 +55,25 @@
 </div>
 
 <script>
-    // 🛡️ 1. 삭제 프로토콜
+    // 🔐 답변 수정 활성화 프로토콜
+    function enableEdit() {
+        if(confirm("이미 전송된 답변이 있습니다. 답변 내용을 수정하시겠습니까?")) {
+            const area = document.getElementById('answerArea');
+            const editBtn = document.getElementById('editBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            
+            // 🔓 잠금 해제 및 강조
+            area.readOnly = false;
+            area.style.background = "rgba(255,255,255,0.2)"; // 입력 가능함을 시각적으로 표시
+            area.focus();
+            
+            // 🔄 버튼 교체
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+        }
+    }
+
+    // 🛡️ 신호 삭제 프로토콜
     function deleteQnA() {
         if(confirm("이 문의 내역을 우주 공간에서 영구 삭제하시겠습니까?")) {
             const form = document.createElement('form');
@@ -55,11 +84,9 @@
         }
     }
 
-    // ✨ 2. 답변 전송 성공 알림 프로토콜
+    // ✨ 답변 전송 성공 알림 프로토콜
     <c:if test="${param.replySuccess eq 'true'}">
-        alert("✨ 답변이 성공적으로 전송 및 저장되었습니다.");
-        
-        // 🚀 주소창의 파라미터(?replySuccess=true)를 제거하여 새로고침 시 알림이 다시 뜨지 않게 합니다.
+        alert("✨ 답변이 성공적으로 처리되었습니다.");
         if (typeof history.replaceState == 'function') {
             history.replaceState({}, null, location.pathname + "?id=${inquiry.id}");
         }

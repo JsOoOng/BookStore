@@ -51,3 +51,16 @@
         </table>
     </div>
 </div>
+
+<%-- 페이지 최하단 스크립트 구역에 추가 --%>
+<c:if test="${param.sendSuccess eq 'true'}">
+    <script>
+        // 🛰️ 사령부 통신 보고!
+        alert("✨ 문의 신호가 성공적으로 전송되었습니다!\n사령관들이 내용을 분석한 후 답변을 드릴 예정입니다.");
+        
+        // 주소창에서 ?sendSuccess=true를 지워 새로고침 시 알림이 다시 뜨지 않게 정화합니다.
+        if (typeof history.replaceState == 'function') {
+            history.replaceState({}, null, location.pathname);
+        }
+    </script>
+</c:if>

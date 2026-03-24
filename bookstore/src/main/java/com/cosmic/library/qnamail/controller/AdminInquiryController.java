@@ -57,10 +57,9 @@ public class AdminInquiryController {
     public String replyInquiry(@RequestParam("id") int id, @RequestParam("answer") String answer) {
         qnAMailService.replyInquiry(id, answer);
         
-        // 🚀 성공 파라미터(replySuccess)를 추가하여 리다이렉트합니다.
-        return "redirect:/admin/inquiryDetail?id=" + id + "&replySuccess=true";
+        // 🚀 도착지를 '관리자 문의 리스트'로 변경하고 성공 신호를 보냅니다.
+        return "redirect:/admin/inquiries?replySuccess=true"; 
     }
-
     // 4. 관리자 문의 삭제 (POST)
     @PostMapping("/deleteInquiry")
     public String deleteInquiry(@RequestParam("id") int id, HttpSession session) {

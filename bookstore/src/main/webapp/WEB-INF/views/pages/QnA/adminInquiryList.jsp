@@ -47,3 +47,16 @@
         </table>
     </div>
 </div>
+
+<%-- 페이지 최하단 script 구역 --%>
+<c:if test="${param.replySuccess eq 'true'}">
+    <script>
+        // 🛰️ 사령부 업무 보고!
+        alert("✨ 답변이 성공적으로 저장 및 전송되었습니다.");
+        
+        // 주소창에서 ?replySuccess=true를 제거하여 깔끔하게 정화합니다.
+        if (typeof history.replaceState == 'function') {
+            history.replaceState({}, null, location.pathname);
+        }
+    </script>
+</c:if>
