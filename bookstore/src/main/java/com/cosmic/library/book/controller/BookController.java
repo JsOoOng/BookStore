@@ -112,7 +112,7 @@ public class BookController {
 
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalSearchPages);
-        model.addAttribute("pageName", "book/find");
+        
 
         
         return "common/layout";

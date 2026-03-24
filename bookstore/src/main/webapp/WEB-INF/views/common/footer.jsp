@@ -13,7 +13,7 @@
                 <c:if test="${not empty sessionScope.loginMember}">
                     <div class="d-flex flex-column flex-md-row justify-content-md-end gap-2">
                         <a href="${pageContext.request.contextPath}/user/inquiry" class="btn btn-outline-light rounded-pill px-4">
-                            📡 사령부에 문의하기 (Q&A)
+                            📡 사령부에 문의하기 (QnA)
                         </a>
                         <a href="${pageContext.request.contextPath}/user/myInquiries" class="btn btn-outline-info rounded-pill px-4">
                             📋 내 문의 내역
