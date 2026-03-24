@@ -28,5 +28,15 @@ public interface BookService {
 
     // 7. 도서 삭제: 시스템에서 도서 데이터를 영구 삭제
     int removeBook(int id);
+
+    // 8. 페이징 기능 : 시작 지점 계산
+	List<BookVO> findBooksByPage(int page, int size);
+
+	// 9. 페이지 계산 기능
+	int getTotalPageCount(int size);
+
+	List<BookVO> searchBooksPaged(String keyword, int page, int size);
+
+	int getSearchPageCount(String keyword, int size);
 }
 

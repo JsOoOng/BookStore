@@ -1,0 +1,49 @@
+package com.cosmic.library.member.controller;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.cosmic.library.member.model.MemberVO;
+import com.cosmic.library.member.service.MemberService;
+
+@Controller
+@RequestMapping("/super")
+public class SuperController {
+
+    @Autowired
+    private MemberService memberService;
+
+    @GetMapping("/userControl")
+    public String userControl(Model model, HttpSession session) {
+        MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
+        
+        // SUPER role이 아닐 시 바로 퇴출
+        if (loginMember == null || !loginMember.getRole().equals("SUPER")) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("memberList", memberService.getAllMembers());
+        model.addAttribute("pageName", "super/userControl");
+        return "common/layout";
+    }
+    
+    // 2. Role 변경
+    @GetMapping("/changeRole")
+    public String changeRole(@RequestParam("id") String id, @RequestParam("role") String role) {
+        memberService.changeRole(id, role);
+        return "redirect:/super/userControl";
+    }
+
+    // 3. 회원 삭제
+    @GetMapping("/kick")
+    public String kickMember(@RequestParam("id") String id) {
+        memberService.withdraw(id);
+        return "redirect:/super/userControl";
+    }
+}
