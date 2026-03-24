@@ -16,4 +16,8 @@ public interface QnAMailService {
 
     // 문의 삭제 (관리자용)
     void deleteInquiry(int id);
+
+	void replyInquiry(int id, String answer);
+
+	List<QnAMailVO> getMyInquiries(String mail);
 }

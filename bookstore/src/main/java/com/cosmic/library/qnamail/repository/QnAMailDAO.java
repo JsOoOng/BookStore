@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cosmic.library.qnamail.model.QnAMailVO;
 
+
 public interface QnAMailDAO {
 	 // 문의 등록 (DB 저장 + 메일 발송까지 포함 가능)
     void createInquiry(QnAMailVO qnamailvo);
@@ -19,4 +20,8 @@ public interface QnAMailDAO {
      
     // 관리자에게 문의 메일 발송
     void sendInquiryMail(String title, String mail, String inquiry, String detail);
+
+	void updateAnswer(int id, String answer);
+
+	List<QnAMailVO> getInquiriesByMail(String mail);
 }

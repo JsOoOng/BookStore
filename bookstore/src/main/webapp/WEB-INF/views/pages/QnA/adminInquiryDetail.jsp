@@ -1,30 +1,67 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
-<head>
-    <title>문의 상세보기</title>
-    <style>
-        .container { width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        .row { margin-bottom: 10px; }
-        .label { font-weight: bold; }
-    </style>
-</head>
-<body>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<div class="container">
-    <h2>문의 상세보기</h2>
+<div class="container mt-5" style="max-width: 900px;">
+    <div class="d-flex align-items-center mb-4">
+        <a href="${pageContext.request.contextPath}/admin/inquiries" class="btn btn-outline-secondary btn-sm me-3 rounded-circle">←</a>
+        <h3 class="fw-bold mb-0">🔎 문의 상세 분석 보고서</h3>
+    </div>
 
-    <% 
-        com.cosmic.library.qnamail.model.QnAMailVO inquiry = (com.cosmic.library.qnamail.model.QnAMailVO) request.getAttribute("inquiry");
-    %>
+    <div class="card border-0 shadow-sm mb-4 rounded-4">
+        <div class="card-header bg-white py-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-info text-dark">${inquiry.inquiry}</span>
+                <small class="text-muted">No. ${inquiry.id}</small>
+            </div>
+            <h4 class="mt-2 fw-bold">${inquiry.title}</h4>
+            <div class="text-muted small">발신 대원: <strong>${inquiry.mail}</strong></div>
+        </div>
+        <div class="card-body p-4" style="min-height: 200px; background-color: #f8f9fa;">
+            <p class="card-text" style="white-space: pre-wrap;">${inquiry.detail}</p>
+        </div>
+    </div>
 
-    <div class="row"><span class="label">ID:</span> <%= inquiry.getId() %></div>
-    <div class="row"><span class="label">제목:</span> <%= inquiry.getTitle() %></div>
-    <div class="row"><span class="label">작성자 이메일:</span> <%= inquiry.getMail() %></div>
-    <div class="row"><span class="label">문의 종류:</span> <%= inquiry.getInquiry() %></div>
-    <div class="row"><span class="label">내용:</span> <pre><%= inquiry.getDetail() %></pre></div>
-
-    <a href="<%= request.getContextPath() %>/admin/inquiries">목록으로 돌아가기</a>
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-dark text-white">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">📡 사령부 응답 (Reply)</h5>
+            <form action="${pageContext.request.contextPath}/admin/replyInquiry" method="post">
+                <input type="hidden" name="id" value="${inquiry.id}">
+                <textarea name="answer" class="form-control mb-3 border-0" rows="6" 
+                          placeholder="대원에게 보낼 답변을 입력하세요..." 
+                          style="background: rgba(255,255,255,0.1); color: white; border-radius: 12px;">${inquiry.answer}</textarea>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">답변 저장 및 전송</button>
+                        <button type="button" class="btn btn-link text-white-50 text-decoration-none ms-2" 
+                                onclick="location.href='${pageContext.request.contextPath}/admin/inquiries'">취소</button>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="deleteQnA()">신호 삭제</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<script>
+    // 🛡️ 1. 삭제 프로토콜
+    function deleteQnA() {
+        if(confirm("이 문의 내역을 우주 공간에서 영구 삭제하시겠습니까?")) {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = '${pageContext.request.contextPath}/admin/deleteInquiry?id=${inquiry.id}';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // ✨ 2. 답변 전송 성공 알림 프로토콜
+    <c:if test="${param.replySuccess eq 'true'}">
+        alert("✨ 답변이 성공적으로 전송 및 저장되었습니다.");
+        
+        // 🚀 주소창의 파라미터(?replySuccess=true)를 제거하여 새로고침 시 알림이 다시 뜨지 않게 합니다.
+        if (typeof history.replaceState == 'function') {
+            history.replaceState({}, null, location.pathname + "?id=${inquiry.id}");
+        }
+    </c:if>
+</script>

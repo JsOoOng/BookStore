@@ -12,8 +12,8 @@
 
     <c:import url="/WEB-INF/views/common/header.jsp" />
 
-    <main class="main-content">
-	    <c:import url="/WEB-INF/views/pages/${pageName}.jsp" />
+    <main class="main-content" style="min-height: 65vh; padding-bottom: 50px;">
+	    <jsp:include page="/WEB-INF/views/${pageName}.jsp" />
 	</main>
 
     <c:import url="/WEB-INF/views/common/footer.jsp" />

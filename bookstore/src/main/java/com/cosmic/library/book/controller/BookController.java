@@ -9,7 +9,7 @@ import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
 
 @Controller
-@RequestMapping("/book") // 모든 경로는 /book으로 시작합니다.
+@RequestMapping("/book") 
 public class BookController {
 
     @Autowired
@@ -26,7 +26,9 @@ public class BookController {
         model.addAttribute("bookList", books);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
-        model.addAttribute("pageName", "book/list");
+        
+        // 🚀 좌표 수정: book/list -> pages/book/list
+        model.addAttribute("pageName", "pages/book/list");
         
         return "common/layout";
     }
@@ -35,20 +37,22 @@ public class BookController {
     @GetMapping("/view")
     public String view(@RequestParam("id") int id, Model model) {
         BookVO book = bookService.findBookById(id);
-        
-        // 상세 페이지 하단의 '다른 지식' 추천용 (최신 도서 5권)
         List<BookVO> recommendList = bookService.findRecentBooks(5);
         
         model.addAttribute("book", book);
         model.addAttribute("recommendList", recommendList);
-        model.addAttribute("pageName", "book/view");
+        
+        // 🚀 좌표 수정: book/view -> pages/book/view
+        model.addAttribute("pageName", "pages/book/view");
+        
         return "common/layout";
     }
 
     // 3. 신규 도서 등록 폼 (Insert - GET)
     @GetMapping("/insert")
     public String insertForm(Model model) {
-        model.addAttribute("pageName", "book/insert");
+        // 🚀 좌표 수정: book/insert -> pages/book/insert
+        model.addAttribute("pageName", "pages/book/insert");
         return "common/layout";
     }
 
@@ -56,7 +60,7 @@ public class BookController {
     @PostMapping("/insert")
     public String insertProcess(@ModelAttribute BookVO book) {
         bookService.registerBook(book);
-        return "redirect:/book/list"; // 등록 후 리스트로 귀환
+        return "redirect:/book/list"; 
     }
 
     // 5. 도서 정보 수정 폼 (Update - GET)
@@ -64,7 +68,10 @@ public class BookController {
     public String updateForm(@RequestParam("id") int id, Model model) {
         BookVO book = bookService.findBookById(id);
         model.addAttribute("book", book);
-        model.addAttribute("pageName", "book/update");
+        
+        // 🚀 좌표 수정: book/update -> pages/book/update
+        model.addAttribute("pageName", "pages/book/update");
+        
         return "common/layout";
     }
 
@@ -72,7 +79,7 @@ public class BookController {
     @PostMapping("/update")
     public String updateProcess(@ModelAttribute BookVO book) {
         bookService.modifyBook(book);
-        return "redirect:/book/view?id=" + book.getId(); // 수정 후 해당 상세페이지로 이동
+        return "redirect:/book/view?id=" + book.getId(); 
     }
 
     // 7. 도서 데이터 말소 (Delete)
@@ -88,7 +95,10 @@ public class BookController {
         List<BookVO> searchResult = bookService.searchBooks(keyword);
         model.addAttribute("bookList", searchResult);
         model.addAttribute("searchKeyword", keyword);
-        model.addAttribute("pageName", "book/find");
+        
+        // 🚀 좌표 수정: book/find -> pages/book/find
+        model.addAttribute("pageName", "pages/book/find");
+        
         return "common/layout";
     }
 }

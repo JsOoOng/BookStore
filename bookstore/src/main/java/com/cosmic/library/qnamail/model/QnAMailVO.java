@@ -6,17 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-@ToString
+@NoArgsConstructor
+@Getter @Setter @ToString
 public class QnAMailVO {
-	
-	int id;
-	String title;
-	String mail;
-	String inquiry;
-	String detail;
-	
+    private int id;
+    private String title;
+    private String mail;
+    private String inquiry; // 문의 종류
+    private String detail;  // 문의 내용
+    private String answer;  // 🔍 [추가] 관리자 답변 내용
 }

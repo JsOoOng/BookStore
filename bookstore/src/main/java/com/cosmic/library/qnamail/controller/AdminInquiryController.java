@@ -1,9 +1,7 @@
 package com.cosmic.library.qnamail.controller;
 
 import java.util.List;
-
 import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,33 +24,53 @@ public class AdminInquiryController {
         this.qnAMailService = qnAMailService;
     }
 
-    // 관리자 문의 리스트
+    // 1. 관리자 문의 리스트
     @GetMapping("/inquiries")
     public String inquiryList(Model model, HttpSession session) {
-        // 세션 체크 (관리자인 경우만)
+        // 🛡️ 사령관 권한 체크 (필요시 추가 로직 구현)
         List<QnAMailVO> inquiries = qnAMailService.getAllInquiries();
         model.addAttribute("inquiries", inquiries);
-        model.addAttribute("pageName", "QnA/adminInquiryList"); // JSP 경로
+        
+        // 🚀 좌표 수정: QnA/adminInquiryList -> pages/QnA/adminInquiryList
+        model.addAttribute("pageName", "pages/QnA/adminInquiryList"); 
+        
         return "common/layout";
     }
 
-    // 관리자 문의 상세보기
+    // 2. 관리자 문의 상세보기
     @GetMapping("/inquiryDetail")
     public String inquiryDetail(@RequestParam("id") int id, Model model, HttpSession session) {
-        Object admin = session.getAttribute("loginAdmin");
+        // 🛡️ 사령관 세션 확인 (기존 로직 유지)
+        session.getAttribute("loginAdmin");
 
         QnAMailVO inquiry = qnAMailService.getInquiryById(id);
         model.addAttribute("inquiry", inquiry);
-        model.addAttribute("pageName", "QnA/adminInquiryDetail");
+        
+        // 🚀 좌표 수정: QnA/adminInquiryDetail -> pages/QnA/adminInquiryDetail
+        model.addAttribute("pageName", "pages/QnA/adminInquiryDetail");
+        
         return "common/layout";
     }
+    
+    // 3. 관리자 문의 답변 등록 (POST)
+    @PostMapping("/replyInquiry")
+    public String replyInquiry(@RequestParam("id") int id, @RequestParam("answer") String answer) {
+        qnAMailService.replyInquiry(id, answer);
+        
+        // 🚀 성공 파라미터(replySuccess)를 추가하여 리다이렉트합니다.
+        return "redirect:/admin/inquiryDetail?id=" + id + "&replySuccess=true";
+    }
 
-    // 관리자 문의 삭제
+    // 4. 관리자 문의 삭제 (POST)
     @PostMapping("/deleteInquiry")
     public String deleteInquiry(@RequestParam("id") int id, HttpSession session) {
-        Object admin = session.getAttribute("loginAdmin");
+        session.getAttribute("loginAdmin");
 
         qnAMailService.deleteInquiry(id);
+        
+        // ⚓ 리다이렉트는 URL 주소이므로 그대로 유지합니다.
         return "redirect:/admin/inquiries";
     }
+    
+    
 }

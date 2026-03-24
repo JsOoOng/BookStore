@@ -38,6 +38,20 @@ public class QnAMailServiceImple implements QnAMailService {
             qnamailvo.getDetail()
         );
     }
+    
+    // Service (QnAMailServiceImple)
+    @Override
+    public List<QnAMailVO> getMyInquiries(String mail) {
+        return qnAMailDAO.getInquiriesByMail(mail);
+    }
+    
+    @Override
+    public void replyInquiry(int id, String answer) {
+        // 답변을 DB에 저장합니다.
+        qnAMailDAO.updateAnswer(id, answer);
+        
+        // 💡 선택사항: 여기서 유저(mail)에게 "답변이 등록되었습니다"라고 실제 이메일을 발송할 수도 있습니다.
+    }
 
     // 전체 문의 조회 (관리자용)
     public List<QnAMailVO> getAllInquiries() {

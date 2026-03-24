@@ -14,6 +14,11 @@
 				            👑 사령실(Admin)
 				        </a>
 				    </li>
+				    <li class="nav-item">
+				        <a class="nav-link text-info fw-bold" href="${pageContext.request.contextPath}/admin/inquiries">
+				            📨 문의 사항 확인
+				        </a>
+				    </li>
 				</c:if>
             </ul>
             

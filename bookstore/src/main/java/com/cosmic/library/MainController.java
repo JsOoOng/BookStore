@@ -11,7 +11,7 @@ public class MainController {
     public String mainPage(Model model) {
     	
         // layout.jsp에서 "pages/main.jsp 본문 띄우기
-        model.addAttribute("pageName", "main"); 
+        model.addAttribute("pageName", "pages/main"); 
         return "common/layout"; // 실제 이동은 common/layout.jsp로 함
     }
 }

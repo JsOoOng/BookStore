@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.cosmic.library.qnamail.model.QnAMailVO;
 
+
 @Repository
 public class QnAMailDAOH2 implements QnAMailDAO {
 
@@ -15,6 +16,20 @@ public class QnAMailDAOH2 implements QnAMailDAO {
 
     public QnAMailDAOH2(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+    
+    @Override
+    public List<QnAMailVO> getInquiriesByMail(String mail) {
+        // 🛰️ 특정 이메일로 발신된 모든 신호를 역순(최신순)으로 긁어옵니다.
+        String sql = "SELECT * FROM qna_mail WHERE mail = ? ORDER BY id DESC";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(QnAMailVO.class), mail);
+    }
+    
+    @Override
+    public void updateAnswer(int id, String answer) {
+        // 🛰️ 문의 사항에 관리자의 답변을 새깁니다.
+        String sql = "UPDATE qna_mail SET answer = ? WHERE id = ?";
+        jdbcTemplate.update(sql, answer, id);
     }
 
     @Override
