@@ -89,15 +89,31 @@ public class BookController {
         return "redirect:/book/list";
     }
 
-    // 8. 키워드 기반 도서 검색 (Find)
+ // 8. 키워드 기반 도서 검색 (Find - 페이징 추가 버전)
     @GetMapping("/find")
-    public String find(@RequestParam("title") String keyword, Model model) {
-        List<BookVO> searchResult = bookService.searchBooks(keyword);
+    public String find(
+        @RequestParam("title") String keyword, 
+        @RequestParam(value = "page", defaultValue = "1") int page, // 페이지 파라미터 추가
+        Model model) {
+        
+        int pageSize = 8; // 리스트와 동일하게 10개씩
+        
+        // 🔍 [주의] Service에 검색용 페이징 메소드가 필요합니다.
+        // 기존 searchBooks(keyword) 대신 페이징이 적용된 메소드를 호출해야 합니다.
+        List<BookVO> searchResult = bookService.searchBooksPaged(keyword, page, pageSize);
+        int totalSearchPages = bookService.getSearchPageCount(keyword, pageSize);
+        
         model.addAttribute("bookList", searchResult);
         model.addAttribute("searchKeyword", keyword);
+
         
         // 🚀 좌표 수정: book/find -> pages/book/find
         model.addAttribute("pageName", "pages/book/find");
+
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalSearchPages);
+        model.addAttribute("pageName", "book/find");
+
         
         return "common/layout";
     }

@@ -29,6 +29,15 @@ public class MemberDAOH2 implements MemberDAO {
             return null;
         }
     }
+    
+    @Override
+    public int countMemberById(String id) {
+        // 해당 ID를 가진 대원이 몇 명인지 숫자로 반환합니다. (0 또는 1)
+        String sql = "SELECT COUNT(*) FROM MEMBER WHERE id = ?";
+        
+        // queryForObject를 사용하여 단일 숫자 값을 가져옵니다.
+        return jdbcTemplate.queryForObject(sql, Integer.class, id);
+    }
 
     @Override
     public int insertMember(MemberVO member) {

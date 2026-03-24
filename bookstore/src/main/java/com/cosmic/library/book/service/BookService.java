@@ -34,5 +34,9 @@ public interface BookService {
 
 	// 9. 페이지 계산 기능
 	int getTotalPageCount(int size);
+
+	List<BookVO> searchBooksPaged(String keyword, int page, int size);
+
+	int getSearchPageCount(String keyword, int size);
 }
 

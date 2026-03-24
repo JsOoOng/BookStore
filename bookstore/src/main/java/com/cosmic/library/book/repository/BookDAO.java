@@ -32,5 +32,11 @@ public interface BookDAO {
 
 	// 도서 전체 갯수
 	int countAll();
+	
+	// 검색어에 따른 페이징 목록 조회
+	List<BookVO> selectByKeywordPaged(String keyword, int limit, int offset);
+
+	// 검색 결과의 총 개수 조회 (검색용 페이지 계산)
+	int countByKeyword(String keyword);
 }
 

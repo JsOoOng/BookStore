@@ -24,6 +24,16 @@ public class MemberServiceImple implements MemberService {
         
         return null; // 인증 실패: 침입자 또는 정보 불일치
     }
+    
+    @Override
+    public boolean isIdAvailable(String id) {
+        // 1. DAO에게 해당 ID를 쓰는 대원이 몇 명인지 물어봅니다.
+        int count = memberDAO.countMemberById(id);
+        
+        // 2. 결과가 0이면 사용 가능한 아이디(true), 아니면 중복(false)입니다.
+        // 🛰️ "기지에 동일한 신호가 감지되지 않음 -> 입성 허가"
+        return count == 0;
+    }
 
     @Override
     public int join(MemberVO member) {
