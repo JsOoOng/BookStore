@@ -25,6 +25,13 @@
 				            📨 문의 사항 확인
 				        </a>
 				    </li>
+				    
+				    <li class="nav-item">
+				        <a class="nav-link text-info fw-bold" href="${pageContext.request.contextPath}/book/insert">
+				            도서 추가
+				        </a>
+				    </li>
+				    
 				</c:if>
 
             </ul>
