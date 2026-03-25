@@ -3,7 +3,6 @@ package com.cosmic.library.member.repository;
 import java.util.List;
 
 import com.cosmic.library.member.model.MemberVO;
-import com.cosmic.library.qnamail.model.QnAMailVO;
 
 public interface MemberDAO {
     
