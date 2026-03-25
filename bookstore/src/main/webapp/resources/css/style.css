@@ -349,3 +349,26 @@ body::before {
     box-shadow: 0 0 15px rgba(93, 95, 239, 0.15);
     background: white;
 }
+
+
+
+
+.map-container {
+    margin-bottom: 30px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.location-info {
+    background: rgba(255,255,255,0.7);
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.location-info h4 {
+    color: #5d5fef;
+    margin-bottom: 10px;
+}

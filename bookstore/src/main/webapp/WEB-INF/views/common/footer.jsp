@@ -21,6 +21,7 @@
                     </div>
                 </c:if>
                 
+                <p><a href="${pageContext.request.contextPath}/map" class="btn btn-outline-info rounded-pill px-4">찾아오는 길</a></p>
                 <p class="small mt-2" style="color: #DCDCDC;">© 2026 Cosmic Library Project. All Rights Reserved.</p>
             </div>
         </div>
