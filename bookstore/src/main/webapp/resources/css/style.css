@@ -325,3 +325,27 @@ body::before {
     color: white;
     box-shadow: 0 0 15px rgba(93, 95, 239, 0.4);
 }
+
+
+
+/* 장르 select 스타일 추가 */
+.input-group-cosmic select {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 15px;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box;
+    appearance: none; /* 기본 화살표 제거 */
+    cursor: pointer;
+}
+
+/* 포커스 효과 */
+.input-group-cosmic select:focus {
+    border-color: #5d5fef;
+    box-shadow: 0 0 15px rgba(93, 95, 239, 0.15);
+    background: white;
+}
