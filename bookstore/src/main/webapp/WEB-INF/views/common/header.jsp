@@ -12,21 +12,26 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/book/list">도서목록</a></li>
 
-                
-                <%-- 로그인한 대원의 세션 정보(loginMember)에서 role을 꺼내와야 합니다 --%>
-				<c:if test="${sessionScope.loginMember.role eq 'SUPER'}">
-				    <li class="nav-item">
-				        <a class="nav-link text-warning fw-bold" href="${pageContext.request.contextPath}/super/userControl">
-				            👑 사령실(Admin)
-				        </a>
-				    </li>
-				    <li class="nav-item">
-				        <a class="nav-link text-info fw-bold" href="${pageContext.request.contextPath}/admin/inquiries">
-				            📨 문의 사항 확인
-				        </a>
-				    </li>
-				</c:if>
+                <%-- 실시간 상담 버튼 (항상 노출, 클릭 시 컨트롤러에서 비로그인 튕겨냄) --%>
+                <li class="nav-item">
+                    <a class="nav-link text-success fw-bold" href="${pageContext.request.contextPath}/qna/chat">
+                        💬 실시간 상담
+                    </a>
+                </li>
 
+                <%-- 관리자 전용 메뉴 --%>
+                <c:if test="${sessionScope.loginMember.role eq 'SUPER' or sessionScope.loginMember.role eq 'QNAadmin'}">
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="${pageContext.request.contextPath}/super/userControl">
+                            👑 사령실(Admin)
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="${pageContext.request.contextPath}/admin/inquiries">
+                            📨 문의 사항 확인
+                        </a>
+                    </li>
+                </c:if>
             </ul>
 
             <form action="${pageContext.request.contextPath}/book/find" method="get" class="d-flex mx-auto" style="width: 35%;">
