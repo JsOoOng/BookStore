@@ -7,7 +7,6 @@
         <h2 class="fw-bold" style="color: #5d5fef;">Cosmic Inquiry</h2>
         <p class="text-muted">문의 사항을 남겨주시면 모든 사령관(Admin)이 검토 후 답변해 드립니다.</p>
     </div>
-
     <form action="${pageContext.request.contextPath}/user/submitInquiry" method="post" class="cosmic-form">
         <input type="hidden" name="name" value="${sessionScope.loginMember.id}" />
 
