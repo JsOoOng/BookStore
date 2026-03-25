@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.cosmic.library.member.model.MemberVO;
-import com.cosmic.library.qnamail.model.QnAMailVO;
 
 @Repository
 public class MemberDAOH2 implements MemberDAO {

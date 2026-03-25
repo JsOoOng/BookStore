@@ -14,12 +14,36 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/book/list">도서목록</a></li>
 
+
                 <%-- 2. 실시간 상담 버튼 (알람 뱃지 포함) --%>
                 <li class="nav-item">
                     <a class="nav-link text-success fw-bold" href="${pageContext.request.contextPath}/qna/chat">
                         💬 실시간 상담 <span id="chatAlarmBadge" class="badge bg-danger rounded-pill" style="display:none; font-size: 0.7rem;">New</span>
                     </a>
                 </li>
+
+                
+                <%-- 로그인한 대원의 세션 정보(loginMember)에서 role을 꺼내와야 합니다 --%>
+				<c:if test="${sessionScope.loginMember.role eq 'SUPER'}">
+				    <li class="nav-item">
+				        <a class="nav-link text-warning fw-bold" href="${pageContext.request.contextPath}/super/userControl">
+				            👑 사령실(Admin)
+				        </a>
+				    </li>
+				    <li class="nav-item">
+				        <a class="nav-link text-info fw-bold" href="${pageContext.request.contextPath}/admin/inquiries">
+				            📨 문의 사항 확인
+				        </a>
+				    </li>
+				    
+				    <li class="nav-item">
+				        <a class="nav-link text-info fw-bold" href="${pageContext.request.contextPath}/book/insert">
+				            도서 추가
+				        </a>
+				    </li>
+				    
+				</c:if>
+
 
                 <c:if test="${sessionScope.loginMember.role eq 'SUPER' or sessionScope.loginMember.role eq 'QNAadmin'}">
                     <li class="nav-item"><a class="nav-link text-warning fw-bold" href="${pageContext.request.contextPath}/super/userControl">👑 사령실(Admin)</a></li>
