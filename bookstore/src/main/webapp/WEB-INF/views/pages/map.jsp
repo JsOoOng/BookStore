@@ -13,9 +13,7 @@
         src="https://www.google.com/maps?q=서울특별시 중랑구 서일대학교&output=embed"
         width="100%" 
         height="450" 
-        style="border:0; border-radius:20px;"
-        allowfullscreen 
-        loading="lazy">
+        style="border:0; border-radius:20px;">
     </iframe>
 </div>
 
