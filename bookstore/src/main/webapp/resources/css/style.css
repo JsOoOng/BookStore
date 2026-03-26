@@ -675,4 +675,34 @@ body::before {
         font-size: 0.76rem;
         padding: 6px 10px;
     }
+    /* --- purchase success --- */
+
+	.success-container {
+	    text-align: center;
+	    padding: 60px 20px;
+	}
+	
+	.success-icon {
+	    font-size: 60px;
+	    margin-bottom: 20px;
+	    animation: float 2s ease-in-out infinite;
+	}
+	
+	.success-container h2 {
+	    font-size: 28px;
+	    color: #2f3542;
+	    margin-bottom: 15px;
+	}
+	
+	.success-container p {
+	    color: #666;
+	    line-height: 1.7;
+	    margin-bottom: 30px;
+	}
+	
+	@keyframes float {
+	    0% { transform: translateY(0px); }
+	    50% { transform: translateY(-10px); }
+	    100% { transform: translateY(0px); }
+	}
 }

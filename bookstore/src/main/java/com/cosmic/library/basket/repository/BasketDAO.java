@@ -13,14 +13,16 @@ public interface BasketDAO {
     void insert(String memberId, int bookId);
 
     // 장바구니 항목 삭제 (단일)
-    void deleteById(int busketId, String memberId);
+    void deleteById(int basketId, String memberId);
 
     // 장바구니 항목 삭제 (다중)
-    void deleteByIds(int[] busketIds, String memberId);
+    void deleteByIds(int[] basketIds, String memberId);
 
     // 구매 처리 (단일)
-    void buy(int busketId, String memberId);
+    void buy(int basketId, String memberId);
 
     // 구매 처리 (다중)
-    void buy(int[] busketIds, String memberId);
+    void buy(int[] basketIds, String memberId);
+
+	void delete(String memberId, int bookId);
 }

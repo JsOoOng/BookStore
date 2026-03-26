@@ -8,7 +8,11 @@ import lombok.Setter;
 public class Purchase {
 
     private int id;
-    private String memberId;
-    private int bookId;
-    private int price;
+
+    private String memberId;   // 회원 ID
+    private int bookId;        // 책 ID
+
+    private int price;         // 단가
+    private int quantity;      // 수량 ⭐ 추가
+    private int totalPrice;    // 총 금액 ⭐ 추가
 }
