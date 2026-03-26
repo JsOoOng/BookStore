@@ -1,12 +1,13 @@
-package com.cosmic.library.busket.service;
+package com.cosmic.library.basket.service;
 
-import com.cosmic.library.busket.model.BusketVO;
 import java.util.List;
 
-public interface BusketService {
+import com.cosmic.library.basket.model.BasketVO;
+
+public interface BasketService {
 
     // 회원별 장바구니 리스트 조회
-    List<BusketVO> getList(String memberId);
+    List<BasketVO> getList(String memberId);
 
     // 장바구니 삭제 (단일)
     void delete(String memberId, int busketId);

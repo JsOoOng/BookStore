@@ -1,12 +1,13 @@
-package com.cosmic.library.busket.repository;
+package com.cosmic.library.basket.repository;
 
-import com.cosmic.library.busket.model.BusketVO;
 import java.util.List;
 
-public interface BusketDAO {
+import com.cosmic.library.basket.model.BasketVO;
+
+public interface BasketDAO {
 
     // 회원 기준 장바구니 리스트 조회
-    List<BusketVO> findAll(String memberId);
+    List<BasketVO> findAll(String memberId);
 
     // 장바구니에 도서 추가 (회원 기준)
     void insert(String memberId, int bookId);

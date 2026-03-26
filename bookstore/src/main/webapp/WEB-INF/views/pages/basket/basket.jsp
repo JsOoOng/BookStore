@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <form action="${pageContext.request.contextPath}/busket/delete" method="post" id="deleteForm">
+    <form action="${pageContext.request.contextPath}/basket/delete" method="post" id="deleteForm">
     
      <!-- 상단 버튼 -->
         <div class="d-flex justify-content-between mt-3">
@@ -50,11 +50,11 @@
             </thead>
 
             <tbody>
-                <c:forEach var="vo" items="${busketList}">
+                <c:forEach var="vo" items="${basketList}">
                     <tr>
                         <!-- 체크박스 -->
                         <td>
-                            <input type="checkbox" name="ids" value="${vo.busketId}" class="selectItem">
+                            <input type="checkbox" name="ids" value="${vo.basketId}" class="selectItem">
                         </td>
 
                         <!-- 이미지 -->
@@ -83,7 +83,7 @@
                         <td>
                             <button type="button"
                                     class="btn btn-sm btn-danger"
-                                    onclick="deleteOne(${vo.busketId})">
+                                    onclick="deleteOne(${vo.basketId})">
                                 삭제
                             </button>
                         </td>
@@ -92,7 +92,7 @@
                         <td>
                             <button type="button"
                                     class="btn btn-sm btn-success"
-                                    onclick="location.href='${pageContext.request.contextPath}/busket/buy?busketIds=${vo.busketId}'">
+                                    onclick="location.href='${pageContext.request.contextPath}/basket/buy?basketIds=${vo.basketId}'">
                                 구매
                             </button>
                         </td>
@@ -126,7 +126,7 @@ document.getElementById('buyBtn').addEventListener('click', function() {
         return;
     }
 
-    location.href = "${pageContext.request.contextPath}/busket/buy?busketIds=" + selected;
+    location.href = "${pageContext.request.contextPath}/basket/buy?basketIds=" + selected;
 });
 
 // 개별 삭제
@@ -137,7 +137,7 @@ function deleteOne(id) {
 
     const input = document.createElement('input');
     input.type = 'hidden';
-    input.name = 'busketId';
+    input.name = 'basketId';
     input.value = id;
 
     form.appendChild(input);

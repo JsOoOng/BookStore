@@ -1,33 +1,32 @@
-package com.cosmic.library.busket.repository;
+package com.cosmic.library.basket.repository;
 
-import com.cosmic.library.busket.model.BusketVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.cosmic.library.basket.model.BasketVO;
+
 import java.util.List;
 
 @Repository
-public class BusketDAOH2 implements BusketDAO {
+public class BasketDAOH2 implements BasketDAO {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     // 회원 기준 장바구니 조회
     @Override
-    public List<BusketVO> findAll(String memberId) {
-        String sql = """
-            SELECT b.busket_id, b.member_id, b.book_id, b.quantity, b.reg_date,
-                   bk.title, bk.writer, bk.price, bk.image
-            FROM busket b
-            JOIN book bk ON b.book_id = bk.id
-            WHERE b.member_id = ?
-            ORDER BY b.reg_date DESC
-        """;
+    public List<BasketVO> findAll(String memberId) {
+    	String sql = "SELECT b.busket_id, b.member_id, b.book_id, b.quantity, b.reg_date, "
+                + "bk.title, bk.writer, bk.price, bk.image "
+                + "FROM busket b "
+                + "JOIN book bk ON b.book_id = bk.id "
+                + "WHERE b.member_id = ? "
+                + "ORDER BY b.reg_date DESC";
 
         return jdbcTemplate.query(sql, new Object[]{memberId}, (rs, rowNum) -> {
-            BusketVO vo = new BusketVO();
-            vo.setBusketId(rs.getInt("busket_id")); 
+            BasketVO vo = new BasketVO();
+            vo.setBasketId(rs.getInt("busket_id")); 
             vo.setMemberId(rs.getString("member_id"));
             vo.setBookId(rs.getInt("book_id"));
             vo.setQuantity(rs.getInt("quantity"));

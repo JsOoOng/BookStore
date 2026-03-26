@@ -1,21 +1,22 @@
-package com.cosmic.library.busket.service;
+package com.cosmic.library.basket.service;
 
-import com.cosmic.library.busket.model.BusketVO;
-import com.cosmic.library.busket.repository.BusketDAO;
+import com.cosmic.library.basket.model.BasketVO;
+import com.cosmic.library.basket.repository.BasketDAO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class BusketServiceImpl implements BusketService {
+public class BasketServiceImpl implements BasketService {
 
     @Autowired
-    private BusketDAO busketDAO;
+    private BasketDAO busketDAO;
 
     // 회원 기준 장바구니 리스트 조회
     @Override
-    public List<BusketVO> getList(String memberId) {
+    public List<BasketVO> getList(String memberId) {
         return busketDAO.findAll(memberId);
     }
 
