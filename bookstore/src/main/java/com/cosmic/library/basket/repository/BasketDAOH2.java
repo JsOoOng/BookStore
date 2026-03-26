@@ -17,7 +17,6 @@ public class BasketDAOH2 implements BasketDAO {
     // 회원 기준 장바구니 조회
     @Override
     public List<BasketVO> findAll(String memberId) {
-
         String sql = "SELECT b.basket_id, b.member_id, b.book_id, b.quantity, b.reg_date, "
                 + "bk.title, bk.writer, bk.price, bk.image "
                 + "FROM basket b "
@@ -75,7 +74,6 @@ public class BasketDAOH2 implements BasketDAO {
     // 다중 삭제
     @Override
     public void deleteByIds(int[] basketIds, String memberId) {
-
         if (basketIds == null || basketIds.length == 0) return;
 
         StringBuilder sql = new StringBuilder(
@@ -84,10 +82,9 @@ public class BasketDAOH2 implements BasketDAO {
 
         for (int i = 0; i < basketIds.length; i++) {
             sql.append("?");
-            if (i < basketIds.length - 1) {
-                sql.append(",");
-            }
-        }
+            if (
+            		i < basketIds.length - 1) sql.append(",");
+        	}
         sql.append(")");
 
         Object[] params = new Object[basketIds.length + 1];
