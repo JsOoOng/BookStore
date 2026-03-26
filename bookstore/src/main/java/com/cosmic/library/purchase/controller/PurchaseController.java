@@ -30,7 +30,7 @@ public class PurchaseController {
         BookVO book = bookService.getById(bookId); // ⭐ 핵심
 
         model.addAttribute("book", book);
-        model.addAttribute("pageName", "purchase/purchase");
+        model.addAttribute("pageName", "pages/purchase/purchase");
 
         return "common/layout";
     }

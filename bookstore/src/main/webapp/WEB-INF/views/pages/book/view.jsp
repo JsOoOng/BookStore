@@ -30,6 +30,14 @@
                 <fmt:formatNumber value="${book.price}" pattern="#,###"/> 원
             </div>
             
+            <!-- 🔥 구매하기 버튼 -->
+			<div class="form-actions mt-5 d-flex gap-3">
+
+			    <button type="button" class="btn-confirm" onclick="location.href='${pageContext.request.contextPath}/purchase/view?bookId=${book.id}'">
+			        🛒 구매하기
+				</button>
+			</div>
+            
 	        <div class="form-actions mt-5 d-flex gap-3">
 			    <button type="button" class="btn-cancel" onclick="location.href='${pageContext.request.contextPath}/book/list'">
 			        목록으로 돌아가기
