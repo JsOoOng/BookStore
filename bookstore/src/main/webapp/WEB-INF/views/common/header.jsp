@@ -63,6 +63,9 @@
                         <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/member/join">신규 대원 등록</a></li>
                     </c:when>
                     <c:otherwise>
+                     	<li class="nav-item">
+                    		<a class="nav-link" href="${pageContext.request.contextPath}/busket">장바구니</a>
+                    	</li>
                         <li class="nav-item"><span class="nav-link text-primary fw-bold">✨ ${loginMember.name} 대원님</span></li>
                         <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/member/edit">정보 수정</a></li>
                         <li class="nav-item"><a class="nav-link text-danger" href="${pageContext.request.contextPath}/member/logout">로그아웃</a></li>

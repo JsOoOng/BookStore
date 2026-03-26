@@ -100,3 +100,25 @@
         }
     }
 </script>
+
+<!-- 장바구니 클릭 로그인 여부 -->
+<script>
+    function addToBusket(bookId) {
+        fetch('${pageContext.request.contextPath}/busket/add?id=' + bookId)
+            .then(response => response.text())
+            .then(result => {
+                if(result === 'ok') {
+                    alert('장바구니에 담겼습니다!'); // DB 추가 완료 알림
+                } else if(result === 'error') {
+                    alert('로그인이 필요합니다.');
+                    location.href = '${pageContext.request.contextPath}/member/login';
+                } else {
+                    alert('장바구니 추가 실패');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('오류가 발생했습니다.');
+            });
+    }
+</script>
