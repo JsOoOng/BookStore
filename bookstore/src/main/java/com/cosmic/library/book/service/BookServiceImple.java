@@ -81,4 +81,9 @@ public class BookServiceImple implements BookService {
         if (totalCount == 0) return 1;
         return (int) Math.ceil((double) totalCount / size);
     }
+
+	@Override
+	public BookVO getById(int id) {
+		return bookDAO.findById(id); // ⭐ 연결
+	}
 }
