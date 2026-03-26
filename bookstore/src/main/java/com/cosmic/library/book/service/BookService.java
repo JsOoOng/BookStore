@@ -38,5 +38,6 @@ public interface BookService {
 	List<BookVO> searchBooksPaged(String keyword, int page, int size);
 
 	int getSearchPageCount(String keyword, int size);
+	
+	BookVO getById(int id);
 }
-

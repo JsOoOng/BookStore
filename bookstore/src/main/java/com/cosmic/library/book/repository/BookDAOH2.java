@@ -112,4 +112,28 @@ public class BookDAOH2 implements BookDAO {
         String search = "%" + keyword + "%";
         return jdbcTemplate.queryForObject(sql, Integer.class, search, search, search, search);
     }
+
+    @Override
+    public BookVO findById(int id) {
+
+        String sql = "SELECT * FROM book WHERE id = ?";
+
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            BookVO book = new BookVO();
+
+            book.setId(rs.getInt("id"));
+            book.setTitle(rs.getString("title"));
+            book.setWriter(rs.getString("writer"));
+            book.setPublisher(rs.getString("publisher"));
+            book.setPrice(rs.getInt("price"));
+            book.setGenre(rs.getString("genre"));
+            book.setIsbn(rs.getString("isbn"));
+            book.setContent(rs.getString("content"));
+            book.setImage(rs.getString("image"));
+            book.setRegDate(rs.getTimestamp("regDate"));
+
+            return book;
+
+        }, id); // ⭐ 여기 중요 (Object... 형태)
+    }
 }

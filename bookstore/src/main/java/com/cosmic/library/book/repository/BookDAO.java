@@ -38,5 +38,7 @@ public interface BookDAO {
 
 	// 검색 결과의 총 개수 조회 (검색용 페이지 계산)
 	int countByKeyword(String keyword);
+	
+	public BookVO findById(int id);
 }
 
