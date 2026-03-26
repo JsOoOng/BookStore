@@ -21,14 +21,20 @@ public class BasketController {
 	// 장바구니 페이지 조회
 	@GetMapping("")
 	public String list(Model model, HttpSession session) {
-		MemberVO member = getLoginMember(session);
-		if (member == null)
-			return "redirect:/";
 
-		List<BasketVO> list = basketService.getList(member.getId());
-		model.addAttribute("basketList", list);
+	    MemberVO member = getLoginMember(session);
+	    if (member == null)
+	        return "redirect:/";
 
-		return "pages/basket/basket";
+	    List<BasketVO> list = basketService.getList(member.getId());
+
+	    model.addAttribute("basketList", list);
+
+	    // ⭐ 추가
+	    model.addAttribute("pageName", "pages/basket/basket");
+
+	    // ⭐ 핵심 변경
+	    return "common/layout";
 	}
 
 	// 장바구니 삭제 (단일 + 선택 삭제)
