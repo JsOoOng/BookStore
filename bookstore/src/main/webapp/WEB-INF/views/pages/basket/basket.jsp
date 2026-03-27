@@ -12,26 +12,24 @@
 
 	</div>
 
-	<div class="top-action-bar">
-
     <div class="right-buttons">
 
-        <button type="submit" form="deleteForm"
-            class="btn-cosmic btn-delete btn-unified">
-            선택 삭제
-        </button>
-
-        <button type="button"
-            class="btn-cosmic btn-confirm btn-unified"
-            id="buyBtn">
-            🛒 선택 구매
-        </button>
-
-        <a href="/" class="btn-home">
-            🪐 홈
-        </a>
-
-    	</div>
+        <div class="top-action-bar">
+		    <div class="left-actions" style="display: flex; align-items: center; gap: 8px;">
+		        <input type="checkbox" id="selectAll" id="selectAll" style="width: 18px; height: 18px; cursor: pointer;">
+		        <label for="selectAll" style="cursor: pointer; color: #fff; margin-bottom: 0;">전체 선택</label>
+		    </div>
+		
+		    <div class="right-buttons">
+		        <button type="submit" form="deleteForm" class="btn-cosmic btn-delete btn-unified">
+		            선택 삭제
+		        </button>
+		        <button type="button" class="btn-cosmic btn-confirm btn-unified" id="buyBtn">
+		            🛒 선택 구매
+		        </button>
+		        <a href="/" class="btn-home">🪐 홈</a>
+		    </div>
+		</div>
 	
 	</div>
 
@@ -119,6 +117,33 @@
 	</div>
 </form>
 <script>
+
+	
+	//🛰️ 전체 선택/해제 컨트롤러
+	const selectAll = document.getElementById("selectAll");
+	const itemCheckboxes = document.querySelectorAll(".selectItem");
+	
+	// 1. 마스터 체크박스 클릭 시
+	selectAll.addEventListener("change", function() {
+	    itemCheckboxes.forEach(cb => {
+	        cb.checked = selectAll.checked; // 모든 체크박스를 마스터 상태와 동기화
+	    });
+	    updateTotal(); // 전체 금액 갱신
+	});
+	
+	// 2. 개별 체크박스 조작 시 마스터 체크박스 상태 갱신
+	itemCheckboxes.forEach(check => {
+	    check.addEventListener("change", function() {
+	        const checkedCount = document.querySelectorAll(".selectItem:checked").length;
+	        const totalCount = itemCheckboxes.length;
+	        
+	        // 모든 항목이 체크되었을 때만 마스터 체크박스 체크
+	        selectAll.checked = (checkedCount === totalCount);
+	        
+	        updateTotal();
+	    });
+	});
+	
 	function updateTotal() {
 	
 	    let total = 0;

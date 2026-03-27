@@ -43,17 +43,30 @@
 <c:if test="${not empty bookList}">
     <nav aria-label="Cosmic Search Navigation" class="mt-5">
         <ul class="pagination justify-content-center cosmic-pagination">
-            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                <a class="page-link" href="?title=${searchKeyword}&page=${currentPage - 1}">&laquo; 이전</a>
+            
+            <%-- 1. [이전 블록] 시작 페이지가 1이면 이전 성단이 없으므로 비활성화 --%>
+            <li class="page-item ${startPage == 1 ? 'disabled' : ''}">
+                <%-- 클릭 시 이전 블록의 마지막 페이지(startPage - 1)로 워프 --%>
+                <a class="page-link" href="?title=${searchKeyword}&page=${startPage - 1}" aria-label="Previous Block">
+                    <span aria-hidden="true">&laquo; 이전 블록</span>
+                </a>
             </li>
-            <c:forEach var="i" begin="1" end="${totalPages}">
+
+            <%-- 2. [페이지 번호] 현재 탐사 중인 블록(startPage ~ endPage)만 출력 --%>
+            <c:forEach var="i" begin="${startPage}" end="${endPage}">
                 <li class="page-item ${currentPage == i ? 'active' : ''}">
                     <a class="page-link" href="?title=${searchKeyword}&page=${i}">${i}</a>
                 </li>
             </c:forEach>
-            <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="?title=${searchKeyword}&page=${currentPage + 1}">다음 &raquo;</a>
+
+            <%-- 3. [다음 블록] 끝 페이지가 전체 페이지와 같으면 다음 성단이 없으므로 비활성화 --%>
+            <li class="page-item ${endPage == totalPages ? 'disabled' : ''}">
+                <%-- 클릭 시 다음 블록의 첫 번째 페이지(endPage + 1)로 워프 --%>
+                <a class="page-link" href="?title=${searchKeyword}&page=${endPage + 1}" aria-label="Next Block">
+                    <span aria-hidden="true">다음 블록 &raquo;</span>
+                </a>
             </li>
+            
         </ul>
     </nav>
 </c:if>
