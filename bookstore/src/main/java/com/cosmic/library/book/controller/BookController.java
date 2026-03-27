@@ -37,7 +37,7 @@ public class BookController {
     @GetMapping("/view")
     public String view(@RequestParam("id") int id, Model model) {
         BookVO book = bookService.findBookById(id);
-        List<BookVO> recommendList = bookService.findRecentBooks(5);
+        List<BookVO> recommendList = bookService.findRandomBooks(5, id);
         
         model.addAttribute("book", book);
         model.addAttribute("recommendList", recommendList);

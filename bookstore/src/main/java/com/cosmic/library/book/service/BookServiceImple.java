@@ -86,4 +86,9 @@ public class BookServiceImple implements BookService {
 	public BookVO getById(int id) {
 		return bookDAO.findById(id); // ⭐ 연결
 	}
+	
+	@Override
+	public List<BookVO> findRandomBooks(int count, int excludeId) {
+	    return bookDAO.selectRandom(count, excludeId);
+	}
 }
