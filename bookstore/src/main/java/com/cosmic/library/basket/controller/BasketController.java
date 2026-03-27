@@ -75,10 +75,10 @@ public class BasketController {
 				ids[i] = Integer.parseInt(arr[i]);
 			}
 
-			basketService.buy(member.getId(), ids);
+			
 		}
 
-		return "redirect:/purchase/view?bookIds=" + basketIds;
+		return "redirect:/purchase/view?basketIds=" + basketIds;
 	}
 
 	// 장바구니 담기 (AJAX)

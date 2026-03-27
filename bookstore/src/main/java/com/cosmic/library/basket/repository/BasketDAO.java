@@ -25,4 +25,6 @@ public interface BasketDAO {
     void buy(int[] basketIds, String memberId);
 
 	void delete(String memberId, int bookId);
+
+	List<BasketVO> findByIds(int[] basketIds, String memberId);
 }

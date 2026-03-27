@@ -23,4 +23,6 @@ public interface BasketService {
 
     // 장바구니에 책 추가
     void add(String memberId, int bookId);
+
+	List<BasketVO> getSelectedList(String memberId, int[] basketIds);
 }

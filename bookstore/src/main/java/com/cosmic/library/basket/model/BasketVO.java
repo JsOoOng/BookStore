@@ -18,4 +18,9 @@ public class BasketVO {
     private String writer;
     private int price;
     private String image;
+    
+    // 500 에러 방지를 위해 반드시 추가해야 할 필드들
+    private String genre;      
+    private String publisher;  
+    private String isbn;
 }

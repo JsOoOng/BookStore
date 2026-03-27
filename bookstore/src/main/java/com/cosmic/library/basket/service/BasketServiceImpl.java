@@ -19,6 +19,11 @@ public class BasketServiceImpl implements BasketService {
     public List<BasketVO> getList(String memberId) {
         return busketDAO.findAll(memberId);
     }
+    
+    @Override
+    public List<BasketVO> getSelectedList(String memberId, int[] basketIds) {
+        return busketDAO.findByIds(basketIds, memberId);
+    }
 
     // 장바구니 삭제 (단일)
     @Override

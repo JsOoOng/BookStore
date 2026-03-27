@@ -872,3 +872,99 @@ body::before {
 	    -webkit-background-clip: text;
 	    -webkit-text-fill-color: transparent;
 	}
+	
+	
+	/* 🎨 추가된 Cosmic Purchase 전용 스타일 */
+.purchase-layout { display: flex; gap: 30px; align-items: flex-start; margin-top: 30px; }
+.purchase-book-list { flex: 1; }
+
+/* 개별 아이템 카드 */
+.purchase-item-card { 
+    display: flex; gap: 20px; background: #fff; padding: 20px; 
+    border-radius: 20px; margin-bottom: 20px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
+}
+.purchase-cover-wrap { width: 120px; flex-shrink: 0; }
+.purchase-img { width: 100%; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.purchase-info { flex: 1; }
+.item-title { font-size: 1.25rem; margin: 10px 0; color: #2d3436; }
+.purchase-price-row { margin-top: 15px; text-align: right; }
+.item-price { font-size: 1.1rem; font-weight: 700; color: #5d5fef; }
+
+/* 요약 카드 sticky 효과 */
+.purchase-summary-card { width: 320px; position: sticky; top: 100px; }
+.summary-inner { 
+    background: #ffffff; padding: 30px; border-radius: 24px; 
+    box-shadow: 0 10px 30px rgba(93, 95, 239, 0.15); 
+    border: 1px solid rgba(93, 95, 239, 0.1);
+}
+.summary-total { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+.total-amount { font-size: 1.5rem; color: #5d5fef; }
+.summary-divider { height: 1px; background: #eee; margin: 15px 0; }
+
+@media (max-width: 900px) {
+    .purchase-layout { flex-direction: column; }
+    .purchase-summary-card { width: 100%; position: static; }
+}
+
+/* 🎨 마이페이지 전용 Cosmic 디자인 */
+.mypage-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+
+/* 프로필 카드 */
+.profile-card { 
+    background: #ffffff; padding: 30px; border-radius: 24px; 
+    box-shadow: 0 10px 30px rgba(93, 95, 239, 0.1); margin-bottom: 30px;
+    border: 1px solid rgba(93, 95, 239, 0.1);
+}
+.profile-header { display: flex; align-items: center; gap: 25px; }
+.profile-avatar { 
+    width: 80px; height: 80px; background: #f4f7fe; 
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px;
+}
+.profile-name { margin: 0; font-weight: 700; color: #2d3436; }
+.badge-role { background: #5d5fef; color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; }
+.btn-edit { 
+    text-decoration: none; background: #f1f3f9; color: #636e72; padding: 10px 20px; 
+    border-radius: 12px; font-weight: 600; transition: all 0.3s; 
+}
+.btn-edit:hover { background: #e2e5ed; color: #2d3436; transform: translateY(-2px); }
+
+/* 그리드 레이아웃 */
+.mypage-content-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+.mypage-section { background: #fff; padding: 25px; border-radius: 24px; box-shadow: 0 5px 20px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; }
+.section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; color: #5d5fef; }
+.scroll-area { max-height: 450px; overflow-y: auto; padding-right: 10px; }
+
+/* 스크롤바 커스텀 */
+.scroll-area::-webkit-scrollbar { width: 6px; }
+.scroll-area::-webkit-scrollbar-thumb { background: #e2e5ed; border-radius: 10px; }
+
+/* 미니 카드 (장바구니) */
+.mini-item-card { 
+    display: flex; align-items: center; gap: 15px; padding: 12px; 
+    border-radius: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 10px;
+}
+.mini-item-card:hover { background: #f9faff; }
+.mini-img { width: 50px; height: 70px; border-radius: 8px; object-fit: cover; }
+.mini-title { font-weight: 600; margin: 0; font-size: 0.95rem; color: #2d3436; }
+.mini-price { font-size: 0.85rem; color: #5d5fef; margin: 0; }
+
+/* 히스토리 카드 (구매) */
+.history-item-card { margin-bottom: 20px; border-bottom: 1px solid #f1f3f9; padding-bottom: 15px; }
+.history-date { font-size: 0.8rem; color: #a0a5ba; margin-bottom: 8px; }
+.history-main { display: flex; align-items: center; gap: 15px; }
+.history-img { width: 40px; height: 55px; border-radius: 5px; }
+.history-info { flex: 1; }
+.history-title { font-weight: 600; margin: 0; font-size: 1rem; }
+.history-meta { font-size: 0.85rem; color: #636e72; margin: 0; }
+.status-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 5px; font-weight: 700; }
+.status-done { background: #e8fbf3; color: #27ae60; }
+
+.empty-msg { text-align: center; color: #a0a5ba; padding: 40px 0; font-size: 0.9rem; }
+
+@media (max-width: 800px) {
+    .mypage-content-grid { grid-template-columns: 1fr; }
+    .profile-header { flex-direction: column; text-align: center; }
+}
+

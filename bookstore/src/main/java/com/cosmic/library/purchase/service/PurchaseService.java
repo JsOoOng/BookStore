@@ -1,5 +1,7 @@
 package com.cosmic.library.purchase.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,5 +62,9 @@ public class PurchaseService {
 
             basketRepository.delete(memberId, bookId);
         }
+    }
+    
+    public List<Purchase> getMyPurchases(String memberId) {
+        return purchaseRepository.findByMemberId(memberId);
     }
 }

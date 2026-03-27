@@ -38,6 +38,45 @@ public class BasketDAOH2 implements BasketDAO {
             return vo;
         }, memberId);
     }
+    
+ // 선택된 장바구니 항목 상세 조회 (JOIN 포함)
+    @Override
+    public List<BasketVO> findByIds(int[] basketIds, String memberId) {
+        if (basketIds == null || basketIds.length == 0) return new java.util.ArrayList<>();
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT b.basket_id, b.member_id, b.book_id, b.quantity, b.reg_date, "
+                + "bk.title, bk.writer, bk.price, bk.image "
+                + "FROM basket b "
+                + "JOIN book bk ON b.book_id = bk.id "
+                + "WHERE b.member_id = ? AND b.basket_id IN ("
+        );
+
+        for (int i = 0; i < basketIds.length; i++) {
+            sql.append("?");
+            if (i < basketIds.length - 1) sql.append(",");
+        }
+        sql.append(")");
+
+        Object[] params = new Object[basketIds.length + 1];
+        params[0] = memberId;
+        for (int i = 0; i < basketIds.length; i++) {
+            params[i + 1] = basketIds[i];
+        }
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            BasketVO vo = new BasketVO();
+            vo.setBasketId(rs.getInt("basket_id"));
+            vo.setMemberId(rs.getString("member_id"));
+            vo.setBookId(rs.getInt("book_id"));
+            vo.setQuantity(rs.getInt("quantity"));
+            vo.setTitle(rs.getString("title"));
+            vo.setWriter(rs.getString("writer"));
+            vo.setPrice(rs.getInt("price"));
+            vo.setImage(rs.getString("image"));
+            return vo;
+        }, params);
+    }
 
     // 장바구니 추가
     @Override
