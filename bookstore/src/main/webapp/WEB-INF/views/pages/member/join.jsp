@@ -71,8 +71,12 @@
                 url: "${pageContext.request.contextPath}/member/checkId",
                 type: "GET",
                 data: { "id": userId },
+             // 수정된 코드
                 success: function(res) {
-                    if(res === "Y") {
+                    // 서버 응답값 앞뒤의 불필요한 공백/줄바꿈 제거
+                    const result = res.trim(); 
+                    
+                    if(result === "Y") {
                         // 사용 가능할 때 (Green Light)
                         $("#id_msg").text("사용 가능한 멋진 ID입니다! ✨").css("color", "#10ac84");
                         $("#btn_submit").attr("disabled", false); // 🔓 등록 버튼 활성화
