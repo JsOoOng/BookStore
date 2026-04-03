@@ -29,6 +29,9 @@
                             <c:when test="${m.role eq 'ADMIN'}">
                                 <span class="badge rounded-pill bg-primary px-3">관리자 (ADMIN)</span>
                             </c:when>
+                            <c:when test="${m.role eq 'QNAadmin'}">
+					            <span class="badge rounded-pill bg-success px-3">상담원 (QNAadmin)</span>
+					        </c:when>
                             <c:otherwise>
                                 <span class="badge rounded-pill bg-secondary px-3">대원 (USER)</span>
                             </c:otherwise>
@@ -36,33 +39,51 @@
                     </td>
                     <td><fmt:formatDate value="${m.regDate}" pattern="yyyy-MM-dd HH:mm"/></td>
                     <td>
-                        <div class="btn-group">
-                            <c:if test="${m.role ne 'SUPER'}">
-                                <%-- 계급 조정 버튼 --%>
-                                <c:if test="${m.role eq 'USER'}">
-                                    <button class="btn btn-sm btn-outline-primary" 
-                                            onclick="location.href='changeRole?id=${m.id}&role=ADMIN'">ADMIN 임명</button>
-                                </c:if>
-                                <c:if test="${m.role eq 'ADMIN'}">
-                                    <button class="btn btn-sm btn-outline-secondary" 
-                                            onclick="location.href='changeRole?id=${m.id}&role=USER'">USER 강등</button>
-                                </c:if>
-                                
-                                <%-- 대원 제명 버튼 --%>
-                                <button class="btn btn-sm btn-danger ms-2" 
-                                        onclick="kickConfirm('${m.id}')">제명</button>
-                            </c:if>
-                        </div>
-                    </td>
+					    <div class="d-flex justify-content-center align-items-center gap-2">
+					        <c:if test="${m.role ne 'SUPER'}">
+					            <%-- 1. 권한 선택 셀렉트 박스 --%>
+					            <select id="roleSelect_${m.id}" class="form-select form-select-sm" style="width: 130px; border-radius: 10px;">
+					                <option value="USER" ${m.role eq 'USER' ? 'selected' : ''}>대원 (USER)</option>
+					                <option value="ADMIN" ${m.role eq 'ADMIN' ? 'selected' : ''}>관리자 (ADMIN)</option>
+					                <option value="QNAadmin" ${m.role eq 'QNAadmin' ? 'selected' : ''}>상담원 (QNA)</option>
+					            </select>
+					
+					            <%-- 2. 변경 적용 버튼 --%>
+					            <button class="btn btn-sm btn-primary" style="border-radius: 10px;" 
+					                    onclick="applyRoleChange('${m.id}')">적용</button>
+					
+					            <%-- 3. 구분선 및 제명 버튼 --%>
+					            <div class="vr mx-1"></div> 
+					            <button class="btn btn-sm btn-outline-danger" style="border-radius: 10px;"
+					                    onclick="kickConfirm('${m.id}')">제명</button>
+					        </c:if>
+					        
+					        <c:if test="${m.role eq 'SUPER'}">
+					            <span class="text-muted small">수정 불가</span>
+					        </c:if>
+					    </div>
+					</td>
                 </tr>
             </c:forEach>
         </tbody>
     </table>
 </div>
 
+
 <script>
+    // 권한 변경 적용 함수
+    function applyRoleChange(memberId) {
+        const selectElement = document.getElementById('roleSelect_' + memberId);
+        const selectedRole = selectElement.value;
+        
+        if(confirm(memberId + " 대원의 권한을 [" + selectedRole + "](으)로 변경하시겠습니까?")) {
+            location.href = "changeRole?id=" + memberId + "&role=" + selectedRole;
+        }
+    }
+
+    // 기존 제명 함수 (유지)
     function kickConfirm(id) {
-        if(confirm("정말 이 대원을 기지에서 영구 제명하시겠습니까?")) {
+        if(confirm("정말 이 대원을 도서관에서 영구 제명하시겠습니까?")) {
             location.href = "kick?id=" + id;
         }
     }

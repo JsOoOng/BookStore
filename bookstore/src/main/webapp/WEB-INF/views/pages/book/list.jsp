@@ -31,21 +31,26 @@
 <nav aria-label="Cosmic Page Navigation" class="mt-5">
     <ul class="pagination justify-content-center cosmic-pagination">
         
-        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-            <a class="page-link" href="?page=${currentPage - 1}" aria-label="Previous">
-                <span aria-hidden="true">&laquo; 이전</span>
+        <%-- 1. [이전 블록] 현재 시작페이지가 1이면 이전 블록이 없으므로 disabled --%>
+        <li class="page-item ${startPage == 1 ? 'disabled' : ''}">
+            <%-- 🚀 클릭 시 이전 블록의 마지막 페이지(startPage - 1)로 이동 --%>
+            <a class="page-link" href="?page=${startPage - 1}${not empty searchKeyword ? '&title=' : ''}${searchKeyword}" aria-label="Previous Block">
+                <span aria-hidden="true">&laquo; 이전 블록</span>
             </a>
         </li>
 
-        <c:forEach var="i" begin="1" end="${totalPages}">
+        <%-- 2. [페이지 번호] 현재 블록의 번호들만 출력 --%>
+        <c:forEach var="i" begin="${startPage}" end="${endPage}">
             <li class="page-item ${currentPage == i ? 'active' : ''}">
-                <a class="page-link" href="?page=${i}">${i}</a>
+                <a class="page-link" href="?page=${i}${not empty searchKeyword ? '&title=' : ''}${searchKeyword}">${i}</a>
             </li>
         </c:forEach>
 
-        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-            <a class="page-link" href="?page=${currentPage + 1}" aria-label="Next">
-                <span aria-hidden="true">다음 &raquo;</span>
+        <%-- 3. [다음 블록] 현재 끝페이지가 전체페이지와 같으면 다음 블록이 없으므로 disabled --%>
+        <li class="page-item ${endPage == totalPages ? 'disabled' : ''}">
+            <%-- 🚀 클릭 시 다음 블록의 첫 번째 페이지(endPage + 1)로 이동 --%>
+            <a class="page-link" href="?page=${endPage + 1}${not empty searchKeyword ? '&title=' : ''}${searchKeyword}" aria-label="Next Block">
+                <span aria-hidden="true">다음 블록 &raquo;</span>
             </a>
         </li>
         

@@ -40,4 +40,6 @@ public interface BookService {
 	int getSearchPageCount(String keyword, int size);
 	
 	BookVO getById(int id);
+
+	List<BookVO> findRandomBooks(int count, int excludeId);
 }

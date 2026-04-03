@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <title>Cosmic Library - 실시간 통신망</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body { background-color: #0b0c10; color: #c5c6c7; font-family: 'Malgun Gothic', sans-serif; }
         .chat-container { margin: 30px auto; max-width: 1000px; }
@@ -17,7 +18,9 @@
         .msg.my-msg { background-color: #45a29e; color: #0b0c10; float: right; border-bottom-right-radius: 0; }
         .msg.other-msg { background-color: #2c3e50; color: #fff; float: left; border-bottom-left-radius: 0; }
         .sender-name { font-size: 0.8rem; color: #66fcf1; margin-bottom: 5px; clear: both; }
-        .time-stamp { font-size: 0.7rem; color: #7a7a7a; margin: 0 8px; position: relative; top: 10px; }
+        
+        /* 타임스탬프 CSS 수정: 말풍선 밖으로 꺼내기 위해 relative와 top 속성 제거 */
+        .time-stamp { font-size: 0.7rem; color: #7a7a7a; margin: 0 8px; }
         
         .input-group input { background-color: #0b0c10; color: #fff; border: 1px solid #45a29e; }
         .input-group input:focus { background-color: #1f2833; color: #fff; border-color: #66fcf1; box-shadow: none; }
@@ -93,10 +96,9 @@
 
         var currentSelectedUser = ""; 
         var userRooms = {}; 
-        var historyLoaded = false; // 과거 내역 로드 완료 플래그
-        var replyTimeout; // 일반 유저 대기 타이머 변수
+        var historyLoaded = false;
+        var replyTimeout; 
 
-        // 시간 포맷팅 함수 (HH:mm)
         function formatTime(timestamp) {
             var d = timestamp ? new Date(timestamp) : new Date();
             var h = d.getHours();
@@ -105,22 +107,17 @@
         }
 
         window.receiveMessageFromGlobal = function(data) {
-            // 헤더의 글로벌 알람 끄기
             var badge = document.getElementById("chatAlarmBadge");
             if (badge) badge.style.display = "none";
 
             if (data.senderId === "SERVER") {
-                // [수정된 부분] 과거 내역 로딩이 끝났을 때의 처리
                 if (data.message === "HISTORY_DONE") {
                     historyLoaded = true;
-                    
-                    // 관리자라면, 각 유저별 마지막 메시지를 확인해서 '답변 대기' 상태인 방에 New 뱃지 켜기
                     if (isAdmin) {
                         for (var roomUser in userRooms) {
                             var msgs = userRooms[roomUser];
                             if (msgs.length > 0) {
                                 var lastMsg = msgs[msgs.length - 1];
-                                // 마지막 메시지를 보낸 사람이 해당 유저라면 (관리자가 아직 답장을 안 했다면)
                                 if (lastMsg.senderId === roomUser) {
                                     var userBadge = document.getElementById("badge_" + roomUser);
                                     if(userBadge) {
@@ -155,7 +152,6 @@
                 return;
             }
 
-            // 관리자가 답장을 보내면 타이머 해제 및 버튼 숨김
             if (!isAdmin && data.senderRole && (data.senderRole === 'SUPER' || data.senderRole === 'QNAadmin')) {
                 clearTimeout(replyTimeout);
                 var inquiryBtn = document.getElementById("inquiryBtn");
@@ -183,15 +179,13 @@
                 receiverId = currentSelectedUser; 
             } else {
                 receiverId = "ADMIN";
-                
-                // 일반 유저가 전송 버튼을 누르면 60초 타이머 시작
                 clearTimeout(replyTimeout);
                 var inquiryBtn = document.getElementById("inquiryBtn");
                 if (inquiryBtn) {
-                    inquiryBtn.style.display = "none"; // 기존에 떠있으면 다시 숨김
+                    inquiryBtn.style.display = "none"; 
                     replyTimeout = setTimeout(function() {
                         inquiryBtn.style.display = "inline-block";
-                    }, 60000); // 60초 (60000ms)
+                    }, 60000); 
                 }
             }
 
@@ -273,7 +267,6 @@
                 if (currentSelectedUser === roomUser) {
                     renderMessageToBox(data);
                 } else {
-                    // 과거 내역 데이터가 다 들어온 이후 발생하는 '진짜' 새 메시지에만 뱃지 표시
                     if (historyLoaded) {
                         var badge = document.getElementById("badge_" + roomUser);
                         if(badge) {
@@ -287,6 +280,7 @@
             }
         }
 
+        // 말풍선 밖으로 시간을 분리하여 배치하도록 DOM 구조 수정
         function renderMessageToBox(data) {
             var chatBox = document.getElementById("chatBox");
             
@@ -295,13 +289,25 @@
             
             var msgDiv = document.createElement("div");
             var nameDiv = document.createElement("div");
-            var timeHtml = "<span class='time-stamp'>" + formatTime(data.sendTime) + "</span>";
+            
+            var timeSpan = document.createElement("span");
+            timeSpan.className = "time-stamp";
+            timeSpan.innerHTML = formatTime(data.sendTime);
 
             if (data.senderId === loginId) {
+                // 내 메시지 (우측 정렬)
                 msgDiv.className = "msg my-msg";
-                // 내 메시지는 타임스탬프가 왼쪽에 붙음
-                msgDiv.innerHTML = timeHtml + data.message;
+                msgDiv.innerHTML = data.message;
+                
+                timeSpan.style.float = "right";
+                timeSpan.style.marginTop = "15px"; // 말풍선 높이와 시각적으로 맞추기 위한 여백
+                
+                // float 특성상 wrapper에 추가하는 순서가 중요합니다.
+                // 먼저 msgDiv를 우측 끝에 붙이고, 그 다음에 timeSpan을 우측에 붙여 메시지 왼쪽에 표시되게 합니다.
+                wrapperDiv.appendChild(msgDiv);
+                wrapperDiv.appendChild(timeSpan);
             } else {
+                // 상대방 메시지 (좌측 정렬)
                 msgDiv.className = "msg other-msg";
                 nameDiv.className = "sender-name";
                 
@@ -310,12 +316,18 @@
                 } else {
                     nameDiv.innerHTML = "👨‍🚀 대원 (" + data.senderId + ")";
                 }
-                wrapperDiv.appendChild(nameDiv);
-                // 상대방 메시지는 타임스탬프가 오른쪽에 붙음
-                msgDiv.innerHTML = data.message + timeHtml;
+                
+                msgDiv.innerHTML = data.message;
+                
+                timeSpan.style.float = "left";
+                timeSpan.style.marginTop = "15px";
+
+                wrapperDiv.appendChild(nameDiv); // 이름은 block 요소로 위에 배치
+                // 먼저 msgDiv를 좌측 끝에 붙이고, 그 다음에 timeSpan을 좌측에 붙여 메시지 오른쪽에 표시되게 합니다.
+                wrapperDiv.appendChild(msgDiv);
+                wrapperDiv.appendChild(timeSpan);
             }
 
-            wrapperDiv.appendChild(msgDiv);
             chatBox.appendChild(wrapperDiv);
             chatBox.scrollTop = chatBox.scrollHeight; 
         }
