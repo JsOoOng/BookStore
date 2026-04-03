@@ -136,4 +136,12 @@ public class BookDAOH2 implements BookDAO {
 
         }, id); // ⭐ 여기 중요 (Object... 형태)
     }
+    
+    @Override
+    public List<BookVO> selectRandom(int count, int excludeId) {
+        // id != ? 는 현재 상세 페이지에서 보고 있는 책이 추천 목록에 나오지 않게 함
+        // ORDER BY RAND() 는 매번 순서를 무작위로 섞음
+        String sql = "SELECT * FROM BOOK WHERE id != ? ORDER BY RAND() LIMIT ?";
+        return jdbcTemplate.query(sql, rowMapper, excludeId, count);
+    }
 }

@@ -40,5 +40,7 @@ public interface BookDAO {
 	int countByKeyword(String keyword);
 	
 	public BookVO findById(int id);
+
+	List<BookVO> selectRandom(int count, int excludeId);
 }
 

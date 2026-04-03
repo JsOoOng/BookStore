@@ -26,11 +26,13 @@
             <mvc:exclude-mapping path="/"/>
             <mvc:exclude-mapping path="/member/login"/>
             <mvc:exclude-mapping path="/member/join"/>
+            <mvc:exclude-mapping path="/member/checkId"/>
             <mvc:exclude-mapping path="/resources/**"/>
             <mvc:exclude-mapping path="/map"/>
             <mvc:exclude-mapping path="/book/list"/>     
             <mvc:exclude-mapping path="/book/view"/>
             <mvc:exclude-mapping path="/book/find"/>
+            <mvc:exclude-mapping path="/basket/add"/>
             
             <bean class="com.cosmic.library.common.filter.LoginInterceptor" />
         </mvc:interceptor>

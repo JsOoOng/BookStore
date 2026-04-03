@@ -36,6 +36,12 @@
 			    <button type="button" class="btn-confirm" onclick="location.href='${pageContext.request.contextPath}/purchase/view?bookId=${book.id}'">
 			        🛒 구매하기
 				</button>
+				
+				<!-- 🛒 장바구니 추가 -->
+               <button type="button" class="btn-cosmic"
+                       onclick="addToBasket('${book.id}')">
+                      🛒 장바구니 담기
+ 				</button>
 			</div>
             
 	        <div class="form-actions mt-5 d-flex gap-3">
@@ -103,8 +109,8 @@
 
 <!-- 장바구니 클릭 로그인 여부 -->
 <script>
-    function addToBusket(bookId) {
-        fetch('${pageContext.request.contextPath}/busket/add?id=' + bookId)
+    function addToBasket(bookId) {
+        fetch('${pageContext.request.contextPath}/basket/add?id=' + bookId)
             .then(response => response.text())
             .then(result => {
                 if(result === 'ok') {

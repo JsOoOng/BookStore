@@ -27,7 +27,7 @@
         </div>
 
         <div class="mt-4">
-            <button type="submit" class="btn-confirm w-100 shadow-lg">우주선 탑승 (Login)</button>
+            <button type="submit" class="btn-confirm w-100 shadow-lg">Login</button>
         </div>
 
         <div class="text-center mt-4 pt-3 border-top border-light">

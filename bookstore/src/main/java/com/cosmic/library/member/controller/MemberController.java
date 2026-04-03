@@ -1,6 +1,7 @@
 package com.cosmic.library.member.controller;
 
 import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.cosmic.library.basket.service.BasketService;
 import com.cosmic.library.member.model.MemberVO;
 import com.cosmic.library.member.service.MemberService;
+import com.cosmic.library.purchase.service.PurchaseService;
 
 @Controller
 @RequestMapping("/member")
@@ -20,6 +23,12 @@ public class MemberController {
 
     @Autowired
     private MemberService memberService;
+    
+    @Autowired
+    private BasketService basketService;
+
+    @Autowired
+    private PurchaseService purchaseService;
 
     // 1. 로그인 페이지로 이동
     @GetMapping("/login")
@@ -129,5 +138,26 @@ public class MemberController {
         // "Y" : 사용 가능 (Yellow Light? 아니, Green Light!)
         // "N" : 중복됨 (No Go)
         return isAvailable ? "Y" : "N";
+    }
+    
+    @GetMapping("/mypage")
+    public String myPage(HttpSession session, Model model) {
+        // 1. 세션 신호 확인 (로그인 여부)
+        MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
+        if (loginMember == null) {
+            return "redirect:/member/login";
+        }
+
+        String memberId = loginMember.getId();
+
+        // 2. 장바구니 리스트 호출 (보급 예약 현황)
+        model.addAttribute("basketList", basketService.getList(memberId));
+
+        // 3. 구매 내역 리스트 호출 (탐사 완료 기록)
+        model.addAttribute("purchaseList", purchaseService.getMyPurchases(memberId));
+
+        // 4. 뷰 좌표 설정
+        model.addAttribute("pageName", "pages/member/mypage");
+        return "common/layout";
     }
 }
