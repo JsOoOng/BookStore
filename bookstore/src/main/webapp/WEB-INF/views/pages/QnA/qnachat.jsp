@@ -19,7 +19,6 @@
         .msg.other-msg { background-color: #2c3e50; color: #fff; float: left; border-bottom-left-radius: 0; }
         .sender-name { font-size: 0.8rem; color: #66fcf1; margin-bottom: 5px; clear: both; }
         
-        /* 타임스탬프 CSS 수정: 말풍선 밖으로 꺼내기 위해 relative와 top 속성 제거 */
         .time-stamp { font-size: 0.7rem; color: #7a7a7a; margin: 0 8px; }
         
         .input-group input { background-color: #0b0c10; color: #fff; border: 1px solid #45a29e; }
@@ -65,7 +64,7 @@
                     </h5>
                     
                     <div id="chatBox" class="chat-box">
-                        <div class="text-center text-muted mb-3"><small>-- 보안 연결이 완료되었습니다 --</small></div>
+                        <div class="text-center text-muted mb-3" id="connectionStatusIndicator"><small>📡 은하 네트워크 동기화 시도 중...</small></div>
                     </div>
                     
                     <div class="input-group">
@@ -75,7 +74,6 @@
                                 ${(sessionScope.loginMember.role eq 'SUPER' or sessionScope.loginMember.role eq 'QNAadmin') ? 'disabled' : ''}>전송</button>
                     </div>
 
-                    <%-- 일반 유저 전용: 1분 타임아웃 시 나타날 문의게시판 이동 버튼 --%>
                     <c:if test="${sessionScope.loginMember.role ne 'SUPER' and sessionScope.loginMember.role ne 'QNAadmin'}">
                         <div class="text-center mt-3">
                             <button id="inquiryBtn" class="btn btn-outline-warning btn-sm" style="display:none;" onclick="location.href='${pageContext.request.contextPath}/user/inquiry'">
@@ -89,6 +87,7 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         var loginId = "${sessionScope.loginMember.id}";
         var role = "${sessionScope.loginMember.role}"; 
@@ -99,6 +98,44 @@
         var historyLoaded = false;
         var replyTimeout; 
 
+        // 🪐 [신규 인프라] 전역 웹소켓 인스턴스 락온 장치
+        var globalWs = null;
+
+        $(document).ready(function() {
+            initCosmicWebSocket();
+        });
+
+        // 📡 [신규 관제 개착] /chat-ws 경로로 실시간 웹소켓 주파수 개통
+        function initCosmicWebSocket() {
+            var wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+            var wsUrl = wsProtocol + window.location.host + "${pageContext.request.contextPath}/chat-ws";
+            
+            globalWs = new WebSocket(wsUrl);
+
+            globalWs.onopen = function() {
+                $("#connectionStatusIndicator").html("<small style='color: #2ed573;'>🟢 보안 연결이 완료되었습니다</small>");
+                
+                // 💥 핸들러의 ENTER 트리거를 작동시키기 위한 이니셜 프로토콜 미사일 발사!
+                var enterSignal = {
+                    senderId: loginId,
+                    senderRole: role,
+                    receiverId: isAdmin ? "" : "ADMIN",
+                    message: isAdmin ? "ENTER_GLOBAL" : "ENTER_CHATROOM" // 관리자는 글로벌 대기실, 유저는 곧바로 방 입장
+                };
+                globalWs.send(JSON.stringify(enterSignal));
+            };
+
+            globalWs.onmessage = function(event) {
+                var rawData = JSON.parse(event.data);
+                receiveMessageFromGlobal(rawData); // 원본 관제 함수로 패킷 토스
+            };
+
+            globalWs.onclose = function() {
+                $("#connectionStatusIndicator").html("<small style='color: #ff4757;'>🔴 통신망 두절 (3초 후 재접속 시도)</small>");
+                setTimeout(function() { initCosmicWebSocket(); }, 3000);
+            };
+        }
+
         function formatTime(timestamp) {
             var d = timestamp ? new Date(timestamp) : new Date();
             var h = d.getHours();
@@ -106,7 +143,7 @@
             return (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m);
         }
 
-        window.receiveMessageFromGlobal = function(data) {
+        function receiveMessageFromGlobal(data) {
             var badge = document.getElementById("chatAlarmBadge");
             if (badge) badge.style.display = "none";
 
@@ -162,7 +199,7 @@
             }
 
             receiveMessage(data);
-        };
+        }
 
         function sendMessage() {
             var msgInput = document.getElementById("messageInput");
@@ -196,7 +233,10 @@
                 message: message
             };
 
-            globalWs.send(JSON.stringify(chatVO));
+            // 🪐 [싱크] 개통 완료된 globalWs 파이프라인으로 구조체 발사!
+            if(globalWs && globalWs.readyState === WebSocket.OPEN) {
+                globalWs.send(JSON.stringify(chatVO));
+            }
             msgInput.value = "";
         }
 
@@ -242,8 +282,12 @@
             
             var items = document.getElementsByClassName("user-item");
             for(var i=0; i<items.length; i++) items[i].classList.remove("active");
-            document.getElementById("user_item_" + userId).classList.add("active");
-            document.getElementById("badge_" + userId).style.display = "none";
+            
+            var userItem = document.getElementById("user_item_" + userId);
+            if(userItem) userItem.classList.add("active");
+            
+            var badge = document.getElementById("badge_" + userId);
+            if(badge) badge.style.display = "none";
 
             var chatBox = document.getElementById("chatBox");
             chatBox.innerHTML = "<div class='text-center text-muted mb-3'><small>-- " + userId + " 님과의 보안 연결 --</small></div>";
@@ -280,7 +324,6 @@
             }
         }
 
-        // 말풍선 밖으로 시간을 분리하여 배치하도록 DOM 구조 수정
         function renderMessageToBox(data) {
             var chatBox = document.getElementById("chatBox");
             
@@ -295,19 +338,15 @@
             timeSpan.innerHTML = formatTime(data.sendTime);
 
             if (data.senderId === loginId) {
-                // 내 메시지 (우측 정렬)
                 msgDiv.className = "msg my-msg";
                 msgDiv.innerHTML = data.message;
                 
                 timeSpan.style.float = "right";
-                timeSpan.style.marginTop = "15px"; // 말풍선 높이와 시각적으로 맞추기 위한 여백
+                timeSpan.style.marginTop = "15px"; 
                 
-                // float 특성상 wrapper에 추가하는 순서가 중요합니다.
-                // 먼저 msgDiv를 우측 끝에 붙이고, 그 다음에 timeSpan을 우측에 붙여 메시지 왼쪽에 표시되게 합니다.
                 wrapperDiv.appendChild(msgDiv);
                 wrapperDiv.appendChild(timeSpan);
             } else {
-                // 상대방 메시지 (좌측 정렬)
                 msgDiv.className = "msg other-msg";
                 nameDiv.className = "sender-name";
                 
@@ -322,8 +361,7 @@
                 timeSpan.style.float = "left";
                 timeSpan.style.marginTop = "15px";
 
-                wrapperDiv.appendChild(nameDiv); // 이름은 block 요소로 위에 배치
-                // 먼저 msgDiv를 좌측 끝에 붙이고, 그 다음에 timeSpan을 좌측에 붙여 메시지 오른쪽에 표시되게 합니다.
+                wrapperDiv.appendChild(nameDiv); 
                 wrapperDiv.appendChild(msgDiv);
                 wrapperDiv.appendChild(timeSpan);
             }

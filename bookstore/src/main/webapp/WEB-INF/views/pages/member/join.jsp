@@ -25,6 +25,18 @@
         </div>
 
         <div class="input-group-cosmic">
+            <label for="email">통신 이메일 주소</label>
+            <input type="email" id="email" name="email" placeholder="example@cosmic.com" required>
+            <small class="text-muted mt-1 d-block">기지 주요 공지 및 보급 현황이 전송되는 통신 주소입니다.</small>
+        </div>
+
+        <div class="input-group-cosmic">
+            <label for="address">🌌 물류 보급 배송지 주소</label>
+            <input type="text" id="address" name="address" placeholder="지식 서적을 보급받을 실제 주소를 기입하세요">
+            <small class="text-muted mt-1 d-block">미기입 시 결제 프로세스 진입 전 마이페이지에서 강제 등록 절차를 밟게 됩니다.</small>
+        </div>
+
+        <div class="input-group-cosmic">
             <label for="pw">보안 코드 (PW)</label>
             <input type="password" id="pw" name="pw" placeholder="비밀번호를 입력하세요" required>
         </div>
@@ -50,7 +62,6 @@
 <script>
     $(document).ready(function() {
         // 아이디 입력값이 변경되면 즉시 가입 버튼을 다시 잠그고 확인 메시지를 초기화합니다.
-        // (확인 버튼 누른 후 아이디를 살짝 바꾸는 행위를 방지)
         $("#id").on("input", function() {
             $("#btn_submit").attr("disabled", true); 
             $("#id_msg").text("아이디 중복 확인이 필요합니다.").css("color", "#747d8c");
@@ -71,17 +82,13 @@
                 url: "${pageContext.request.contextPath}/member/checkId",
                 type: "GET",
                 data: { "id": userId },
-             // 수정된 코드
                 success: function(res) {
-                    // 서버 응답값 앞뒤의 불필요한 공백/줄바꿈 제거
                     const result = res.trim(); 
                     
                     if(result === "Y") {
-                        // 사용 가능할 때 (Green Light)
                         $("#id_msg").text("사용 가능한 멋진 ID입니다! ✨").css("color", "#10ac84");
                         $("#btn_submit").attr("disabled", false); // 🔓 등록 버튼 활성화
                     } else {
-                        // 중복일 때 (Red Light)
                         $("#id_msg").text("이미 은하계에 존재하는 ID입니다. ⛔").css("color", "#ff4757");
                         $("#btn_submit").attr("disabled", true);  // 🔒 버튼 유지
                     }

@@ -968,3 +968,759 @@ body::before {
     .profile-header { flex-direction: column; text-align: center; }
 }
 
+/* ==========================================================================
+   🪐 Cosmic Library - 마이페이지 레이아웃 & 가독성 패치 시스템
+   ========================================================================== */
+
+/* 1. 하단 블록 가로 반반 양분 레이아웃 */
+.mypage-content-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* 모바일 화면 규격 대응 (화면이 좁아지면 부드럽게 세로로 전환) */
+@media (max-width: 768px) {
+    .mypage-content-row {
+        flex-direction: column;
+    }
+}
+
+/* 2. 🌌 [SHIPPING] 배지 가독성 전면 고도화 스타일 */
+.status-badge.shipping {
+    background-color: #0bd1a3 !important; /* 밀도 높은 에메랄드 민트 */
+    color: #064e3b !important;            /* 아주 깊고 어두운 포레스트 그린 (명도 대비 확보) */
+    padding: 5px 12px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 2px 5px rgba(11, 209, 163, 0.25) !important;
+    display: inline-block !important;
+}
+
+/* ==========================================================================
+   👑 Cosmic Library - 사령부 관리자 전용 인증망 테마
+   ========================================================================== */
+
+/* 관리자 폼 라벨 강조 */
+.admin-theme label {
+    color: #ff4757 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+}
+
+/* 관리자 전용 입력창 포커스 선명도 보정 */
+.admin-theme input:focus {
+    border-color: #ff4757 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 71, 87, 0.15) !important;
+}
+
+/* 사령부 접속 승인 버튼 (크림슨 레드 그라데이션) */
+.btn-admin-access {
+    background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: bold !important;
+    padding: 12px 24px;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+}
+
+.btn-admin-access:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4) !important;
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   👑 Cosmic Library - 총괄 사령실 대원 통제 센터 UI
+   ========================================================================== */
+
+/* 사령실 전용 테이블 스타일 */
+.admin-table-card {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+.admin-table th {
+    background-color: rgba(255, 71, 87, 0.1) !important;
+    color: #ff4757 !important;
+    font-weight: bold !important;
+    text-align: center;
+    border-bottom: 2px solid rgba(255, 71, 87, 0.2) !important;
+}
+
+.admin-table td {
+    vertical-align: middle !important;
+    text-align: center;
+    color: #e0e0e0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 대원 상태 배지 스타일 */
+.badge-status-active {
+    background-color: rgba(46, 213, 115, 0.15) !important;
+    color: #2ed573 !important;
+    border: 1px solid #2ed573;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.badge-status-block {
+    background-color: rgba(255, 71, 87, 0.15) !important;
+    color: #ff4757 !important;
+    border: 1px solid #ff4757;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   🪐 Cosmic Library - 3단 통합 로그인 탭 시스템 (MEMBER / VENDOR / ADMIN)
+   ========================================================================== */
+
+/* 탭 네비게이션 컨테이너 */
+.login-tabs {
+    display: flex;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 30px;
+    padding: 0;
+    list-style: none;
+}
+
+.login-tab-item {
+    flex: 1;
+    text-align: center;
+}
+
+.login-tab-link {
+    display: block;
+    padding: 12px 0;
+    font-weight: bold;
+    color: #a0a0a0;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.login-tab-link:hover {
+    color: #ffffff;
+}
+
+/* 활성화된 탭 고유 컬러링 */
+.login-tab-item.active .tab-member {
+    color: #5d5fef !important;
+    border-bottom: 2px solid #5d5fef;
+}
+
+.login-tab-item.active .tab-vendor {
+    color: #17a2b8 !important;
+    border-bottom: 2px solid #17a2b8;
+}
+
+.login-tab-item.active .tab-admin {
+    color: #ff4757 !important;
+    border-bottom: 2px solid #ff4757;
+}
+
+/* 폼 콘텐츠 숨김/보여주기 제어 */
+.login-form-panel {
+    display: none;
+}
+
+.login-form-panel.active {
+    display: block;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   👑 사령부 고위 관리자 제어 패널 전용 스타일 팩 (양옆 와이드 대확장 버전)
+   ========================================================================== */
+
+/* ⚓ 푸터 바닥 고정을 위한 기지 본체 최소 높이 및 레이아웃 확보 */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main, .container, .body-container {
+    flex: 1;
+}
+
+/* 🪐 [정밀 수술] 부모 컨테이너와 하얀색 카드 본체의 가로 제약 조건을 강제로 파괴! */
+.admin-wide-container {
+    max-width: 1400px !important; /* 사령관 취향에 따라 1200px ~ 1500px 자유롭게 조율 가능! */
+    margin: 0 auto;
+    width: 100% !important;
+}
+
+/* 💥 핵심 치트키: admin-wide-container 하위에 있는 모든 부모 카드 박스의 max-width를 무력화 */
+.admin-wide-container .form-container,
+.admin-wide-container .main-content,
+.admin-wide-container .card {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* 🛠️ 드롭다운이 카드 벽에 잘리는 현상을 완벽하게 방어하는 핵심 앵커 */
+.admin-table-card {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: visible !important; /* hidden 철거로 하위 드롭다운 해방! */
+}
+
+/* 📊 테이블 헤더 및 폰트 디테일 조율 */
+.admin-table th {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* 드롭다운 메뉴가 하위 테이블 레이어에 파묻히지 않도록 z-index 수위 방어 */
+.admin-table .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* 🎭 인라인 직무 배지 공통 스타일 및 미세 반응형 효과 */
+.admin-table .btn-sm.dropdown-toggle {
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.admin-table .btn-sm.dropdown-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* ==========================================================================
+   🪐 Cosmic 전용 레이아웃 마스터 정화 팩 (모든 페이지 가두리 전면 해제)
+   ========================================================================== */
+
+/* ⚓ 1. 푸터 바닥 고정 + 자식들이 가로로 쪼그라드는 현상 원천 차단 */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* 💥 핵심 처방: main과 그 자식 컨테이너들이 쪼그라들지 못하도록 가로폭 100% 강제 확장 */
+main, 
+.container, 
+.body-container,
+.form-container {
+    flex: 1 0 auto; /* flex-grow는 1, flex-shrink는 0으로 주어 절대 쪼그라들지 않게 방어! */
+    width: 100% !important;
+    max-width: 100% !important; /* 기존에 800px 등으로 묶여있던 모든 빗장을 풀고 100% 개방! */
+}
+
+/* 🪐 2. 단, 일반적인 본문(예: 상점, 도서 목록 등)이 너무 찢어져 보이지 않게 내부 컨테이너 상한선만 배정 */
+.container, 
+.body-container {
+    max-width: 1300px !important; /* 기지 전반적인 화면 가로 폭의 표준 궤도 설정 */
+    margin: 0 auto !important;
+}
+
+/* 👑 3. 사령부 관제 전용 와이드 컨테이너 (여기는 더 넓게 사용) */
+.admin-wide-container {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+}
+
+/* 🛠️ 4. 드롭다운 오버플로우 방어벽 */
+.admin-table-card {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: visible !important; 
+}
+
+/* 📊 5. 테이블 및 인라인 배지 디자인 튠 */
+.admin-table th {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.admin-table .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+.admin-table .btn-sm.dropdown-toggle {
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.admin-table .btn-sm.dropdown-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* ==========================================================================
+   🪐 로그인 및 회원가입 페이지 전용 콤팩트 가이드라인 (예외 방어벽)
+   ========================================================================== */
+
+/* 1. 로그인 창과 회원가입 창을 감싸는 폼 컨테이너가 폭주하지 않도록 제동 */
+.admin-theme,
+.form-container,
+#form-panel-member,
+#form-panel-vendor,
+#form-panel-admin {
+    /* 기존 100% 개방을 유지하되, 특정 로그인/회원가입 카드만 상한선을 480px로 제한! */
+    max-width: 480px !important; 
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* 2. 만약 회원가입(Join) 페이지가 입력 항목이 많아 살짝 더 넓이고 싶다면 아래 가이드 가동 */
+form[action*="join"],
+.join-container {
+    max-width: 550px !important; /* 가입창은 조금 더 안정감 있게 550px 배정 */
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* 3. 인풋 박스 내부의 글자나 라벨이 너무 퍼지지 않도록 일체감 부여 */
+.input-group-cosmic {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* ==========================================================================
+   🪐 Cosmic 전용 레이아웃 마스터 정화 팩 (75% 황금 비율 모드)
+   ========================================================================== */
+
+/* ⚓ 1. 푸터 바닥 고정 체계 유지 */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* 💥 [핵심 치트키] 메인 관제소 자체를 화면의 딱 75%만 사용하도록 제동! */
+main, 
+.body-container {
+    flex: 1 0 auto;
+    width: 75% !important;      /* 사령관의 특명: 화면의 75%만 전격 하산! */
+    max-width: 1400px !important;  /* 너무 거대한 모니터에서도 터지지 않게 상한선 방어 */
+    margin: 0 auto !important;     /* 가운데 정렬로 양옆에 예쁜 공백 부여 */
+}
+
+/* 👑 2. 사령부 관제 & 대원 통제 패널 (75%로 줄어든 main 공간을 100% 와이드하게 활용) */
+.admin-wide-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+}
+
+/* 📚 3. 도서 목록 페이지 (75% 공간 안에서 살짝 더 콤팩트하게 모아주기) */
+.book-list-container,
+.book-table-wrapper,
+div[class*="bookList"] {
+    max-width: 90% !important; 
+    margin: 0 auto !important;
+    width: 100% !important;
+}
+
+/* 🔒 4. 로그인 / 회원가입 / 도서 추가 (75% 안에서도 쏠림 없이 무조건 콤팩트 알약 형태 고정) */
+.admin-theme,
+.form-container,
+#form-panel-member,
+#form-panel-vendor,
+#form-panel-admin,
+form[action*="bookAdd"],
+form[action*="insertBook"],
+.book-add-container {
+    max-width: 480px !important; 
+    margin: 30px auto !important;
+    width: 100% !important;
+}
+
+/* 🛠 ========================================================================
+   오버플로우 및 세부 버그 방어선 (기존 세팅 유지)
+   ========================================================================== */
+.admin-table-card {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: visible !important; 
+}
+
+.admin-table th {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.admin-table .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+.admin-table .btn-sm.dropdown-toggle {
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.admin-table .btn-sm.dropdown-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* ==========================================================================
+   🪐 Cosmic 레이아웃 마스터 정화 팩 (여백 주입 + 푸터 슬림화 버전)
+   ========================================================================== */
+
+/* ⚓ 1. 푸터 바닥 고정 체계 및 배경선 정돈 */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* 💥 [핵심 보정] 헤더/푸터와의 숨통을 트기 위해 위아래 마진(Margin) 전격 주입! */
+main, 
+.body-container {
+    flex: 1 0 auto;
+    width: 75% !important;      
+    max-width: 1400px !important;  
+    margin: 50px auto !important; /* 🌟 위아래에 50px의 시원한 여백을 주어 패널을 헤더/푸터와 격리! */
+}
+
+/* 🚫 [쓸데없이 넓은 푸터 저격] 위아래 패딩을 획기적으로 줄여 슬림하게 개조 */
+footer,
+.footer-cosmic,
+div[class*="footer"] {
+    padding-top: 20px !important;    /* 🌟 기존의 뚱뚱했던 패딩을 20px로 압축 */
+    padding-bottom: 20px !important; /* 🌟 바닥 패딩도 20px로 다이어트 */
+    margin-top: auto !important;     /* 푸터가 언제나 본문 밑 바닥에 정착하도록 유도 */
+    font-size: 0.85rem !important;   /* 글자 크기도 정갈하게 살짝 축소 */
+}
+
+/* 푸터 내부의 로고나 텍스트 마진도 콤팩트하게 정화 */
+footer h4, footer .h4, footer p, footer div {
+    margin-bottom: 5px !important;
+    padding: 0 !important;
+}
+
+/* 👑 2. 사령부 관제 & 대원 통제 패널 (75% 내부 채우기 고정) */
+.admin-wide-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+}
+
+/* 🔒 3. 로그인 / 회원가입 / 도서 추가 (알약 형태 유지) */
+.admin-theme,
+.form-container,
+#form-panel-member,
+#form-panel-vendor,
+#form-panel-admin,
+form[action*="bookAdd"],
+form[action*="insertBook"],
+.book-add-container {
+    max-width: 480px !important; 
+    margin: 0 auto !important; /* main 자체에 마진이 생겼으므로 여기선 중앙 정렬만 체크 */
+    width: 100% !important;
+}
+
+/* 🛠 ========================================================================
+   오버플로우 및 세부 버그 방어선 (기존 세팅 유지)
+   ========================================================================== */
+.admin-table-card {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: visible !important; 
+}
+
+.admin-table th {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.admin-table .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* ==========================================================================
+   🪐 Cosmic 전용 레이아웃 마스터 정화 팩 (85% 대확장 & 폰트 벌크업 버전)
+   ========================================================================== */
+
+/* ⚓ 1. 푸터 바닥 고정 체계 유지 */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* 💥 [특명 반영] 메인 선체 자체를 화면의 85%로 와이드하게 전격 확장! */
+main, 
+.body-container {
+    flex: 1 0 auto;
+    width: 85% !important;        /* 75%에서 85%로 와이드하게 개방! */
+    max-width: 1600px !important;  /* 거대 모니터에서도 안정감을 유지하는 상한선 상향 */
+    margin: 50px auto !important;  /* 위아래 숨통 여백 50px 고정 */
+}
+
+/* 🚫 푸터 초슬림화 유지 */
+footer,
+.footer-cosmic,
+div[class*="footer"] {
+    padding-top: 20px !important;    
+    padding-bottom: 20px !important; 
+    margin-top: auto !important;     
+    font-size: 0.85rem !important;   
+}
+
+footer h4, footer .h4, footer p, footer div {
+    margin-bottom: 5px !important;
+    padding: 0 !important;
+}
+
+/* 👑 2. 관제 패널 및 와이드 컨테이너 (85% 내부 완벽 호환) */
+.admin-wide-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+}
+
+/* 🔒 3. 로그인 / 회원가입 / 도서 추가 (폼 크기는 퍼지지 않게 단단히 고정) */
+.admin-theme,
+.form-container,
+#form-panel-member,
+#form-panel-vendor,
+#form-panel-admin,
+form[action*="bookAdd"],
+form[action*="insertBook"],
+.book-add-container {
+    max-width: 480px !important; 
+    margin: 0 auto !important; 
+    width: 100% !important;
+}
+
+/* 🛠 ========================================================================
+   📊 테이블 카드 및 글로벌 폰트 시인성 벌크업 조율선
+   ========================================================================== */
+.admin-table-card {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: visible !important; 
+}
+
+/* 🅰️ [폰트 체인저] 전체적인 테이블 글자 크기를 키워 시원시원한 가독성 확보 */
+.admin-table {
+    font-size: 0.95rem !important; /* 🌟 기본 글씨 크기 상향 조정! */
+}
+
+.admin-table th {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    font-size: 1rem !important;    /* 🌟 제목 행 폰트 사이즈 인상 */
+}
+
+/* 좌측 정보창 내부 폰트 디테일 벌크업 */
+.card-body .fs-6 {
+    font-size: 1.05rem !important; /* 🌟 파트너 ID, 상호명 등 핵심 정보 글자 크기 확대 */
+}
+.card-body small {
+    font-size: 0.85rem !important; /* 라벨용 소형 텍스트 크기 보정 */
+    font-weight: 600;
+}
+
+.admin-table .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+.admin-table .btn-sm.dropdown-toggle {
+    font-size: 0.9rem !important;  /* 🌟 직무/상태 배지 버튼 글자 크기 인상 */
+    transition: all 0.2s ease-in-out;
+}
+
+.admin-table .btn-sm.dropdown-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* ==========================================================================
+   🚚 입점 파트너 주문 배송 관제탑 (orderList) 전용 스타일 패키지
+   ========================================================================== */
+
+/* 🚀 관제탑 헤더 섹션 디자인 조율 */
+.vendor-hero-section {
+    margin-bottom: 30px; 
+    background: rgba(0, 0, 0, 0.02); 
+    padding: 25px; 
+    border-radius: 15px; 
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.vendor-kicker-brand {
+    color: #5d5fef; 
+    font-weight: 800; 
+    letter-spacing: 2px; 
+    font-size: 0.9rem;
+}
+
+.vendor-main-title {
+    margin: 8px 0 12px 0; 
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+}
+
+.vendor-desc-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* 📊 테이블 내부 전용 컬럼 폭 및 폰트 디테일 규격화 */
+.admin-table .col-order-num { width: 12%; }
+.admin-table .col-book-info { width: 32%; }
+.admin-table .col-order-qty { width: 12%; }
+.admin-table .col-total-price { width: 15%; color: #5d5fef; }
+.admin-table .col-order-date { width: 15%; }
+.admin-table .col-order-status { width: 14%; }
+.admin-table .col-order-control { width: 14%; }
+
+/* 도서 썸네일 정밀 튠 */
+.vendor-book-thumb {
+    width: 45px; 
+    height: 65px; 
+    object-fit: cover;
+}
+
+.vendor-book-no-image {
+    width: 45px; 
+    height: 65px; 
+    font-size: 0.7rem; 
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   🚚 입점 파트너 주문 배송 관제탑 (orderList) 컬럼 황금 비율 밸런스 세팅
+   ========================================================================== */
+
+/* 📊 데이터 특성에 맞춘 최적화된 컬럼 폭 (합계 100%) */
+.admin-table .col-order-num { 
+    width: 10% !important; /* # 123 형태의 짧은 번호이므로 축소 */
+}
+
+.admin-table .col-book-info { 
+    width: 38% !important; /* 🌟 제목이 잘리지 않도록 공간을 38%까지 대폭 확장! */
+}
+
+.admin-table .col-order-qty { 
+    width: 10% !important; /* 'X 권'만 들어가는 구역이므로 슬림하게 조정 */
+}
+
+.admin-table .col-total-price { 
+    width: 14% !important; /* 금액 표기 구역, 가독성 확보 */
+    color: #5d5fef !important; 
+}
+
+.admin-table .col-order-date { 
+    width: 16% !important; /* 'yyyy-MM-dd HH:mm' 포맷이 한 줄로 예쁘게 나오도록 확장 */
+}
+
+.admin-table .col-order-status { 
+    width: 12% !important; /* 배지 크기에 딱 맞게 조율 */
+}
+
+.admin-table .col-order-control { 
+    width: 10% !important; /* 버튼 크기에 맞춘 컴팩트 마감 */
+}
+
+/* 썸네일 이미지 및 텍스트 정렬 디테일 보정 */
+.vendor-book-thumb,
+.vendor-book-no-image {
+    width: 42px; 
+    height: 60px; 
+    object-fit: cover;
+    flex-shrink: 0; /* 와이드 화면에서 이미지가 찌그러지지 않도록 고정 */
+}
+
+/* 도서 제목 글자가 너무 길어지더라도 카드 밖으로 터지지 않게 제어 */
+.admin-table td .text-truncate {
+    max-width: 380px !important; /* 넓어진 만큼 제목을 더 길고 시원하게 노출 */
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* ==========================================================================
+   🪐 부트스트랩의 자동 컬럼 계산을 무력화하고 개발자 지정 비율을 강제하는 치트키
+   ========================================================================== */
+.admin-table {
+    font-size: 0.95rem !important;
+    
+    /* 💥 [핵심 치트키] 브라우저의 자동 폭 계산을 완전히 끄고, 
+       우리가 선언한 .col-... 비율 매핑 값대로 무조건 칼각 고정시킴! */
+    table-layout: fixed !important; 
+    
+    width: 100% !important;
+    word-break: break-all !important; /* 텍스트가 칸을 뚫고 나가지 못하게 방어 */
+}
+
+/* ==========================================================================
+   📊 테이블 셀 데이터 세틀라인 정렬 (세로축 정중앙 칼정렬)
+   ========================================================================== */
+.admin-table td, 
+.admin-table th {
+    /* 💥 줄 내부의 데이터 높낮이가 달라도, 무조건 세로축 정중앙에 글자 라인을 정렬! */
+    vertical-align: middle !important; 
+}
+
+/* 추가 보정: 주문 번호 텍스트 주변에 불필요한 라인 높이나 여백이 잡히는 걸 방어 */
+.admin-table td.text-dark {
+    line-height: 1 !important; 
+}
+
+/* ==========================================================================
+   🪐 코스믹 통합 도서 목록 트윈 탭 내비게이션 비주얼 튠
+   ========================================================================== */
+.cosmic-tabs .nav-link {
+    background: rgba(0, 0, 0, 0.03);
+    color: #666;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+}
+
+.cosmic-tabs .nav-link.active {
+    background: #5d5fef !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.3) !important;
+}
+
+.cosmic-tabs .nav-link:hover:not(.active) {
+    background: rgba(93, 95, 239, 0.08);
+    color: #5d5fef;
+}

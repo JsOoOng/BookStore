@@ -12,47 +12,68 @@ import java.util.List;
 public class BasketServiceImpl implements BasketService {
 
     @Autowired
-    private BasketDAO busketDAO;
+    private BasketDAO basketDAO;
 
-    // 회원 기준 장바구니 리스트 조회
+    // 🌟 전면 개편: String memberId ➔ int userRegNum 동기화
+
+    // 회원 활동 번호 기준 장바구니 리스트 조회
     @Override
-    public List<BasketVO> getList(String memberId) {
-        return busketDAO.findAll(memberId);
+    public List<BasketVO> getList(int userRegNum) {
+        return basketDAO.findAll(userRegNum);
     }
     
+    // 선택된 장바구니 리스트 조회
     @Override
-    public List<BasketVO> getSelectedList(String memberId, int[] basketIds) {
-        return busketDAO.findByIds(basketIds, memberId);
+    public List<BasketVO> getSelectedList(int userRegNum, int[] basketIds) {
+        return basketDAO.findByIds(basketIds, userRegNum);
     }
 
     // 장바구니 삭제 (단일)
     @Override
-    public void delete(String memberId, int busketId) {
-        busketDAO.deleteById(busketId, memberId);
+    public void delete(int userRegNum, int busketId) {
+        basketDAO.deleteById(busketId, userRegNum);
     }
 
     // 장바구니 삭제 (다중)
     @Override
-    public void delete(String memberId, int[] busketIds) {
-        busketDAO.deleteByIds(busketIds, memberId); // 🔥 반복문 제거
+    public void delete(int userRegNum, int[] basketIds) {
+        basketDAO.deleteByIds(basketIds, userRegNum); 
     }
 
     // 구매 처리 (단일)
     @Override
-    public void buy(String memberId, int busketId) {
-        busketDAO.buy(busketId, memberId);
+    public void buy(int userRegNum, int busketId) {
+        basketDAO.buy(busketId, userRegNum);
     }
 
     // 구매 처리 (다중)
     @Override
-    public void buy(String memberId, int[] busketIds) {
-        busketDAO.buy(busketIds, memberId); // 🔥 반복문 제거
+    public void buy(int userRegNum, int[] basketIds) {
+        basketDAO.buy(basketIds, userRegNum); 
     }
 
     // 장바구니에 책 추가
     @Override
-    public void add(String memberId, int bookId) {
-        System.out.println("장바구니 담기 실행: member=" + memberId + ", book=" + bookId);
-        busketDAO.insert(memberId, bookId);
+    public void add(int userRegNum, int bookId) {
+        System.out.println("🛸 장바구니 담기 관제소 작동: userRegNum=" + userRegNum + ", book=" + bookId);
+        basketDAO.insert(userRegNum, bookId);
     }
+
+    // 🌟 [오픈마켓용 추가] 인터페이스 실현 및 DAO 호출
+    @Override
+    public boolean addMarketBasket(int userRegNum, int saleId, int qty) {
+        
+        // DAO에게 대원 번호(user_reg_num), 마켓 상품 번호(sale_id), 수량을 들고 인서트하라고 명령!
+        // (성공 시 성공한 행의 개수가 1 이상이므로 true 반환하도록 세팅)
+        int result = basketDAO.insertMarketBasket(userRegNum, saleId, qty);
+        
+        return result > 0;
+    }
+    
+    @Override
+    public boolean updateBasketQty(int basketId, int userRegNum, int qty) {
+        // 하단 3단계에서 추가할 DAO 메서드를 호출해줍니다.
+        return basketDAO.updateQty(basketId, userRegNum, qty) > 0;
+    }
+    
 }

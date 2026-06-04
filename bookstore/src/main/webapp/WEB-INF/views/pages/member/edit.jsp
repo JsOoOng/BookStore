@@ -26,6 +26,18 @@
             <input type="text" id="name" name="name" value="${loginMember.name}" required placeholder="수정할 성명을 입력하세요">
         </div>
 
+        <div class="input-group-cosmic">
+            <label for="email">통신 이메일 주소</label>
+            <input type="email" id="email" name="email" value="${loginMember.email}" required placeholder="example@cosmic.com">
+            <small class="text-muted" style="font-size: 0.8rem;">기지 주요 공지 및 보급 소식을 전송받을 주소입니다.</small>
+        </div>
+
+        <div class="input-group-cosmic">
+            <label for="address">🌌 물류 보급 배송지 주소</label>
+            <input type="text" id="address" name="address" value="${loginMember.address}" required placeholder="보급품을 전달받을 주소를 입력하세요">
+            <small class="text-muted" style="font-size: 0.8rem;">주문 결제를 진행하기 위해 반드시 실제 주소 형식으로 기입해 주셔야 합니다.</small>
+        </div>
+
         <hr class="my-4" style="opacity: 0.1;">
 
         <div class="input-group-cosmic">
@@ -87,11 +99,18 @@
     function validateEditForm() {
         const newPw = $("#newPw").val();
         const confirm = $("#newPwConfirm").val();
+        const address = $("#address").val().trim();
 
-        // 새 비밀번호를 입력했는데 확인란과 다를 경우
         if (newPw !== "" && newPw !== confirm) {
             alert("새로 입력한 보안 코드가 서로 일치하지 않습니다. 다시 확인해주세요.");
             $("#newPwConfirm").focus();
+            return false;
+        }
+
+        // 🪐 [주소 유효성 방어선] 공백이나 기본값으로 수정을 시도하는 행위 차단
+        if (address === "" || address === "은하계 미지정 구역") {
+            alert("보급을 전송받을 유효한 배송지 주소를 정확히 기입해 주세요.");
+            $("#address").focus();
             return false;
         }
 

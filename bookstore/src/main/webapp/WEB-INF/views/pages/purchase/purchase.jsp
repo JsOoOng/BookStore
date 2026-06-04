@@ -41,7 +41,8 @@
                             <div class="purchase-price-row">
                                 <span class="price-label">데이터 가치</span>
                                 <span class="item-price">
-                                    <fmt:formatNumber value="${book.price}" pattern="#,###"/> 원
+                                    <%-- 🌟 [수정] 단가 대신 진짜 수량이 곱해진 총 가격을 뿜어냅니다! --%>
+                                    <fmt:formatNumber value="${book.price * book.quantity}" pattern="#,###"/> 원
                                 </span>
                             </div>
                         </div>
@@ -55,20 +56,27 @@
 
                     <form action="${pageContext.request.contextPath}/purchase/buy" method="post">
                         <c:choose>
-						    <%-- 장바구니에서 넘어온 경우 --%>
-						    <c:when test="${not empty basketIds}">
-						        <input type="hidden" name="basketIds" value="${basketIds}">
-						    </c:when>
-						    <%-- 상세페이지에서 바로구매로 넘어온 경우 --%>
-						    <c:otherwise>
-						        <input type="hidden" name="bookId" value="${purchaseList[0].bookId}">
-						    </c:otherwise>
-						</c:choose>
+                            <%-- 장바구니에서 넘어온 경우 --%>
+                            <c:when test="${not empty basketIds}">
+                                <input type="hidden" name="basketIds" value="${basketIds}">
+                            </c:when>
+                            <%-- 상세페이지에서 바로구매로 넘어온 경우 --%>
+                            <c:otherwise>
+                                <input type="hidden" name="bookId" value="${purchaseList[0].bookId}">
+                            </c:otherwise>
+                        </c:choose>
 
                         <div class="purchase-summary-details">
                             <div class="summary-row">
                                 <span>선택된 지식 수</span>
-                                <span>${purchaseList.size()} 권</span>
+                                <span>
+                                    <%-- 🌟 [수정] 리스트의 종류 개수가 아닌 모든 도서 수량의 총합을 실시간 연산 --%>
+                                    <c:set var="totalQuantity" value="0" />
+                                    <c:forEach var="b" items="${purchaseList}">
+                                        <c:set var="totalQuantity" value="${totalQuantity + b.quantity}" />
+                                    </c:forEach>
+                                    ${totalQuantity} 권
+                                </span>
                             </div>
 
                             <div class="summary-row">

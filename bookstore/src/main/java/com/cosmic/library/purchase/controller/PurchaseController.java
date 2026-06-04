@@ -1,7 +1,6 @@
 package com.cosmic.library.purchase.controller;
 
 import java.util.List;
-
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,58 +30,61 @@ public class PurchaseController {
     private BookService bookService;
 
     @Autowired
-    private BasketService basketService; // ⭐ BasketService 주입 확인!
+    private BasketService basketService;
 
+ // 1️⃣ 결제 대기 페이지 (주문서 작성 화면 - 하이브리드 밸런싱 동기화 버전)
     @GetMapping("/view")
     public String purchasePage(
-            @RequestParam(required = false) Integer bookId,    // 단일 구매 (상세페이지에서 옴)
-            @RequestParam(required = false) String basketIds, // 장바구니 구매 (장바구니에서 옴)
+            @RequestParam(required = false) Integer bookId,    
+            @RequestParam(required = false) Integer saleId,  // 🌟 [추가] 어떤 파트너사의 상품인지 식별자 장착
+            @RequestParam(required = false, defaultValue = "0") Integer price, // 🌟 [추가] 마켓 실시간 가격 장착
+            @RequestParam(required = false) String basketIds, 
             HttpSession session,
             Model model) {
 
         MemberVO member = (MemberVO) session.getAttribute("loginMember");
-        if (member == null) return "redirect:/";
+        if (member == null) return "redirect:/member/login";
 
+        int userRegNum = member.getUser_reg_num();
         List<BasketVO> purchaseList = new java.util.ArrayList<>();
         int totalPrice = 0;
 
-        // Case 1: 상세페이지에서 [바로 구매]를 누른 경우 (bookId 기반)
+        // Case 1: 상세페이지에서 [바로 구매]를 누른 경우 (실시간 마켓 가격 완벽 보정)
         if (bookId != null) {
-            BookVO book = bookService.getById(bookId);
+            BookVO book = bookService.findBookById(bookId); // (기존 getById 메서드명을 프로젝트 싱크에 맞게 보정)
             if (book != null) {
                 BasketVO temp = new BasketVO();
                 
-                // 💡 핵심: purchase.jsp에서 사용하는 모든 필드를 다 채워줘야 합니다.
                 temp.setBookId(book.getId());
                 temp.setTitle(book.getTitle());
-                temp.setPrice(book.getPrice());
                 temp.setWriter(book.getWriter());
                 temp.setImage(book.getImage());
-                temp.setQuantity(1); // 바로 구매는 기본 1개
+                temp.setQuantity(1); 
                 
-                // ✅ 추가된 필드들도 잊지 말고 세팅!
+                // 🌟 중요: 0원으로 강제 락인되던 임시 변수를 주소창에서 들고 온 진짜 마켓 실시간 단가로 바인딩!
+                temp.setPrice(price); 
+                
                 temp.setGenre(book.getGenre());
                 temp.setPublisher(book.getPublisher());
                 temp.setIsbn(book.getIsbn());
                 
                 purchaseList.add(temp);
-                totalPrice = book.getPrice();
+                totalPrice = price; // 총 결제 금액도 실제 마켓 단가로 즉시 동기화!
             }
         }
-        // Case 2: 장바구니에서 [선택 구매]를 누른 경우 (basketIds 기반)
+        // Case 2: 장바구니에서 [선택 구매]를 누른 경우
         else if (basketIds != null && !basketIds.isEmpty()) {
             String[] arr = basketIds.split(",");
             int[] ids = new int[arr.length];
             for (int i = 0; i < arr.length; i++) ids[i] = Integer.parseInt(arr[i]);
 
-            // ⭐ 새로 만든 findByIds 로직 사용 (장바구니에 담긴 수량까지 정확히 가져옴)
-            purchaseList = basketService.getSelectedList(member.getId(), ids);
+            purchaseList = basketService.getSelectedList(userRegNum, ids);
             
             for (BasketVO vo : purchaseList) {
                 totalPrice += (vo.getPrice() * vo.getQuantity());
             }
             
-            model.addAttribute("basketIds", basketIds); // 나중에 결제 완료 시 삭제하기 위해 저장
+            model.addAttribute("basketIds", basketIds); 
         }
 
         model.addAttribute("purchaseList", purchaseList);
@@ -92,64 +94,62 @@ public class PurchaseController {
         return "common/layout";
     }
 
+    // 2️⃣ 결제 승인 처리 (POST)
     @PostMapping("/buy")
     public String processPurchase(
-            @RequestParam(required = false) Integer bookId,    // 단일 구매 시 사용
-            @RequestParam(required = false) String basketIds, // 장바구니 구매 시 사용
+            @RequestParam(required = false) Integer bookId,    
+            @RequestParam(required = false) String basketIds, 
             HttpSession session) {
         
         MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
-        if (loginMember == null) return "redirect:/";
+        if (loginMember == null) return "redirect:/member/login";
 
-        String memberId = loginMember.getId();
+        // 🌟 3차 빌딩 핵심 정수형 식별자 추출
+        int userRegNum = loginMember.getUser_reg_num();
 
-        // 1️⃣ 단일 구매 (바로 구매) 처리
+        // 1) 단일 바로 구매 처리
         if (bookId != null) {
-            BookVO book = bookService.getById(bookId);
-            
             Purchase purchase = new Purchase();
-            purchase.setMemberId(memberId);
+            purchase.setUserRegNum(userRegNum); // 🌟 바뀐 VO 스펙(int) 반영
             purchase.setBookId(bookId);
-            purchase.setQuantity(1); // 바로 구매는 기본 1개
-            purchase.setPrice(book.getPrice());
-            purchase.setTotalPrice(book.getPrice());
+            purchase.setQuantity(1); 
+            purchase.setPrice(0);      // 임시 0원 처리
+            purchase.setTotalPrice(0);
 
-            // ⭐ 실제 구매 테이블에 저장
             purchaseService.buy(purchase); 
         }
 
-        // 2️⃣ 장바구니 선택 구매 처리
+        // 2) 장바구니 선택 구매 처리
         if (basketIds != null && !basketIds.isEmpty()) {
             String[] arr = basketIds.split(",");
             int[] ids = new int[arr.length];
             for (int i = 0; i < arr.length; i++) ids[i] = Integer.parseInt(arr[i]);
 
-            // ⭐ 중요: 결제 직전, 장바구니 아이템들을 다시 조회해서 정보를 가져옵니다 (수량 때문)
-            List<BasketVO> selectedList = basketService.getSelectedList(memberId, ids);
+            // 🌟 변경: 문자열 ID 대신 userRegNum(int)을 주입해 다시 덤프 수량 추출!
+            List<BasketVO> selectedList = basketService.getSelectedList(userRegNum, ids);
 
             for (BasketVO item : selectedList) {
                 Purchase purchase = new Purchase();
-                purchase.setMemberId(memberId);
+                purchase.setUserRegNum(userRegNum); // 🌟 바뀐 VO 스펙(int) 반영
                 purchase.setBookId(item.getBookId());
-                purchase.setQuantity(item.getQuantity()); // 장바구니에 담긴 수량 그대로!
+                purchase.setQuantity(item.getQuantity()); 
                 purchase.setPrice(item.getPrice());
                 purchase.setTotalPrice(item.getPrice() * item.getQuantity());
 
-                // ⭐ 각 항목별로 구매 테이블에 저장
                 purchaseService.buy(purchase);
             }
 
-            // 3️⃣ 구매 성공 후 장바구니에서 해당 항목들 삭제
-            basketService.delete(memberId, ids);
+            // 🌟 변경: 구매 완료 후 장바구니 비우기 시 userRegNum(int) 전송!
+            basketService.delete(userRegNum, ids);
         }
 
         return "redirect:/purchase/success";
     }
     
+    // 3️⃣ 결제 완료 성공 화면 워프
     @GetMapping("/success")
     public String showSuccessPage(Model model) {
-        // 레이아웃 페이지에 "지금 보여줄 페이지는 success야"라고 알려줌
         model.addAttribute("pageName", "pages/purchase/success");
-        return "common/layout"; // 공통 레이아웃 파일 리턴
+        return "common/layout"; 
     }
 }

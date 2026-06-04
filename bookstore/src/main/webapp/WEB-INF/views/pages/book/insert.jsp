@@ -14,24 +14,33 @@
             <input type="text" id="writer" name="writer" placeholder="지식의 개척자(저자)를 입력하세요" required>
         </div>
 
-        <!-- 🔥 추가: 출판사 -->
         <div class="input-group-cosmic">
             <label for="publisher">출판사</label>
             <input type="text" id="publisher" name="publisher" placeholder="출판사를 입력하세요" required>
         </div>
 
-        <!-- 🔥 추가: ISBN -->
+        <div class="input-group-cosmic">
+            <label for="pubDate">출판일</label>
+            <input type="date" id="pubDate" name="pubDate" required>
+        </div>
+
         <div class="input-group-cosmic">
             <label for="isbn">ISBN</label>
             <input type="text" id="isbn" name="isbn" placeholder="ISBN 번호를 입력하세요" required>
         </div>
 
         <div class="input-group-cosmic">
-            <label for="price">탐사 비용 (가격)</label>
-            <input type="number" id="price" name="price" placeholder="숫자만 입력하세요" required>
+            <label for="language">기록 언어</label>
+            <select id="language" name="language" required>
+                <option value="Korean" selected>Korean</option>
+                <option value="English">English</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Chinese">Chinese</option>
+                <option value="German">German</option>
+                <option value="French">French</option>
+            </select>
         </div>
 
-        <!-- 🔥 추가: 장르 선택 -->
         <div class="input-group-cosmic">
             <label for="genre">장르</label>
             <select id="genre" name="genre" required>
@@ -52,11 +61,6 @@
                 <option value="항해">항해</option>
                 <option value="기타">기타</option>
             </select>
-        </div>
-
-        <div class="input-group-cosmic">
-            <label for="content">행성 상세 기록 (요약)</label>
-            <textarea id="content" name="content" rows="5" placeholder="책의 핵심적인 지식을 기록해 주세요"></textarea>
         </div>
 
         <div class="input-group-cosmic">

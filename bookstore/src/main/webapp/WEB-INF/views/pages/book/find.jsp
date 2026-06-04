@@ -12,17 +12,22 @@
         <c:when test="${not empty bookList}">
             <c:forEach var="book" items="${bookList}">
                 <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="card book-card" onclick="location.href='${pageContext.request.contextPath}/book/view?id=${book.id}'">
+                    <div class="card book-card" onclick="location.href='${pageContext.request.contextPath}/book/view?id=${book.id}'" style="cursor: pointer;">
                         <div class="book-img-wrapper">
                             <img src="${not empty book.image ? book.image : 'https://via.placeholder.com/200x300'}" 
                                  onerror="this.src='https://via.placeholder.com/200x300?text=No+Image'">
                         </div>
                         <div class="card-body">
-                            <span class="genre-badge mb-2">${not empty book.genre ? book.genre : '미분류'}</span>
+                            <div class="d-flex gap-1 mb-2">
+                                <span class="genre-badge">${not empty book.genre ? book.genre : '미분류'}</span>
+                                <span class="badge bg-secondary" style="font-size: 0.7rem; padding: 2px 6px;">${book.language}</span>
+                            </div>
+                            
                             <h5 class="card-title fw-bold text-truncate">${book.title}</h5>
-                            <p class="text-muted small mb-3">${book.writer} | ${book.publisher}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="book-price text-danger fw-bold"><fmt:formatNumber value="${book.price}" pattern="#,###"/>원</span>
+                            <p class="text-muted small mb-2">${book.writer} | ${book.publisher}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="book-meta small text-secondary" style="font-size: 0.8rem;">📅 ${book.pubDate}</span>
                                 <button class="btn btn-sm btn-outline-primary rounded-pill">상세보기</button>
                             </div>
                         </div>
@@ -46,7 +51,6 @@
             
             <%-- 1. [이전 블록] 시작 페이지가 1이면 이전 성단이 없으므로 비활성화 --%>
             <li class="page-item ${startPage == 1 ? 'disabled' : ''}">
-                <%-- 클릭 시 이전 블록의 마지막 페이지(startPage - 1)로 워프 --%>
                 <a class="page-link" href="?title=${searchKeyword}&page=${startPage - 1}" aria-label="Previous Block">
                     <span aria-hidden="true">&laquo; 이전 블록</span>
                 </a>
@@ -61,7 +65,6 @@
 
             <%-- 3. [다음 블록] 끝 페이지가 전체 페이지와 같으면 다음 성단이 없으므로 비활성화 --%>
             <li class="page-item ${endPage == totalPages ? 'disabled' : ''}">
-                <%-- 클릭 시 다음 블록의 첫 번째 페이지(endPage + 1)로 워프 --%>
                 <a class="page-link" href="?title=${searchKeyword}&page=${endPage + 1}" aria-label="Next Block">
                     <span aria-hidden="true">다음 블록 &raquo;</span>
                 </a>
