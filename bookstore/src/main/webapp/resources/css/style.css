@@ -2609,163 +2609,152 @@ body {
    🪐 Vendor OrderList.jsp 전용 - 입점 파트너 주문 배송 관제탑 스타일
    ========================================================================== */
 
-/* 💥 1. 테이블 헤더를 대시보드와 동일한 라이트 그레이로 변경 (이중 블랙 블록 현상 제거) */
-.vendor-order-table th {
-    background: #f8fafc !important; 
-    color: #2f3542 !important;
-    padding: 14px 10px !important;
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    border-bottom: 1px solid #edeff2 !important;
-    border-radius: 0 !important; /* 내부 요소이므로 불필요한 둥근 모서리 제거 */
-}
+.vendor-table-wrap {
+        overflow-x: hidden !important; /* 화면을 찢고 나가는 가로 스크롤 강제 소멸 */
+        width: 100%;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(11, 19, 43, 0.05);
+    }
 
-/* 📊 테이블 컬럼 너비 최적화 (둥근 모서리 속성 제거됨) */
-.vendor-order-table .th-order-num { width: 10%; }
-.vendor-order-table .th-book-info { width: 37%; }
-.vendor-order-table .th-order-qty { width: 10%; }
-.vendor-order-table .th-total-price { width: 12%; }
-.vendor-order-table .th-order-date { width: 13%; }
-.vendor-order-table .th-order-status { width: 10%; }
-.vendor-order-table .th-order-control { width: 8%; }
+    .vendor-order-table {
+        width: 100% !important;
+        table-layout: fixed !important; /* 컬럼 너비를 % 기준으로 완벽 고정 */
+        border-collapse: collapse;
+        margin: 0;
+    }
 
-/* 빈 상태(Empty State)의 튀는 빨간색 텍스트를 차분한 회색으로 강제 보정 */
-.vendor-order-table .td-empty-state {
-    border-bottom: none !important;
-}
-.vendor-order-table .empty-title {
-    color: #7f8c8d !important; /* 빨간색 멸균 */
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    margin-top: 12px !important;
-}
+    /* 테이블 헤더 - 라이트 그레이 톤 매너 동기화 */
+    .vendor-order-table th {
+        background: #f8fafc !important; 
+        color: #2f3542 !important;
+        padding: 14px 10px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        border-bottom: 1px solid #edeff2 !important;
+        text-align: center;
+    }
 
-/* 도서 정보 레이아웃 (이미지와 텍스트 가로 정렬) */
-.vendor-order-book-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+    /* 📊 철벽 보안 컬럼 비율 고정 (합계 100%) */
+    .th-order-num     { width: 10%; }
+    .th-book-info     { width: 38%; }
+    .th-order-qty     { width: 10%; }
+    .th-total-price   { width: 14%; }
+    .th-order-date    { width: 14%; }
+    .th-order-status  { width: 14%; }
+    .th-order-control { width: 12%; }
 
-/* 도서 썸네일 이미지 */
-.vendor-book-thumb-img {
-    width: 50px;
-    height: 75px;
-    object-fit: cover;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border: 1px solid #e1e4e8;
-}
+    /* 모든 셀 데이터 한 줄 정렬 및 가운대 정렬 락온 */
+    .vendor-order-table td {
+        padding: 14px 10px !important;
+        vertical-align: middle !important;
+        border-bottom: 1px solid #f1f2f6 !important;
+        text-align: center;
+        white-space: nowrap; /* 💥 글자가 아래로 꺾이는 현상 절대 차단 */
+        overflow: hidden;
+        text-overflow: ellipsis; /* 혹시라도 넘치면 자동으로 말줄임표 처리 */
+    }
 
-/* 이미지가 없을 때의 대체 박스 */
-.vendor-book-no-img {
-    width: 50px;
-    height: 75px;
-    background: #f1f2f6;
-    color: #a4b0be;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    border-radius: 4px;
-    border: 1px dashed #ced6e0;
-}
+    /* 도서 정보 구역 (이미지 + 제목 가로 한 줄 정렬) */
+    .vendor-order-book-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+        width: 100%;
+        overflow: hidden;
+    }
 
-/* 도서 제목 */
-.vendor-order-book-title {
-    font-weight: 700;
-    color: #2f3542;
-    font-size: 14px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* 2줄 이상 넘어갈 경우 말줄임표 */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+    /* 표지 썸네일 규격 고정 */
+    .vendor-book-thumb-img {
+        width: 42px !important;
+        height: 60px !important;
+        object-fit: contain;
+        background: #fcfcfd;
+        border: 1px solid #e1e4e8;
+        border-radius: 4px;
+        flex-shrink: 0; /* 테이블이 좁아져도 이미지가 찌그러지지 않게 방어 */
+    }
 
-/* 수직 중앙 정렬 (JSP에 align-middle 클래스 추가됨) */
-.vendor-order-table td {
-    vertical-align: middle;
-    border-bottom: 1px solid #f1f2f6;
-    padding: 15px 10px;
-}
+    .vendor-book-no-img {
+        width: 42px;
+        height: 60px;
+        background: #f1f2f6;
+        color: #a4b0be;
+        font-size: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        border: 1px dashed #ced6e0;
+        flex-shrink: 0;
+    }
 
-/* 🏷️ 상태 배지 스타일 */
-.badge-status-vendor {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 800;
-    text-align: center;
-}
+    /* 한 줄 유지를 위한 도서 제목 최대 너비 제약 */
+    .vendor-order-book-title {
+        font-weight: 700;
+        color: #0b132b;
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex-grow: 1;
+    }
 
-.status-ready {
-    background: #ffeaa7; /* 준비 중(경고색) */
-    color: #d35400;
-}
+    /* 🏷️ 상태 배지 스타일 */
+    .badge-status-vendor {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 800;
+        text-align: center;
+    }
 
-.status-shipping {
-    background: #81ecec; /* 배송 중(민트색) */
-    color: #00b894;
-}
+    .status-ready {
+        background: #ffeaa7 !important;
+        color: #d35400 !important;
+    }
 
-.status-etc {
-    background: #dfe6e9; /* 기타(회색) */
-    color: #636e72;
-}
+    .status-shipping {
+        background: #81ecec !important;
+        color: #00b894 !important;
+    }
 
-/* 🔘 관제 버튼 스타일 */
-.btn-vendor-action-ship {
-    background: #0b132b; /* 사령부 네이비 */
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
+    .status-etc {
+        background: #dfe6e9 !important;
+        color: #636e72 !important;
+    }
 
-.btn-vendor-action-ship:hover {
-    background: #5d5fef; /* 코스믹 퍼플로 발광 */
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(93, 95, 239, 0.3);
-}
+    /* 🔘 제어 버튼 스타일 */
+    .btn-vendor-action-ship {
+        background: #0b132b !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
 
-.btn-vendor-action-complete {
-    background: #f1f2f6;
-    color: #a4b0be;
-    border: 1px solid #dfe4ea;
-    border-radius: 6px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: not-allowed;
-    white-space: nowrap;
-}
+    .btn-vendor-action-ship:hover {
+        background: #5d5fef !important; /* 마우스 오버 시 코스믹 퍼플 개방 */
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(93, 95, 239, 0.2);
+    }
 
-/* 🚀 주문 테이블 레이아웃 강제 고정 */
-.vendor-order-table {
-    table-layout: fixed; /* 컬럼 너비를 고정하여 레이아웃 붕괴 방지 */
-    width: 100%;
-}
-
-.vendor-order-book-title {
-    display: inline-block;
-    white-space: nowrap;      /* 줄바꿈 금지 */
-    overflow: hidden;         /* 넘치는 영역 숨김 */
-    text-overflow: ellipsis;  /* 말줄임표(...) 표시 */
-    font-size: 14px;
-    font-weight: 600;
-}
-
-/* 이미지 깨짐 방지 */
-.vendor-order-book-item img {
-    flex-shrink: 0; /* 이미지가 찌그러지지 않게 고정 */
-}
+    .btn-vendor-action-complete {
+        background: #f1f2f6 !important;
+        color: #a4b0be !important;
+        border: 1px solid #dfe4ea !important;
+        border-radius: 6px !important;
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        cursor: not-allowed;
+    }
 
 /* ==========================================================================
    🪐 Market Shop.jsp 전용 추가 CSS (List.jsp 기반 확장형)
@@ -2859,6 +2848,26 @@ body {
     gap: 30px; /* 카드가 넓어지니 간격도 살짝 넓힘 */
     width: 100%;
 }
+
+/* 💥 [추가] 테이블 양쪽 끝 벽면 충돌 방지용 안전 여백 (가장 중요!) */
+    .vendor-order-table th:first-child,
+    .vendor-order-table td:first-child {
+        padding-left: 24px !important; /* 좌측 주문번호 쪽 숨통 */
+    }
+
+    .vendor-order-table th:last-child,
+    .vendor-order-table td:last-child {
+        padding-right: 24px !important; /* 우측 관제 제어 버튼 쪽 숨통 */
+    }
+
+    /* 📊 철벽 보안 컬럼 비율 미세 조정 (제어 버튼 영역 확장 / 합계 100%) */
+    .th-order-num     { width: 10%; }
+    .th-book-info     { width: 36%; } /* 버튼 공간을 위해 살짝 양보 (38% -> 36%) */
+    .th-order-qty     { width: 10%; }
+    .th-total-price   { width: 14%; }
+    .th-order-date    { width: 14%; }
+    .th-order-status  { width: 11%; } /* 상태 배지 공간 최적화 (14% -> 11%) */
+    .th-order-control { width: 15%; } /*
 
 /* ==========================================================================
    🪐 Vendor Product Register.jsp 전용 - 신규 판매 상품 마켓 론칭 폼 (딥 클리닝)

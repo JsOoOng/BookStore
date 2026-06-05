@@ -5,11 +5,10 @@
 <%-- 🪐 대시보드와 완벽하게 동일한 와이드 컨테이너 장착 --%>
 <div class="admin-wide-container vendor-dashboard-container mt-4 mb-5">
     
-    <%-- 🚀 상단 파트너십 관제탑 타이틀 라인 --%>
+    <%-- 🚀 상단 타이틀 라인 --%>
     <div class="vendor-dashboard-header">
         <div class="header-title-group">
             <h2 class="vendor-main-title">🛰️ Partner Dashboard</h2>
-            <%-- 💥 세션 메모리에서 업체명 직접 호출! --%>
             <p class="vendor-sub-desc">업체명: <span class="text-white fw-bold">${sessionScope.loginVendor.bizName}</span> | 오픈마켓 물류 관제소</p>
         </div>
         <div class="header-action-group">
@@ -19,10 +18,10 @@
         </div>
     </div>
 
-    <%-- 📊 메인 그리드 레이아웃 --%>
+    <%-- 📊 메인 레이아웃 --%>
     <div class="row g-4 vendor-grid-row">
         
-        <%-- 🏢 좌측: 파트너 기지 정보 마스터 카드 --%>
+        <%-- 🏢 좌측 기지 카드 --%>
         <div class="col-xl-3 col-lg-4">
             <div class="card cosmic-vendor-info-card h-100">
                 <div class="card-header info-card-header">
@@ -53,15 +52,13 @@
             </div>
         </div>
 
-        <%-- 📦 우측: 주문 배송 관제탑 메인 보드 --%>
+        <%-- 📦 우측 메인 보드 --%>
         <div class="col-xl-9 col-lg-8">
             <div class="card cosmic-vendor-main-card h-100">
                 
-                <%-- 헤더 컨트롤러 액션 바인딩 구역 --%>
                 <div class="card-header main-card-header">
                     <span class="main-card-title">🚚 입점 파트너 주문 배송 관제탑</span>
                     <div class="main-card-actions">
-                        <%-- 🔙 다시 메인 상품 관리(dashboard)로 돌아가는 탭 버튼 --%>
                         <a href="${pageContext.request.contextPath}/vendor/dashboard" class="btn-vendor-sub">
                             🔙 상품 관리 대시보드
                         </a>
@@ -84,78 +81,79 @@
                             </thead>
                             <tbody>
                                 <c:choose>
-                                    <%-- 들어온 주문이 있을 때 --%>
                                     <c:when test="${not empty orderList}">
                                         <c:forEach var="order" items="${orderList}">
                                             <tr class="vendor-order-row">
                                                 <td class="td-order-num"># ${order.id}</td>
-                                                <td class="td-book-info" style="vertical-align: middle;">
-												    <div class="vendor-order-book-item" style="display: flex; align-items: center; gap: 10px; white-space: nowrap;">
-												        <c:choose>
-												            <c:when test="${not empty order.image}">
-												                <%-- 🚀 이미지 경로 결합 및 엑스박스 방어 코드 --%>
-												                <img src="${pageContext.request.contextPath}${order.image}" 
-												                     alt="${order.title}" 
-												                     style="width: 40px; height: 60px; object-fit: cover; border-radius: 4px;"
-												                     onerror="this.src='https://via.placeholder.com/40x60?text=No+Img';">
-												            </c:when>
-												            <c:otherwise>
-												                <div style="width: 40px; height: 60px; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #999;">No Image</div>
-												            </c:otherwise>
-												        </c:choose>
-												        <%-- 💥 제목이 길어도 넘치지 않게 말줄임표 처리 --%>
-												        <span class="vendor-order-book-title" style="overflow: hidden; text-overflow: ellipsis; max-width: 250px;">
-												            ${order.title}
-												        </span>
+                                                <td class="td-book-info">
+                                                    <div class="vendor-order-book-item">
+                                                        <c:choose>
+                                                            <c:when test="${not empty order.image}">
+                                                                <%-- 📡 [하이브리드 스마트 바인더] 네이버 절대경로와 로컬경로 교차 판별 검문소 --%>
+                                                                <img src="${order.image.startsWith('http') ? order.image : pageContext.request.contextPath.concat(order.image)}" 
+                                                                     alt="${order.title}" 
+                                                                     class="vendor-book-thumb-img" 
+                                                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/50x75?text=No+Cover';">
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <div class="vendor-book-no-img">No Cover</div>
+                                                            </c:otherwise>
+                                                        </c:choose> 
+                                                        <span class="vendor-order-book-title" title="${order.title}">
+                                                            ${order.title}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td class="td-order-qty">${order.quantity} 권</td>
+                                                <td class="td-total-price text-end">
+                                                    <fmt:formatNumber value="${order.totalPrice}" pattern="#,###"/> 원
+                                                </td>
+                                                <td class="td-order-date">
+												    <div style="line-height: 1.4;">
+												        <div style="font-weight: 600; color: #2f3542;">
+												            <fmt:formatDate value="${order.purchaseDate}" pattern="yyyy-MM-dd"/>
+												        </div>
+												        <div style="font-size: 11px; color: #7f8c8d;">
+												            <fmt:formatDate value="${order.purchaseDate}" pattern="HH:mm"/>
+												        </div>
 												    </div>
 												</td>
-												<td class="td-order-qty align-middle">${order.quantity} 권</td>
-												<td class="td-total-price text-end align-middle">
-												    <fmt:formatNumber value="${order.totalPrice}" pattern="#,###"/> 원
-												</td>
-												<td class="td-order-date align-middle">
-												    <fmt:formatDate value="${order.purchaseDate}" pattern="yyyy-MM-dd HH:mm"/>
-												</td>
-												<td class="td-order-status align-middle">
-												    <c:choose>
-												        <%-- 💥 2. 상태 코드 검문소 'READY'로 교체! --%>
-												        <c:when test="${order.status eq 'READY'}">
-												            <span class="badge-status-vendor status-ready">🚀 배송대기</span>
-												        </c:when>
-												        <c:when test="${order.status eq 'SHIPPING'}">
-												            <span class="badge-status-vendor status-shipping">🌌 배송중</span>
-												        </c:when>
-												        <c:otherwise>
-												            <span class="badge-status-vendor status-etc">${order.status}</span>
-												        </c:otherwise>
-												    </c:choose>
-												</td>
-												<td class="td-order-control align-middle">
-												    <c:choose>
-												        <%-- 💥 3. 상태 코드 검문소 'READY'로 교체하여 배송 버튼 봉인 해제! --%>
-												        <c:when test="${order.status eq 'READY'}">
-												            <button type="button" class="btn-vendor-action-ship" onclick="shipOrder('${order.id}')">
-												                🚚 배송하기
-												            </button>
-												        </c:when>
-												        <c:otherwise>
-												            <button type="button" class="btn-vendor-action-complete" disabled>
-												                완료됨
-												            </button>
-												        </c:otherwise>
-												    </c:choose>
-												</td>
+                                                <td class="td-order-status">
+                                                    <c:choose>
+                                                        <c:when test="${order.status eq 'READY'}">
+                                                            <span class="badge-status-vendor status-ready">🚀 배송대기</span>
+                                                        </c:when>
+                                                        <c:when test="${order.status eq 'SHIPPING'}">
+                                                            <span class="badge-status-vendor status-shipping">🌌 배송중</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge-status-vendor status-etc">${order.status}</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td class="td-order-control">
+                                                    <c:choose>
+                                                        <c:when test="${order.status eq 'READY'}">
+                                                            <button type="button" class="btn-vendor-action-ship" onclick="shipOrder('${order.id}')">
+                                                                🚚 배송하기
+                                                            </button>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <button type="button" class="btn-vendor-action-complete" disabled>
+                                                                완료됨
+                                                            </button>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
                                             </tr>
                                         </c:forEach>
                                     </c:when>
-                                    
-                                    <%-- 들어온 주문이 하나도 없을 때 --%>
                                     <c:otherwise>
                                         <tr>
                                             <td colspan="7" class="td-empty-state">
                                                 <div class="cosmic-empty-state py-5">
                                                     <div class="empty-icon-large" style="color: #a4b0be;">📡</div>
-                                                    <h4 class="empty-title" style="color: #7f8c8d;">인입된 도서 주문 내역이 존재하지 않습니다.</h4>
+                                                    <h4 class="empty-title">인입된 도서 주문 내역이 존재하지 않습니다.</h4>
                                                 </div>
                                             </td>
                                         </tr>
@@ -201,7 +199,7 @@ function shipOrder(purchaseId) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 🔥 [하얀 박스 가두리 격파 치트키] 페이지 로드 시 상위 부모 레이아웃의 max-width 강제 해제
+    // 🔥 [하얀 박스 가두리 격파 치트키] 페이지 로드 시 상위 부모 레이아웃의 max-width 강제 해제 및 확장
     var wideContainer = document.querySelector('.admin-wide-container');
     if (wideContainer) {
         var parent = wideContainer.parentElement;
@@ -209,8 +207,10 @@ document.addEventListener("DOMContentLoaded", function() {
             parent.style.maxWidth = '100%';
             parent.style.width = '100%';
             if(parent.classList.contains('form-container') || parent.className.includes('container')) {
-                parent.style.maxWidth = '1400px'; 
+                // 💥 [격파 포인트] 기존 1400px ➔ 1650px 로 대폭 확장! (모니터에 꽉 차게 하려면 '95%' 로 입력해도 된다)
+                parent.style.maxWidth = '1650px'; 
                 parent.style.margin = '0 auto';
+                parent.style.padding = '0 20px'; /* 너무 벽에 붙지 않도록 양옆 안전 여백 추가 */
             }
             parent = parent.parentElement;
         }
