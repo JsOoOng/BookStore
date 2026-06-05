@@ -1,66 +1,69 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<div class="form-container" style="max-width: 500px; margin-top: 50px;">
-    
-    <%-- 🌌 파트너 전용 코스믹 헤더 로고 (일반 대원과 아이덴티티 통일) --%>
-    <div class="text-center mb-5">
-        <h1 style="font-size: 3rem;">🏢</h1>
-        <h2 class="fw-bold" style="color: #17a2b8;">Cosmic Partner</h2>
-        <p class="text-muted">오픈마켓 공급 파트너사로 신청하여 물류 유통 임무를 조율하세요.</p>
-    </div>
-
-    <form id="vendorJoinForm" action="${pageContext.request.contextPath}/vendor/join" method="POST">
+<%-- 일반 대원 폼과 동일한 와이드 컨테이너 적용 --%>
+<div class="admin-wide-container mt-5 mb-5">
+    <div class="cosmic-form-wrapper cosmic-join-wrapper mx-auto">
         
-        <%-- 🛸 1. 파트너 식별 ID 구역 --%>
-        <div class="input-group-cosmic">
-            <label for="vendorId" style="color: #17a2b8 !important;">파트너 식별 ID</label>
-            <div class="d-flex gap-2">
-                <input type="text" id="vendorId" name="vendorId" placeholder="사용할 파트너 ID를 입력하세요" required autocomplete="off">
-                <button type="button" id="btnCheckId" class="btn btn-outline-info rounded-pill" style="min-width: 110px; font-weight: bold;">중복 확인</button>
+        <%-- 🌌 헤더 타이틀 구역 (파트너 아이콘 및 테크 시안 적용) --%>
+        <div class="cosmic-title-section text-center mb-5 border-0">
+            <span class="cosmic-logo-icon">🏢</span>
+            <h2 class="cosmic-main-title vendor-main-title">Cosmic Partner</h2>
+            <p class="cosmic-subtitle-text">오픈마켓 공급 파트너사로 신청하여 물류 유통 임무를 조율하세요.</p>
+        </div>
+
+        <form id="vendorJoinForm" action="${pageContext.request.contextPath}/vendor/join" method="POST">
+            
+            <%-- 🛸 1. 파트너 식별 ID 구역 (일반 대원의 중복확인 레이아웃 동일 적용) --%>
+            <div class="input-group-cosmic vendor-input-group">
+                <label for="vendorId">파트너 식별 ID</label>
+                <div class="cosmic-id-check-row">
+                    <input type="text" id="vendorId" name="vendorId" placeholder="사용할 파트너 ID를 입력하세요" required autocomplete="off">
+                    <button type="button" id="btnCheckId" class="btn-cosmic-inline btn-vendor-check-inline">중복 확인</button>
+                </div>
+                <small id="idCheckResult" class="form-msg-text msg-ready">아이디 중복 확인이 필요합니다.</small>
             </div>
-            <small id="idCheckResult" class="mt-2 d-block" style="font-weight: bold; color: #747d8c;">아이디 중복 확인이 필요합니다.</small>
-        </div>
 
-        <%-- 🔒 2. 물류 보안 코드 (PW) 구역 --%>
-        <div class="input-group-cosmic">
-            <label for="vendorPw" style="color: #17a2b8 !important;">물류 암호 보안 코드 (PW)</label>
-            <input type="password" id="vendorPw" name="vendorPw" placeholder="안전한 비밀번호를 입력하세요" required>
-        </div>
+            <%-- 🔒 2. 물류 보안 코드 (PW) 구역 --%>
+            <div class="input-group-cosmic vendor-input-group">
+                <label for="vendorPw">물류 암호 보안 코드 (PW)</label>
+                <input type="password" id="vendorPw" name="vendorPw" placeholder="안전한 비밀번호를 입력하세요" required>
+            </div>
 
-        <%-- 🏢 3. 상호명 / 업체명 구역 --%>
-        <div class="input-group-cosmic">
-            <label for="bizName" style="color: #17a2b8 !important;">상호명 (업체명)</label>
-            <input type="text" id="bizName" name="bizName" placeholder="예: 은하서점, 우주출판사" required>
-        </div>
+            <%-- 🏢 3. 상호명 / 업체명 구역 --%>
+            <div class="input-group-cosmic vendor-input-group">
+                <label for="bizName">상호명 (업체명)</label>
+                <input type="text" id="bizName" name="bizName" placeholder="예: 은하서점, 우주출판사" required>
+            </div>
 
-        <%-- 📜 4. 사업자 등록 번호 구역 --%>
-        <div class="input-group-cosmic">
-            <label for="bizNo" style="color: #17a2b8 !important;">사업자 등록 번호</label>
-            <input type="text" id="bizNo" name="bizNo" placeholder="000-00-00000" required>
-        </div>
+            <%-- 📜 4. 사업자 등록 번호 구역 --%>
+            <div class="input-group-cosmic vendor-input-group">
+                <label for="bizNo">사업자 등록 번호</label>
+                <input type="text" id="bizNo" name="bizNo" placeholder="000-00-00000" required>
+            </div>
 
-        <%-- 📞 5. 대표 연락처 구역 --%>
-        <div class="input-group-cosmic">
-            <label for="contact" style="color: #17a2b8 !important;">대표 연락처</label>
-            <input type="text" id="contact" name="contact" placeholder="예: 02-1234-5678" required>
-        </div>
+            <%-- 📞 5. 대표 연락처 구역 --%>
+            <div class="input-group-cosmic vendor-input-group">
+                <label for="contact">대표 연락처</label>
+                <input type="text" id="contact" name="contact" placeholder="예: 02-1234-5678" required>
+            </div>
 
-        <%-- 🚀 등록 버튼 연동 (민트/시안 그라데이션) --%>
-        <div class="mt-4">
-            <button type="submit" id="btnSubmit" class="btn-confirm w-100 shadow-lg" style="background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important;" disabled>
-                파트너십 입점 신청
-            </button>
-        </div>
+            <%-- 🚀 등록 버튼 연동 (일반 대원 버튼 규격에 시안 그라데이션 적용) --%>
+            <div class="form-actions-cosmic mt-4">
+                <button type="submit" id="btnSubmit" class="btn-confirm-cosmic btn-join-submit btn-vendor-submit" disabled>
+                    파트너십 입점 신청
+                </button>
+            </div>
 
-        <%-- 🚪 로그인 복귀 주소 정화 --%>
-        <div class="text-center mt-4">
-            <a href="${pageContext.request.contextPath}/member/login" class="text-muted small">이미 파트너이신가요? 통합 로그인하기</a>
-        </div>
-    </form>
+            <%-- 🚪 로그인 복귀 주소 정화 --%>
+            <div class="login-footer-links text-center mt-4">
+                <a href="${pageContext.request.contextPath}/member/login" class="login-redirect-link text-muted vendor-link-muted">이미 파트너이신가요? 통합 로그인하기</a>
+            </div>
+        </form>
+    </div>
 </div>
 
-<%-- 스크립트 관제 제어 장치 (무결성 연동) --%>
+<%-- 스크립트 관제 제어 장치 (무결성 연동 - 기존 코드 100% 보존) --%>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     var isIdChecked = false; // 중복 체크 통과 여부 스위치

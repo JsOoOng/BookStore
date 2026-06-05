@@ -14,7 +14,7 @@ public class BookDAOH2 implements BookDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // DB 컬럼명과 BookVO 필드명이 일치하면 자동으로 매핑해주는 RowMapper (pubDate, language 자동 처리됨)
+    // 🚀 DB 컬럼명과 BookVO 필드명이 일치하면 자동으로 매핑해주는 만능 RowMapper
     private RowMapper<BookVO> rowMapper = new BeanPropertyRowMapper<>(BookVO.class);
 
     @Override
@@ -31,7 +31,6 @@ public class BookDAOH2 implements BookDAO {
 
     @Override
     public List<BookVO> selectByKeyword(String keyword) {
-        // language 필드도 검색 대상에 포함하여 확장 가능
         String sql = "SELECT * FROM BOOK WHERE title LIKE ? OR writer LIKE ? OR genre LIKE ? OR publisher LIKE ? OR language LIKE ? ORDER BY id DESC";
         String search = "%" + keyword + "%";
         return jdbcTemplate.query(sql, rowMapper, search, search, search, search, search);
@@ -39,21 +38,19 @@ public class BookDAOH2 implements BookDAO {
 
     @Override
     public List<BookVO> selectRecent(int count) {
-        // 기존 regDate 컬럼이 없으므로, Auto Increment 되는 id 역순을 기준으로 가장 최근 데이터를 추출
         String sql = "SELECT * FROM BOOK ORDER BY id DESC LIMIT ?";
         return jdbcTemplate.query(sql, rowMapper, count);
     }
 
     @Override
     public int insert(BookVO book) {
-        // price, content, regDate 제거 / pubDate, language 추가
         String sql = "INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql, 
                                    book.getTitle(), 
                                    book.getWriter(), 
                                    book.getPublisher(), 
-                                   book.getPubDate(), // java.sql.Date 매핑
+                                   book.getPubDate(), 
                                    book.getGenre(), 
                                    book.getLanguage(), 
                                    book.getIsbn(), 
@@ -62,7 +59,6 @@ public class BookDAOH2 implements BookDAO {
 
     @Override
     public int update(BookVO book) {
-        // price, content 제거 / pubDate, language 수정 가능하도록 반영
         String sql = "UPDATE BOOK SET title=?, writer=?, publisher=?, pubDate=?, genre=?, language=?, isbn=?, image=? " +
                      "WHERE id=?";
         return jdbcTemplate.update(sql, 
@@ -114,28 +110,14 @@ public class BookDAOH2 implements BookDAO {
         return jdbcTemplate.queryForObject(sql, Integer.class, search, search, search, search, search);
     }
 
+    // 💥 [수정 완료] 수동 매핑의 잔재를 지우고 rowMapper로 일괄 통합!
     @Override
     public BookVO findById(int id) {
-        String sql = "SELECT * FROM book WHERE id = ?";
-
-        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-            BookVO book = new BookVO();
-
-            book.setId(rs.getInt("id"));
-            book.setTitle(rs.getString("title"));
-            book.setWriter(rs.getString("writer"));
-            book.setPublisher(rs.getString("publisher"));
-            book.setPubDate(rs.getDate("pubDate")); // rs.getDate() 사용
-            book.setGenre(rs.getString("genre"));
-            book.setLanguage(rs.getString("language")); // 신규 컬럼 매핑
-            book.setIsbn(rs.getString("isbn"));
-            book.setImage(rs.getString("image"));
-            // 사라진 price, content, regDate 세터 제거
-
-            return book;
-        }, id);
+        String sql = "SELECT * FROM BOOK WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql, rowMapper, id);
     }
     
+    // 무작위 추천 도서 추출 (상세 페이지 하단용)
     @Override
     public List<BookVO> selectRandom(int count, int excludeId) {
         String sql = "SELECT * FROM BOOK WHERE id != ? ORDER BY RAND() LIMIT ?";

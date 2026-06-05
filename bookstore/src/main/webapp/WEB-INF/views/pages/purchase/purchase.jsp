@@ -20,14 +20,16 @@
                 <c:forEach var="book" items="${purchaseList}">
                     <div class="purchase-item-card">
                         <div class="purchase-cover-wrap">
-                            <img src="${pageContext.request.contextPath}${book.image}" alt="${book.title}" class="purchase-img">
+                            <img src="${book.image}" alt="${book.title}" class="purchase-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/150x220?text=No+Img';">
                         </div>
 
                         <div class="purchase-info">
                             <div class="purchase-badge-row">
-                                <span class="purchase-badge">🚀 전송 대기 중</span>
-                                <span class="purchase-badge">${book.genre}</span>
-                            </div>
+							    <span class="purchase-badge">🚀 전송 대기 중</span>
+							    <c:if test="${not empty book.genre}">
+							        <span class="purchase-badge">${book.genre}</span>
+							    </c:if>
+							</div>
 
                             <h3 class="item-title">${book.title}</h3>
 

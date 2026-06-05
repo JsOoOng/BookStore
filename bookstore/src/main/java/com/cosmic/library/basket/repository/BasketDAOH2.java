@@ -215,4 +215,36 @@ public class BasketDAOH2 implements BasketDAO {
         String sql = "UPDATE basket SET qty = ? WHERE basket_id = ? AND user_reg_num = ?";
         return jdbcTemplate.update(sql, qty, basketId, userRegNum);
     }
+    
+ // ==============================================================
+    // 🚀 [추가] 장바구니 수량 변경 전 재고 검증용 단일 품목 스캔
+    // ==============================================================
+    @Override
+    public BasketVO findById(int basketId) {
+        String sql = "SELECT * FROM basket WHERE basket_id = ?";
+        
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+                BasketVO basket = new BasketVO();
+                
+                basket.setBasketId(rs.getInt("basket_id"));
+                basket.setUserRegNum(rs.getInt("user_reg_num"));
+                basket.setBookId(rs.getInt("book_id"));
+                basket.setQuantity(rs.getInt("qty"));
+                
+                // 💥 [NULL 완벽 방어] sale_id가 NULL인 대여 도서도 안전하게 매핑!
+                Object saleIdObj = rs.getObject("sale_id");
+                if (saleIdObj != null) {
+                    basket.setSaleId(((Number) saleIdObj).intValue());
+                } else {
+                    basket.setSaleId(null);
+                }
+                
+                return basket;
+            }, basketId);
+        } catch (Exception e) {
+            System.out.println("🚨 장바구니 품목 추적 실패: " + e.getMessage());
+            return null; // 스캔 실패 시 튕겨내기 위한 안전장치
+        }
+    }
 }

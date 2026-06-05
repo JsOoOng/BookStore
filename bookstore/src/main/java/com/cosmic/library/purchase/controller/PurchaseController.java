@@ -1,8 +1,17 @@
 package com.cosmic.library.purchase.controller;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.http.HttpSession;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +25,6 @@ import com.cosmic.library.basket.service.BasketService;
 import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
 import com.cosmic.library.member.model.MemberVO;
-import com.cosmic.library.purchase.model.Purchase;
 import com.cosmic.library.purchase.service.PurchaseService;
 
 @Controller
@@ -32,12 +40,12 @@ public class PurchaseController {
     @Autowired
     private BasketService basketService;
 
- // 1️⃣ 결제 대기 페이지 (주문서 작성 화면 - 하이브리드 밸런싱 동기화 버전)
+    // 1️⃣ 결제 대기 페이지 (주문서 작성 화면)
     @GetMapping("/view")
     public String purchasePage(
             @RequestParam(required = false) Integer bookId,    
-            @RequestParam(required = false) Integer saleId,  // 🌟 [추가] 어떤 파트너사의 상품인지 식별자 장착
-            @RequestParam(required = false, defaultValue = "0") Integer price, // 🌟 [추가] 마켓 실시간 가격 장착
+            @RequestParam(required = false) Integer saleId,  
+            @RequestParam(required = false, defaultValue = "0") Integer price, 
             @RequestParam(required = false) String basketIds, 
             HttpSession session,
             Model model) {
@@ -46,30 +54,29 @@ public class PurchaseController {
         if (member == null) return "redirect:/member/login";
 
         int userRegNum = member.getUser_reg_num();
-        List<BasketVO> purchaseList = new java.util.ArrayList<>();
+        List<BasketVO> purchaseList = new ArrayList<>();
         int totalPrice = 0;
 
-        // Case 1: 상세페이지에서 [바로 구매]를 누른 경우 (실시간 마켓 가격 완벽 보정)
-        if (bookId != null) {
-            BookVO book = bookService.findBookById(bookId); // (기존 getById 메서드명을 프로젝트 싱크에 맞게 보정)
+        // Case 1: 상세페이지에서 [바로 구매]를 누른 경우
+        if (bookId != null && saleId != null) {
+            BookVO book = bookService.findBookById(bookId); 
             if (book != null) {
                 BasketVO temp = new BasketVO();
                 
                 temp.setBookId(book.getId());
+                temp.setSaleId(saleId); // 💥 [핵심 추가] 재고 차감을 위한 마켓 식별자 장착!
                 temp.setTitle(book.getTitle());
                 temp.setWriter(book.getWriter());
-                temp.setImage(book.getImage());
                 temp.setQuantity(1); 
-                
-                // 🌟 중요: 0원으로 강제 락인되던 임시 변수를 주소창에서 들고 온 진짜 마켓 실시간 단가로 바인딩!
                 temp.setPrice(price); 
-                
                 temp.setGenre(book.getGenre());
                 temp.setPublisher(book.getPublisher());
                 temp.setIsbn(book.getIsbn());
                 
+                temp.setImage(getNaverBookCover(book.getTitle()));
+                
                 purchaseList.add(temp);
-                totalPrice = price; // 총 결제 금액도 실제 마켓 단가로 즉시 동기화!
+                totalPrice = price; 
             }
         }
         // Case 2: 장바구니에서 [선택 구매]를 누른 경우
@@ -81,6 +88,7 @@ public class PurchaseController {
             purchaseList = basketService.getSelectedList(userRegNum, ids);
             
             for (BasketVO vo : purchaseList) {
+                vo.setImage(getNaverBookCover(vo.getTitle()));
                 totalPrice += (vo.getPrice() * vo.getQuantity());
             }
             
@@ -94,53 +102,45 @@ public class PurchaseController {
         return "common/layout";
     }
 
-    // 2️⃣ 결제 승인 처리 (POST)
+    // 2️⃣ 결제 승인 처리 (POST) - 💥 대통합 엔진 가동으로 전면 교체!
     @PostMapping("/buy")
     public String processPurchase(
             @RequestParam(required = false) Integer bookId,    
+            @RequestParam(required = false) Integer saleId,
+            @RequestParam(required = false) Integer price,
             @RequestParam(required = false) String basketIds, 
             HttpSession session) {
         
         MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
         if (loginMember == null) return "redirect:/member/login";
 
-        // 🌟 3차 빌딩 핵심 정수형 식별자 추출
         int userRegNum = loginMember.getUser_reg_num();
+        List<BasketVO> itemsToBuy = new ArrayList<>();
+        int[] basketIdsToRemove = null;
 
-        // 1) 단일 바로 구매 처리
-        if (bookId != null) {
-            Purchase purchase = new Purchase();
-            purchase.setUserRegNum(userRegNum); // 🌟 바뀐 VO 스펙(int) 반영
-            purchase.setBookId(bookId);
-            purchase.setQuantity(1); 
-            purchase.setPrice(0);      // 임시 0원 처리
-            purchase.setTotalPrice(0);
-
-            purchaseService.buy(purchase); 
+        // 1) 단일 바로 구매 데이터 수집
+        if (bookId != null && saleId != null && price != null) {
+            BasketVO singleItem = new BasketVO();
+            singleItem.setBookId(bookId);
+            singleItem.setSaleId(saleId);
+            singleItem.setQuantity(1); 
+            singleItem.setPrice(price);
+            itemsToBuy.add(singleItem);
+        }
+        // 2) 장바구니 선택 구매 데이터 수집
+        else if (basketIds != null && !basketIds.isEmpty()) {
+            String[] arr = basketIds.split(",");
+            basketIdsToRemove = new int[arr.length];
+            for (int i = 0; i < arr.length; i++) {
+                basketIdsToRemove[i] = Integer.parseInt(arr[i]);
+            }
+            // 장바구니 원천 데이터를 통째로 긁어옴
+            itemsToBuy = basketService.getSelectedList(userRegNum, basketIdsToRemove);
         }
 
-        // 2) 장바구니 선택 구매 처리
-        if (basketIds != null && !basketIds.isEmpty()) {
-            String[] arr = basketIds.split(",");
-            int[] ids = new int[arr.length];
-            for (int i = 0; i < arr.length; i++) ids[i] = Integer.parseInt(arr[i]);
-
-            // 🌟 변경: 문자열 ID 대신 userRegNum(int)을 주입해 다시 덤프 수량 추출!
-            List<BasketVO> selectedList = basketService.getSelectedList(userRegNum, ids);
-
-            for (BasketVO item : selectedList) {
-                Purchase purchase = new Purchase();
-                purchase.setUserRegNum(userRegNum); // 🌟 바뀐 VO 스펙(int) 반영
-                purchase.setBookId(item.getBookId());
-                purchase.setQuantity(item.getQuantity()); 
-                purchase.setPrice(item.getPrice());
-                purchase.setTotalPrice(item.getPrice() * item.getQuantity());
-
-                purchaseService.buy(purchase);
-            }
-
-            // 🌟 변경: 구매 완료 후 장바구니 비우기 시 userRegNum(int) 전송!
-            basketService.delete(userRegNum, ids);
+        // 3) 💥 마스터-디테일 대통합 결제 엔진 단일 호출!
+        if (!itemsToBuy.isEmpty()) {
+            purchaseService.executeCheckout(userRegNum, itemsToBuy, basketIdsToRemove);
         }
 
         return "redirect:/purchase/success";
@@ -151,5 +151,51 @@ public class PurchaseController {
     public String showSuccessPage(Model model) {
         model.addAttribute("pageName", "pages/purchase/success");
         return "common/layout"; 
+    }
+    
+    // ==============================================================
+    // 🛰️ [결제 관제탑 전용 레이더] 네이버 실시간 도서 표지 수집 통신 파이프라인
+    // ==============================================================
+    private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
+    private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
+
+    private String getNaverBookCover(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://via.placeholder.com/150x220?text=No+Img";
+        }
+        try {
+            String pureTitle = keyword.split(":")[0].trim();
+            String encodedKeyword = URLEncoder.encode(pureTitle, "UTF-8");
+            
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            URL url = new URL(apiURL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", NAVER_CLIENT_ID);
+            con.setRequestProperty("X-Naver-Client-Secret", NAVER_CLIENT_SECRET);
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200) { 
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONArray items = jsonObject.getJSONArray("items");
+                
+                if (items.length() > 0) {
+                    JSONObject bookItem = items.getJSONObject(0);
+                    return bookItem.getString("image");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("🚨 결제창 네이버 표지 통신 장애: " + e.getMessage());
+        }
+        return "https://via.placeholder.com/150x220?text=No+Img";
     }
 }

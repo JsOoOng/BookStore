@@ -2,6 +2,8 @@ package com.cosmic.library.basket.service;
 
 import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.basket.repository.BasketDAO;
+import com.cosmic.library.vendor.model.ProductSaleVO;
+import com.cosmic.library.vendor.repository.ProductSaleDAO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,9 @@ public class BasketServiceImpl implements BasketService {
 
     @Autowired
     private BasketDAO basketDAO;
+    
+    @Autowired
+    private ProductSaleDAO productSaleDAO;
 
     // 🌟 전면 개편: String memberId ➔ int userRegNum 동기화
 
@@ -58,21 +63,36 @@ public class BasketServiceImpl implements BasketService {
         System.out.println("🛸 장바구니 담기 관제소 작동: userRegNum=" + userRegNum + ", book=" + bookId);
         basketDAO.insert(userRegNum, bookId);
     }
-
-    // 🌟 [오픈마켓용 추가] 인터페이스 실현 및 DAO 호출
+    
     @Override
     public boolean addMarketBasket(int userRegNum, int saleId, int qty) {
+        // 1. 해당 상점 상품의 실시간 재고 스캔
+        ProductSaleVO product = productSaleDAO.findById(saleId);
         
-        // DAO에게 대원 번호(user_reg_num), 마켓 상품 번호(sale_id), 수량을 들고 인서트하라고 명령!
-        // (성공 시 성공한 행의 개수가 1 이상이므로 true 반환하도록 세팅)
+        // 2. 상품이 없거나, 담으려는 수량이 재고보다 크면 즉시 차단!
+        if (product == null || product.getStockQty() < qty) {
+            System.out.println("🚨 [물류 경고] 재고 한도 초과! 담기 거부됨.");
+            return false; 
+        }
+        
         int result = basketDAO.insertMarketBasket(userRegNum, saleId, qty);
-        
         return result > 0;
     }
     
+    // 🌟 장바구니 수량 변경 전 실시간 재고 검증 로직
     @Override
     public boolean updateBasketQty(int basketId, int userRegNum, int qty) {
-        // 하단 3단계에서 추가할 DAO 메서드를 호출해줍니다.
+        // 1. 장바구니 고유 ID로 어떤 상품(saleId)이 담겨 있는지 추적
+        BasketVO basket = basketDAO.findById(basketId); // ⚠️ 주의: BasketDAO에 findById 메서드가 필요함!
+        
+        if (basket != null && basket.getSaleId() != null && basket.getSaleId() > 0) {
+            // 2. 실시간 재고 스캔 후 초과 시 차단!
+            ProductSaleVO product = productSaleDAO.findById(basket.getSaleId());
+            if (product == null || product.getStockQty() < qty) {
+                System.out.println("🚨 [물류 경고] 변경하려는 수량이 실시간 재고를 초과함!");
+                return false;
+            }
+        }
         return basketDAO.updateQty(basketId, userRegNum, qty) > 0;
     }
     

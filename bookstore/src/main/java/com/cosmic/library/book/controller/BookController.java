@@ -180,8 +180,13 @@ public class BookController {
     @GetMapping("/update")
     public String updateForm(@RequestParam("id") int id, Model model) {
         BookVO book = bookService.findBookById(id);
-        model.addAttribute("book", book);
         
+        // 📡 [레이더 포격 추가!] 수정 폼에서도 네이버 실시간 표지를 땡겨오도록 동기화!
+        if (book != null) {
+            book.setImage(getNaverBookCover(book.getIsbn()));
+        }
+        
+        model.addAttribute("book", book);
         model.addAttribute("pageName", "pages/book/update");
         return "common/layout";
     }

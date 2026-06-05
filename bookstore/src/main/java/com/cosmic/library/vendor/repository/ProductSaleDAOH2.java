@@ -120,4 +120,37 @@ public class ProductSaleDAOH2 implements ProductSaleDAO {
         String sql = "DELETE FROM PRODUCT_SALE WHERE sale_id = ?";
         return jdbcTemplate.update(sql, saleId);
     }
+    
+    // 1. 특정 업체의 도서가 이미 입고 테이블에 존재하는지 정밀 스캔
+    @Override
+    public int findStockIdByBookIdAndVendor(int bookId, int vRegNum) {
+        String sql = "SELECT stock_id FROM STOCK_IN WHERE book_id = ? AND v_reg_num = ? LIMIT 1";
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, bookId, vRegNum);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return 0; // 데이터 파편 없음
+        }
+    }
+
+    // 2. 💥 핵심 진압: 모든 NOT NULL 제약조건을 우회하는 대형 삽입 쿼리 및 PK 가로채기
+    @Override
+    public int insertStockIn(int bookId, int vRegNum, int qty, int cost) {
+        String sql = "INSERT INTO STOCK_IN (book_id, v_reg_num, qty, cost) VALUES (?, ?, ?, ?)";
+        
+        org.springframework.jdbc.support.GeneratedKeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        
+        jdbcTemplate.update(connection -> {
+            // 🎯 수정 포인트: RETURN_GENERATED_KEYS 대신 반환받을 컬럼명을 정확히 명시!
+            // 이렇게 하면 H2가 REGDATE를 던지지 않고 오직 STOCK_ID만 반환한다.
+            java.sql.PreparedStatement ps = connection.prepareStatement(sql, new String[] {"STOCK_ID"});
+            ps.setInt(1, bookId);
+            ps.setInt(2, vRegNum);
+            ps.setInt(3, qty);
+            ps.setInt(4, cost);
+            return ps;
+        }, keyHolder);
+        
+        // 🎯 이제 키가 무조건 1개만 반환되므로 기존 코드가 완벽하게 작동한다!
+        return (keyHolder.getKey() != null) ? keyHolder.getKey().intValue() : 0;
+    }
 }

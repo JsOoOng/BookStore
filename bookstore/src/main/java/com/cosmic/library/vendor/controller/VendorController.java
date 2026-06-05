@@ -12,12 +12,22 @@ import com.cosmic.library.vendor.model.ProductSaleVO;
 import com.cosmic.library.vendor.service.VendorService;
 import com.cosmic.library.vendor.service.ProductSaleService;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 @Controller
 @RequestMapping("/vendor")
 public class VendorController {
 
     @Autowired
     private VendorService vendorService;
+    
+    @Autowired
+    private com.cosmic.library.book.repository.BookDAO bookDAO;
 
     @Autowired
     private ProductSaleService productSaleService;
@@ -102,6 +112,11 @@ public class VendorController {
 
         List<ProductSaleVO> myProducts = productSaleService.getProductsByVendor(vRegNum);
         
+        // 📡 [레이더 포격 추가!] 대시보드 리스트에도 도서 제목을 기반으로 네이버 표지 실시간 매핑!
+        for (ProductSaleVO product : myProducts) {
+            product.setImage(getNaverBookCover(product.getTitle()));
+        }
+        
         model.addAttribute("vendorInfo", loginVendor);
         model.addAttribute("productList", myProducts); 
         model.addAttribute("pageName", "pages/vendor/dashboard");
@@ -148,10 +163,24 @@ public class VendorController {
         if (vRegNum == null) {
             return "redirect:/member/login";
         }
+
+        // 1. 해당 업체가 이 책을 이전에 입고(STOCK_IN)한 기록이 있는지 교차 검증 스캔
+        int stockId = productSaleService.findStockIdByBookIdAndVendor(productSale.getBookId(), vRegNum);
         
+        // 2. 💥 데이터 파편이 없다면 즉시 무결성 제약조건 프리패스용 안전 입고 데이터 수동 선행 발사!
+        if (stockId <= 0) {
+            int initialQty = productSale.getStockQty(); // 입력한 초기 재고 수량을 입고 수량으로 인정
+            int calculatedCost = (int)(productSale.getPrice() * 0.7); // 원가는 소비자 판매가의 70% 수준 가상 처리 (또는 0원 처리 가능)
+            
+            // 입고 기지 가동 및 자동 발급된 진짜 식별 키(stockId) 가로채기
+            stockId = productSaleService.insertStockIn(productSale.getBookId(), vRegNum, initialQty, calculatedCost);
+        }
+        
+        // 3. 확보된 진짜 무결성 보증 수표(stockId)와 업체 일련번호를 전술 인코딩
         productSale.setVRegNum(vRegNum);
-        productSale.setStockId(1); // 가상 stock_id 임시 바인딩 유지
+        productSale.setStockId(stockId);
         
+        // 4. 대통합 실시간 상점 매대 등록 개시
         boolean isSuccess = productSaleService.registerProduct(productSale);
         if (isSuccess) {
             return "redirect:/vendor/dashboard?regSuccess=true";
@@ -166,6 +195,12 @@ public class VendorController {
     @GetMapping("/shop")
     public String consumerShop(Model model) {
         List<ProductSaleVO> marketProducts = productSaleService.getAllMarketProducts();
+        
+        // 📡 [레이더 포격 추가!] 상점 리스트에도 도서 제목을 기반으로 네이버 표지 실시간 매핑!
+        for (ProductSaleVO product : marketProducts) {
+            product.setImage(getNaverBookCover(product.getTitle()));
+        }
+        
         model.addAttribute("marketProducts", marketProducts);
         model.addAttribute("pageName", "pages/vendor/market_shop"); 
         return "common/layout";
@@ -201,5 +236,76 @@ public class VendorController {
             return "redirect:/vendor/dashboard?updateSuccess=true";
         }
         return "redirect:/vendor/dashboard?error=updateFail";
+    }
+    
+    /**
+     * 🔍 13. 모달 창 전용 원천 도서 실시간 비동기 검색 API (JSON 반환)
+     */
+    @ResponseBody
+    @GetMapping("/product/searchBook")
+    public List<com.cosmic.library.book.model.BookVO> searchBookApi(@RequestParam("keyword") String keyword) {
+        
+        // 1. DB에서 키워드로 원천 도서 스캔
+        List<com.cosmic.library.book.model.BookVO> searchResult = bookDAO.selectByKeyword(keyword);
+        
+        // 2. 📡 [레이더 포격] 스캔된 결과 리스트에 네이버 실시간 표지를 싹 다 매핑한다!
+        for (com.cosmic.library.book.model.BookVO book : searchResult) {
+            book.setImage(getNaverBookCover(book.getIsbn()));
+        }
+        
+        return searchResult;
+    }
+    
+    // 🪐 [네이버 발급 토큰 장착] 
+    private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
+    private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
+
+    // ==============================================================
+    // 🛰️ [모달/상점 통합 레이더] 네이버 실시간 도서 표지 수집 통신 파이프라인
+    // ==============================================================
+    private String getNaverBookCover(String keyword) {
+        // 1. 키워드가 없으면 즉시 안전한 외부 디폴트 이미지 반환
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://via.placeholder.com/100x140?text=No+Image";
+        }
+        
+        try {
+            // 💥 정밀 타격: "검은 사슴 :한강 장편소설" -> "검은 사슴" (콜론 앞의 순수 제목만 추출!)
+            String pureTitle = keyword.split(":")[0].trim();
+            
+            String encodedKeyword = java.net.URLEncoder.encode(pureTitle, "UTF-8");
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            
+            URL url = new URL(apiURL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", NAVER_CLIENT_ID);
+            con.setRequestProperty("X-Naver-Client-Secret", NAVER_CLIENT_SECRET);
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200) { 
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONArray items = jsonObject.getJSONArray("items");
+                
+                if (items.length() > 0) {
+                    JSONObject bookItem = items.getJSONObject(0);
+                    return bookItem.getString("image"); // 성공 시 네이버 표지 URL 반환
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("🚨 네이버 표지 레이더 통신 장애: " + e.getMessage());
+        }
+        
+        // 2. 검색 결과가 0건이거나 통신 에러 시 안전한 외부 디폴트 이미지 반환
+        return "https://via.placeholder.com/100x140?text=No+Image";
     }
 }

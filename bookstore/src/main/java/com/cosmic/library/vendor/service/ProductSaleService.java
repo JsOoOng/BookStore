@@ -22,4 +22,8 @@ public interface ProductSaleService {
     
     // 6. 마켓에서 상품 완전 삭제
     boolean removeProduct(int saleId);
+    
+    // 🛰️ 관제 통신망 추가
+    int findStockIdByBookIdAndVendor(int bookId, int vRegNum);
+    int insertStockIn(int bookId, int vRegNum, int qty, int cost);
 }

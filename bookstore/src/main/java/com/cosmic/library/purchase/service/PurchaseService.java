@@ -4,13 +4,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // 🌟 트랜잭션 추가
+import org.springframework.transaction.annotation.Transactional;
 
-import com.cosmic.library.basket.repository.BasketDAOH2;
-import com.cosmic.library.book.model.BookVO;
-import com.cosmic.library.book.service.BookService;
+import com.cosmic.library.basket.model.BasketVO;
+import com.cosmic.library.basket.service.BasketService;
 import com.cosmic.library.purchase.model.Purchase;
 import com.cosmic.library.purchase.repository.PurchaseRepository;
+import com.cosmic.library.vendor.model.ProductSaleVO;
+import com.cosmic.library.vendor.repository.ProductSaleDAO;
 
 @Service
 public class PurchaseService {
@@ -19,72 +20,70 @@ public class PurchaseService {
     private PurchaseRepository purchaseRepository;
 
     @Autowired
-    private BookService bookService;
+    private ProductSaleDAO productSaleDAO; // 재고 스캔 및 차감 레이더
 
     @Autowired
-    private BasketDAOH2 basketRepository;
+    private BasketService basketService; // 장바구니 멸균 처리기
 
-    // 1. 기존 컨트롤러 연동용 기본 저장
-    public void buy(Purchase purchase) {
-        purchaseRepository.save(purchase);
-    }
-
-    // 2. 단일 구매 사령탑
-    @Transactional // 🌟 결제 기록 저장 중 터지면 전체 롤백 안전장치
-    public void buySingle(int userRegNum, int bookId) { // String memberId ➔ int userRegNum
-        BookVO book = bookService.getById(bookId);
-
-        Purchase p = new Purchase();
-        p.setUserRegNum(userRegNum); // 🌟 바뀐 VO 스펙(int) 반영
-        p.setBookId(bookId);
+    // =========================================================================
+    // 🚀 [대통합 결제 엔진] 마스터-디테일 생성 + 재고 차감 + 장바구니 비우기
+    // =========================================================================
+    @Transactional // 단 하나의 에러라도 발생하면 100% 원상복구(Rollback) 시키는 절대 방어막!
+    public void executeCheckout(int userRegNum, List<BasketVO> itemsToBuy, int[] basketIdsToRemove) {
         
-        // 🌟 중요: 원천 book 테이블에 price가 제거되었으므로, 
-        // 3단계 오픈마켓(PRODUCT_SALE) 테이블과 조인하기 전까지 에러 방지용 임시 0원 패치
-        p.setPrice(0);
-        p.setQuantity(1);
-        p.setTotalPrice(0);
+        // 1. 장바구니 리스트를 스캔하여 총 결제 금액(total_price) 산출
+        int grandTotal = 0;
+        for (BasketVO item : itemsToBuy) {
+            grandTotal += (item.getPrice() * item.getQuantity());
+        }
 
-        purchaseRepository.save(p);
-    }
+        // 2. 마스터(PURCHASE) 테이블에 '영수증 헤더' 발급 및 번호 가로채기
+        int purchaseId = purchaseRepository.insertMaster(userRegNum, grandTotal);
+        if (purchaseId <= 0) throw new RuntimeException("🚨 마스터 영수증 발급 실패!");
 
-    // 3. 장바구니 품목 선택 구매 (다중 처리)
-    @Transactional // 🌟 하나라도 구매 및 장바구니 삭제 실패 시 전부 원상복구
-    public void buyFromBusket(int userRegNum, String bookIds) { // String memberId ➔ int userRegNum
-        String[] ids = bookIds.split(",");
-
-        for (String id : ids) {
-            int bookId = Integer.parseInt(id.trim());
-            BookVO book = bookService.getById(bookId);
-
-            Purchase p = new Purchase();
-            p.setUserRegNum(userRegNum); // 🌟 바뀐 VO 스펙(int) 반영
-            p.setBookId(bookId);
+        // 3. 구매한 품목들을 순회하며 '세부 품목(DETAIL)' 기록 및 재고 차감
+        for (BasketVO item : itemsToBuy) {
+            // 해당 마켓 상품의 파트너사 정보(v_reg_num)를 스캔
+            ProductSaleVO saleInfo = productSaleDAO.findById(item.getSaleId());
+            if (saleInfo == null) throw new RuntimeException("🚨 마켓 상품 데이터 소실!");
             
-            // 🌟 에러 방지용 임시 0원 패치 (차후 PRODUCT_SALE과 연동 예정)
-            p.setPrice(0);
-            p.setQuantity(1);
-            p.setTotalPrice(0);
+            // 디테일 기록 저장
+            purchaseRepository.insertDetail(
+                purchaseId, 
+                item.getSaleId(), 
+                saleInfo.getVRegNum(), 
+                item.getQuantity(), 
+                item.getPrice()
+            );
 
-            purchaseRepository.save(p);
+            // 💥 구매한 수량만큼 마켓의 실시간 창고 재고 자동 차감!
+            productSaleDAO.updateStock(item.getSaleId(), -item.getQuantity());
+        }
 
-            // 🌟 앞서 리팩토링한 장바구니 삭제 매개변수 규격(int)에 맞춰 완벽하게 동기화!
-            basketRepository.delete(userRegNum, bookId);
+        // 4. 결제가 무사히 끝났다면, 장바구니에 담겨있던 흔적을 완전히 소각!
+        if (basketIdsToRemove != null && basketIdsToRemove.length > 0) {
+            basketService.delete(userRegNum, basketIdsToRemove);
         }
     }
-    
-    // 4. 대원별 탐사(구매) 기록 호출
-    public List<Purchase> getMyPurchases(int userRegNum) { // String memberId ➔ int userRegNum
+
+    // =========================================================================
+    // 📜 대원별 마이페이지 탐사(구매) 기록 호출
+    // =========================================================================
+    public List<Purchase> getMyPurchases(int userRegNum) {
         return purchaseRepository.findByMemberId(userRegNum);
     }
     
- // 🪐 [추가] 판매자별 주문서 긁어오기
+    // =========================================================================
+    // 🏢 파트너 대시보드용 주문서 스캔
+    // =========================================================================
     public List<Purchase> getVendorOrders(int vendorRegNum) {
         return purchaseRepository.findByVendorRegNum(vendorRegNum);
     }
 
-    // 🪐 [추가] 배송 시작 처리 
+    // =========================================================================
+    // 🚚 [배송하기] 파트너사 배송 상태 워프 엔진 (READY ➔ SHIPPING)
+    // =========================================================================
     public boolean startShipping(int purchaseId) {
-        // 상태값을 'SHIPPING'(배송 중)으로 변경하도록 지시!
         return purchaseRepository.updateStatus(purchaseId, "SHIPPING") > 0;
     }
 }

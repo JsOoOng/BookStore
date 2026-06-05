@@ -1,77 +1,91 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<div class="form-container" style="max-width: 500px; margin-top: 50px;">
-    <div class="text-center mb-5">
-        <h1 style="font-size: 3rem;">🛠️</h1>
-        <h2 class="fw-bold" style="color: #5d5fef;">Profile Sync</h2>
-        <p class="text-muted">대원님의 식별 정보 및 보안 코드를 업데이트합니다.</p>
-    </div>
-
-    <c:if test="${param.error == 'pw_mismatch'}">
-        <div class="alert alert-danger border-0 mb-4 text-center" style="border-radius: 15px;">
-            ⚠️ 현재 보안 코드가 일치하지 않습니다. 본인 확인에 실패했습니다.
-        </div>
-    </c:if>
-
-    <form action="${pageContext.request.contextPath}/member/edit" method="POST" onsubmit="return validateEditForm()">
-        <div class="input-group-cosmic">
-            <label>대원 식별 ID (고정)</label>
-            <input type="text" name="id" value="${loginMember.id}" readonly 
-                   style="background: rgba(0,0,0,0.05); cursor: not-allowed; color: #777;">
+<div class="admin-wide-container mt-5 mb-5">
+    <div class="cosmic-form-wrapper cosmic-edit-wrapper mx-auto">
+        
+        <%-- 🌌 헤더 타이틀 구역 --%>
+        <div class="cosmic-title-section text-center mb-5 border-0">
+            <span class="cosmic-logo-icon">🛠️</span>
+            <h2 class="cosmic-main-title text-primary-cosmic">Profile Sync</h2>
+            <p class="cosmic-subtitle-text">대원님의 식별 정보 및 보안 코드를 업데이트합니다.</p>
         </div>
 
-        <div class="input-group-cosmic">
-            <label for="name">대원 성명</label>
-            <input type="text" id="name" name="name" value="${loginMember.name}" required placeholder="수정할 성명을 입력하세요">
+        <%-- 🚨 보안 코드 불일치 경고 배너 --%>
+        <c:if test="${param.error == 'pw_mismatch'}">
+            <div class="cosmic-alert-banner alert-danger-cosmic mb-4 text-center">
+                ⚠️ 현재 보안 코드가 일치하지 않습니다. 본인 확인에 실패했습니다.
+            </div>
+        </c:if>
+
+        <form action="${pageContext.request.contextPath}/member/edit" method="POST" onsubmit="return validateEditForm()">
+            
+            <%-- 대원 식별 ID (고정/읽기 전용) --%>
+            <div class="input-group-cosmic">
+                <label>대원 식별 ID (고정)</label>
+                <input type="text" name="id" value="${loginMember.id}" readonly class="cosmic-readonly-input">
+            </div>
+
+            <%-- 대원 성명 --%>
+            <div class="input-group-cosmic">
+                <label for="name">대원 성명</label>
+                <input type="text" id="name" name="name" value="${loginMember.name}" required placeholder="수정할 성명을 입력하세요">
+            </div>
+
+            <%-- 통신 이메일 --%>
+            <div class="input-group-cosmic">
+                <label for="email">통신 이메일 주소</label>
+                <input type="email" id="email" name="email" value="${loginMember.email}" required placeholder="example@cosmic.com">
+                <small class="form-desc-text">기지 주요 공지 및 보급 소식을 전송받을 주소입니다.</small>
+            </div>
+
+            <%-- 배송지 주소 --%>
+            <div class="input-group-cosmic">
+                <label for="address">🌌 물류 보급 배송지 주소</label>
+                <input type="text" id="address" name="address" value="${loginMember.address}" required placeholder="보급품을 전달받을 주소를 입력하세요">
+                <small class="form-desc-text">주문 결제를 진행하기 위해 반드시 실제 주소 형식으로 기입해 주셔야 합니다.</small>
+            </div>
+
+            <hr class="cosmic-divider my-4">
+
+            <%-- 현재 보안 코드 --%>
+            <div class="input-group-cosmic">
+                <label for="currentPw">현재 보안 코드 <span class="text-danger">*</span></label>
+                <input type="password" id="currentPw" name="currentPw" placeholder="현재 비밀번호를 입력해야 수정이 가능합니다" required>
+                <small class="form-desc-text">안전한 정보 수정을 위해 현재 비밀번호를 입력해주세요.</small>
+            </div>
+
+            <%-- 새 보안 코드 --%>
+            <div class="input-group-cosmic mt-4">
+                <label for="newPw">새 보안 코드 (변경 시에만 입력)</label>
+                <input type="password" id="newPw" name="newPw" placeholder="바꾸실 경우에만 입력하세요">
+            </div>
+
+            <%-- 새 보안 코드 확인 --%>
+            <div class="input-group-cosmic">
+                <label for="newPwConfirm">새 보안 코드 확인</label>
+                <input type="password" id="newPwConfirm" placeholder="한 번 더 입력하세요">
+                <small id="pw_match_msg" class="form-msg-text"></small>
+            </div>
+
+            <%-- 제어 버튼 구역 --%>
+            <div class="form-actions-cosmic mt-5">
+                <button type="submit" class="btn-confirm-cosmic" style="flex: 2;">정보 동기화 승인</button>
+                <button type="button" class="btn-cancel-cosmic" style="flex: 1;" onclick="location.href='${pageContext.request.contextPath}/'">수정 취소</button>
+            </div>
+        </form>
+
+        <%-- 🚨 위험 구역: 탈퇴 링크 --%>
+        <div class="cosmic-edit-footer text-center mt-5">
+            <p class="form-desc-text mb-2">더 이상 탐사를 계속할 수 없나요?</p>
+            <a href="javascript:void(0);" onclick="withdrawConfirm()" class="btn-withdraw-link">
+                지식 기지 탈퇴 신청 (Withdraw) &rarr;
+            </a>
         </div>
-
-        <div class="input-group-cosmic">
-            <label for="email">통신 이메일 주소</label>
-            <input type="email" id="email" name="email" value="${loginMember.email}" required placeholder="example@cosmic.com">
-            <small class="text-muted" style="font-size: 0.8rem;">기지 주요 공지 및 보급 소식을 전송받을 주소입니다.</small>
-        </div>
-
-        <div class="input-group-cosmic">
-            <label for="address">🌌 물류 보급 배송지 주소</label>
-            <input type="text" id="address" name="address" value="${loginMember.address}" required placeholder="보급품을 전달받을 주소를 입력하세요">
-            <small class="text-muted" style="font-size: 0.8rem;">주문 결제를 진행하기 위해 반드시 실제 주소 형식으로 기입해 주셔야 합니다.</small>
-        </div>
-
-        <hr class="my-4" style="opacity: 0.1;">
-
-        <div class="input-group-cosmic">
-            <label for="currentPw">현재 보안 코드 <span class="text-danger">*</span></label>
-            <input type="password" id="currentPw" name="currentPw" placeholder="현재 비밀번호를 입력해야 수정이 가능합니다" required>
-            <small class="text-muted" style="font-size: 0.8rem;">안전한 정보 수정을 위해 현재 비밀번호를 입력해주세요.</small>
-        </div>
-
-        <div class="input-group-cosmic mt-4">
-            <label for="newPw">새 보안 코드 (변경 시에만 입력)</label>
-            <input type="password" id="newPw" name="newPw" placeholder="바꾸실 경우에만 입력하세요">
-        </div>
-
-        <div class="input-group-cosmic">
-            <label for="newPwConfirm">새 보안 코드 확인</label>
-            <input type="password" id="newPwConfirm" placeholder="한 번 더 입력하세요">
-            <small id="pw_match_msg" class="mt-2 d-block" style="font-weight: bold;"></small>
-        </div>
-
-        <div class="d-grid gap-3 mt-5">
-            <button type="submit" class="btn-confirm shadow-lg">정보 동기화 승인</button>
-            <button type="button" class="btn-cancel" onclick="location.href='${pageContext.request.contextPath}/'">
-                수정 취소 및 복귀
-            </button>
-        </div>
-    </form>
-
-    <div class="text-center mt-5 pt-4 border-top border-light">
-        <p class="text-muted small">더 이상 탐사를 계속할 수 없나요?</p>
-        <a href="javascript:void(0);" onclick="withdrawConfirm()" 
-           class="text-danger text-decoration-none small fw-bold">지식 기지 탈퇴 신청 (Withdraw) →</a>
     </div>
 </div>
 
+<%-- 📡 jQuery 및 스크립트 통신망 (무결성 보존) --%>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
@@ -88,9 +102,9 @@
             }
 
             if (newPw === confirm) {
-                msg.text("새 보안 코드가 서로 일치합니다. ✨").css("color", "#10ac84");
+                msg.text("새 보안 코드가 서로 일치합니다. ✨").removeClass("msg-error").addClass("msg-success");
             } else {
-                msg.text("새 보안 코드가 일치하지 않습니다. ⛔").css("color", "#ff4757");
+                msg.text("새 보안 코드가 일치하지 않습니다. ⛔").removeClass("msg-success").addClass("msg-error");
             }
         });
     });

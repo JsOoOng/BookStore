@@ -14,7 +14,7 @@ public class ProductSaleServiceImpl implements ProductSaleService {
 
     @Override
     public boolean registerProduct(ProductSaleVO productSale) {
-        // 기본 판매 상태를 'ON'(판매중)으로 안전하게 세팅
+        // 이미 가공이 완료된 완벽한 VO 상태이므로 즉시 데이터 런칭 수행!
         if (productSale.getSaleStatus() == null) {
             productSale.setSaleStatus("ON");
         }
@@ -44,5 +44,15 @@ public class ProductSaleServiceImpl implements ProductSaleService {
     @Override
     public boolean removeProduct(int saleId) {
         return productSaleDAO.delete(saleId) > 0;
+    }
+    
+    @Override
+    public int findStockIdByBookIdAndVendor(int bookId, int vRegNum) {
+        return productSaleDAO.findStockIdByBookIdAndVendor(bookId, vRegNum);
+    }
+
+    @Override
+    public int insertStockIn(int bookId, int vRegNum, int qty, int cost) {
+        return productSaleDAO.insertStockIn(bookId, vRegNum, qty, cost);
     }
 }

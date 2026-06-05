@@ -1,9 +1,12 @@
 package com.cosmic.library.purchase.repository;
 
+import java.sql.PreparedStatement;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.cosmic.library.purchase.model.Purchase;
@@ -14,79 +17,97 @@ public class PurchaseRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // 1. 구매 기록 저장 (주문 완료 시 작동)
-    public void save(Purchase purchase) {
-        // 컬럼명 member_id ➔ user_reg_num 전면 교체
-        String sql = "INSERT INTO purchase "
-                + "(user_reg_num, book_id, quantity, price, total_price, status) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+    // =========================================================================
+    // 🚀 [1단계] 마스터 영수증(PURCHASE) 생성 및 ID 가로채기
+    // =========================================================================
+    public int insertMaster(int userRegNum, int totalPrice) {
+        String sql = "INSERT INTO purchase (user_reg_num, total_price, status, purchase_date) "
+                   + "VALUES (?, ?, 'ORDERED', NOW())";
+        
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(
-                sql,
-                purchase.getUserRegNum(), // 🌟 바뀐 VO의 getter 호출 (int)
-                purchase.getBookId(),
-                purchase.getQuantity(),
-                purchase.getPrice(),
-                purchase.getTotalPrice(),
-                "ORDERED"
-        );
-    }
-    
-    // 2. 대원 고유 활동 번호 기준 구매 기록 조회
-    public List<Purchase> findByMemberId(int userRegNum) { // 🌟 파라미터 String ➔ int 변경
-        // 쿼리문 내 p.member_id ➔ p.user_reg_num 전면 수정
-        String sql = "SELECT p.purchase_id, p.user_reg_num, p.book_id, p.quantity, p.price, " +
-                     "p.total_price, p.status, p.purchase_date, b.title, b.image " +
-                     "FROM purchase p " +
-                     "JOIN book b ON p.book_id = b.id " +
-                     "WHERE p.user_reg_num = ? " + // 👈 기지 관제 타겟 변경
-                     "ORDER BY p.purchase_date DESC";
+        jdbcTemplate.update(connection -> {
+            // 💥 H2 데이터베이스에게 발급된 PK(purchase_id)를 내놓으라고 강제 지시!
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"PURCHASE_ID"});
+            ps.setInt(1, userRegNum);
+            ps.setInt(2, totalPrice);
+            return ps;
+        }, keyHolder);
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Purchase p = new Purchase();
-            
-            // 기본 구매 정보 새 스펙에 맞춰 매핑
-            p.setId(rs.getInt("purchase_id"));
-            p.setUserRegNum(rs.getInt("user_reg_num")); // 🌟 VO 매핑 동기화
-            p.setBookId(rs.getInt("book_id"));
-            p.setQuantity(rs.getInt("quantity"));
-            p.setPrice(rs.getInt("price"));
-            p.setTotalPrice(rs.getInt("total_price"));
-            p.setStatus(rs.getString("status"));
-            p.setPurchaseDate(rs.getTimestamp("purchase_date"));
-            
-            // JOIN으로 가져온 도서 정보 매핑
-            p.setTitle(rs.getString("title"));
-            p.setImage(rs.getString("image"));
-            
-            return p;
-        }, userRegNum);
+        // 방금 발급된 따끈따끈한 영수증 번호 반환
+        return keyHolder.getKey() != null ? keyHolder.getKey().intValue() : 0;
     }
-    
-    // 🪐 Vendor 배송 관제 전용 메서드 주입 (오류 원천 차단 버전)
-    public List<Purchase> findByVendorRegNum(int vendorRegNum) {
-        // [격파 포인트] product_sale에 존재하지 않는 book_id 대신 
-        // stock_in(si)을 매개체로 조인하여 징검다리를 완벽하게 연결합니다!
+
+    // =========================================================================
+    // 🚀 [2단계] 영수증 내 세부 품목(PURCHASE_DETAIL) 기록
+    // =========================================================================
+    public void insertDetail(int purchaseId, int saleId, int vRegNum, int quantity, int unitPrice) {
+        String sql = "INSERT INTO PURCHASE_DETAIL (purchase_id, sale_id, v_reg_num, quantity, unit_price, delivery_status) " 
+                   + "VALUES (?, ?, ?, ?, ?, 'READY')";
+        jdbcTemplate.update(sql, purchaseId, saleId, vRegNum, quantity, unitPrice);
+    }
+
+    // =========================================================================
+    // 📜 [3단계] 대원(유저) 마이페이지용 구매 기록 조회 (조인 쿼리 전면 개편)
+    // =========================================================================
+    public List<Purchase> findByMemberId(int userRegNum) {
+        // [격파 포인트] 마스터 ➔ 디테일 ➔ 판매상품 ➔ 입고 ➔ 도서까지 완벽하게 이어지는 징검다리!
         String sql = 
-              "SELECT p.purchase_id, p.user_reg_num, p.book_id, p.quantity, "
-            + "       p.price, p.total_price, p.status, p.purchase_date, bk.title, bk.image "
+              "SELECT p.purchase_id, p.user_reg_num, p.purchase_date, p.total_price AS master_total, "
+            + "       pd.sale_id, pd.quantity, pd.unit_price, pd.delivery_status, "
+            + "       b.id AS book_id, b.title, b.image "
             + "FROM purchase p "
-            + "JOIN stock_in si     ON p.book_id = si.book_id "
-            + "JOIN product_sale ps ON si.stock_id = ps.stock_id "
-            + "JOIN book bk         ON p.book_id = bk.id "
-            + "WHERE ps.v_reg_num = ? "
+            + "JOIN PURCHASE_DETAIL pd ON p.purchase_id = pd.purchase_id "
+            + "JOIN PRODUCT_SALE ps    ON pd.sale_id = ps.sale_id "
+            + "JOIN STOCK_IN si        ON ps.stock_id = si.stock_id "
+            + "JOIN BOOK b             ON si.book_id = b.id "
+            + "WHERE p.user_reg_num = ? "
             + "ORDER BY p.purchase_date DESC";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Purchase p = new Purchase();
-            // rs.getInt 타겟 컬럼명을 SELECT 명세와 정확하게 동기화!
-            p.setId(rs.getInt("purchase_id")); 
+            p.setId(rs.getInt("purchase_id"));
+            p.setUserRegNum(rs.getInt("user_reg_num"));
+            p.setBookId(rs.getInt("book_id")); 
+            p.setSaleId(rs.getInt("sale_id")); 
+            p.setQuantity(rs.getInt("quantity"));
+            p.setPrice(rs.getInt("unit_price"));
+            p.setTotalPrice(rs.getInt("unit_price") * rs.getInt("quantity")); // 개별 품목 총액
+            p.setStatus(rs.getString("delivery_status")); // 유저에게는 개별 배송 상태를 보여줌
+            p.setPurchaseDate(rs.getTimestamp("purchase_date"));
+            p.setTitle(rs.getString("title"));
+            p.setImage(rs.getString("image"));
+            return p;
+        }, userRegNum);
+    }
+
+    // =========================================================================
+    // 🏢 [4단계] 파트너(상점) 대시보드용 주문 긁어오기 (조인 쿼리 전면 개편)
+    // =========================================================================
+    public List<Purchase> findByVendorRegNum(int vendorRegNum) {
+        // [격파 포인트] 특정 상점(v_reg_num)에 들어온 주문만 디테일 테이블에서 필터링!
+        String sql = 
+              "SELECT p.purchase_id, p.user_reg_num, p.purchase_date, "
+            + "       pd.sale_id, pd.quantity, pd.unit_price, pd.delivery_status, "
+            + "       b.id AS book_id, b.title, b.image "
+            + "FROM PURCHASE_DETAIL pd "
+            + "JOIN purchase p         ON pd.purchase_id = p.purchase_id "
+            + "JOIN PRODUCT_SALE ps    ON pd.sale_id = ps.sale_id "
+            + "JOIN STOCK_IN si        ON ps.stock_id = si.stock_id "
+            + "JOIN BOOK b             ON si.book_id = b.id "
+            + "WHERE pd.v_reg_num = ? "
+            + "ORDER BY p.purchase_date DESC";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Purchase p = new Purchase();
+            p.setId(rs.getInt("purchase_id"));
             p.setUserRegNum(rs.getInt("user_reg_num"));
             p.setBookId(rs.getInt("book_id"));
+            p.setSaleId(rs.getInt("sale_id"));
             p.setQuantity(rs.getInt("quantity"));
-            p.setPrice(rs.getInt("price"));
-            p.setTotalPrice(rs.getInt("total_price"));
-            p.setStatus(rs.getString("status"));
+            p.setPrice(rs.getInt("unit_price"));
+            p.setTotalPrice(rs.getInt("unit_price") * rs.getInt("quantity"));
+            p.setStatus(rs.getString("delivery_status"));
             p.setPurchaseDate(rs.getTimestamp("purchase_date"));
             p.setTitle(rs.getString("title"));
             p.setImage(rs.getString("image"));
@@ -94,9 +115,12 @@ public class PurchaseRepository {
         }, vendorRegNum);
     }
 
-    // 🪐 [배송하기] 클릭 시 상태 워프 엔진 (ORDERED ➔ SHIPPING)
+    // =========================================================================
+    // 🚚 [5단계] [배송하기] 클릭 시 상태 워프 엔진 (개별 품목의 배송 상태 변경)
+    // =========================================================================
     public int updateStatus(int purchaseId, String status) {
-        String sql = "UPDATE purchase SET status = ? WHERE purchase_id = ?";
+        // 마스터의 상태가 아닌, 파트너사가 책임지는 세부 품목(DETAIL)의 배송 상태를 변경!
+        String sql = "UPDATE PURCHASE_DETAIL SET delivery_status = ? WHERE purchase_id = ?";
         return jdbcTemplate.update(sql, status, purchaseId);
     }
 }

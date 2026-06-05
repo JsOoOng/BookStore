@@ -24,6 +24,6 @@ public class BasketVO {
     private String publisher;  
     private String isbn;
     
-    private int saleId;        // 오픈마켓 상품 일련번호
+    private Integer saleId;        // 오픈마켓 상품 일련번호
     private String bizName;    // 판매 업체명
 }

@@ -2,84 +2,82 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
+<%-- 🚨 미지정 주소 경고 배너 --%>
 <c:if test="${not empty addressAlert}">
-    <div class="alert alert-warning border-0 mb-4 text-center shadow-sm" 
-         style="background: rgba(255, 159, 26, 0.15); color: #d35400; border-radius: 12px; font-weight: bold; padding: 15px; font-size: 1rem;">
+    <div class="cosmic-alert-banner alert-warning-cosmic text-center">
         ⚠️ 보안 및 물류 관제 고지: ${addressAlert}<br>
-        <span style="font-size: 0.85rem; font-weight: normal; opacity: 0.9;">우측 상단의 [⚙️ 개인 정보 수정] 버튼을 눌러 유효한 보급지 주소를 업데이트해 주세요.</span>
+        <span class="alert-sub-text">우측 상단의 [⚙️ 개인 정보 수정] 버튼을 눌러 유효한 보급지 주소를 업데이트해 주세요.</span>
     </div>
 </c:if>
 
-<div class="mypage-container">
+<div class="admin-wide-container mt-4 mb-5">
+    
     <%-- 🪐 1. 상단 프로필 카드 섹션 --%>
-    <section class="profile-card">
+    <section class="cosmic-profile-card">
         <div class="profile-header">
             <div class="profile-avatar">
                 <span class="avatar-icon">👨‍🚀</span>
             </div>
-            <div class="profile-info" style="flex: 1;">
+            <div class="profile-info">
                 <h2 class="profile-name">
                     ${loginMember.name} 대원 
-                    <span class="badge bg-primary ms-2" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 20px;">
-                        ${loginMember.reg_status}
-                    </span>
+                    <span class="badge-status-reg">${loginMember.reg_status}</span>
                 </h2>
-                <p class="profile-role text-muted small mb-1">
+                <p class="profile-role">
                     ID: <span class="fw-bold text-dark">${loginMember.id}</span> | 
                     ✉️ ${not empty loginMember.email ? loginMember.email : '통신 주소 미등록'}
                 </p>
                 
-                <p class="profile-address mb-2 small text-secondary">
+                <p class="profile-address">
                     🏠 물류 보급지: 
                     <c:choose>
                         <c:when test="${loginMember.address eq '은하계 미지정 구역'}">
-                            <span class="text-danger fw-bold" style="background: rgba(255,71,87,0.1); padding: 2px 6px; border-radius: 4px;">⚠️ ${loginMember.address}</span>
+                            <span class="address-warning-badge">⚠️ ${loginMember.address}</span>
                         </c:when>
                         <c:otherwise>
-                            <span class="text-dark fw-bold">${loginMember.address}</span>
+                            <span class="address-normal-text">${loginMember.address}</span>
                         </c:otherwise>
                     </c:choose>
                 </p>
 
-                <div class="d-flex align-items-center gap-4 mt-2">
-                    <p class="profile-date mb-0 small text-secondary">🚀 입성일: <fmt:formatDate value="${loginMember.regDate}" pattern="yyyy-MM-dd"/></p>
-                    <p class="profile-points mb-0 small" style="color: #5d5fef; font-weight: bold;">
+                <div class="profile-meta-row">
+                    <p class="profile-date">🚀 입성일: <fmt:formatDate value="${loginMember.regDate}" pattern="yyyy-MM-dd"/></p>
+                    <p class="profile-points">
                         💰 보유 적립금: <fmt:formatNumber value="${loginMember.points}" pattern="#,###"/> P
                     </p>
                 </div>
             </div>
             <div class="profile-actions">
-                <a href="${pageContext.request.contextPath}/member/edit" class="btn-cosmic btn-edit" style="white-space: nowrap;">
+                <button type="button" class="btn-cosmic btn-edit-profile" onclick="location.href='${pageContext.request.contextPath}/member/edit'">
                     ⚙️ 개인 정보 수정
-                </a>
+                </button>
             </div>
         </div>
     </section>
 
-    <%-- 🪐 2. 하단 양옆 분할 콘텐츠 그리드 (style.css 내의 커스텀 플렉스 매핑) --%>
-    <div class="mypage-content-row">
+    <%-- 🪐 2. 하단 양옆 분할 콘텐츠 그리드 --%>
+    <div class="mypage-content-row mt-4">
         
         <%-- 🛒 좌측 분역: 현재 장바구니 카드 --%>
-        <div style="flex: 1;">
-            <section class="mypage-section basket-section h-100">
-                <h3 class="section-title">📦 현재 장바구니 (${basketList.size()})</h3>
-                <div class="scroll-area">
+        <div class="mypage-half-col">
+            <section class="mypage-dashboard-section h-100">
+                <h3 class="dashboard-section-title">📦 현재 장바구니 (${basketList.size()})</h3>
+                <div class="dashboard-scroll-area">
                     <c:choose>
                         <c:when test="${not empty basketList}">
                             <c:forEach var="basket" items="${basketList}">
-                                <div class="mini-item-card" onclick="location.href='${pageContext.request.contextPath}/basket' " style="cursor: pointer;">
-                                    <img src="${basket.image.startsWith('http') ? basket.image : pageContext.request.contextPath.concat(basket.image)}" 
-                                         class="mini-img" onerror="this.src='https://via.placeholder.com/50x75?text=No+Img' ">
-                                    <div class="mini-info">
-                                        <p class="mini-title text-truncate" style="max-width: 180px;">${basket.title}</p>
-                                        <p class="mini-price"><fmt:formatNumber value="${basket.price}" pattern="#,###"/> 원</p>
+                                <div class="dashboard-mini-card clickable-card" onclick="location.href='${pageContext.request.contextPath}/basket'">
+                                    <img src="${basket.image}" class="dashboard-mini-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/50x75?text=No+Img'">
+                                    <div class="dashboard-mini-info">
+                                        <p class="dashboard-item-title">${basket.title}</p>
+                                        <p class="dashboard-item-price"><fmt:formatNumber value="${basket.price}" pattern="#,###"/> 원</p>
                                     </div>
-                                    <span class="arrow-icon">➔</span>
+                                    <span class="dashboard-arrow-icon">➔</span>
                                 </div>
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <div class="empty-msg">담긴 도서가 없습니다.</div>
+                            <div class="dashboard-empty-msg">담긴 도서가 없습니다.</div>
                         </c:otherwise>
                     </c:choose>
                 </div>
@@ -87,26 +85,24 @@
         </div>
 
         <%-- 📜 우측 분역: 도서 구매 기록 카드 --%>
-        <div style="flex: 1;">
-            <section class="mypage-section purchase-section h-100">
-                <h3 class="section-title">📜 도서 구매 기록 (${purchaseList.size()})</h3>
-                <div class="scroll-area">
+        <div class="mypage-half-col">
+            <section class="mypage-dashboard-section h-100">
+                <h3 class="dashboard-section-title">📜 도서 구매 기록 (${purchaseList.size()})</h3>
+                <div class="dashboard-scroll-area">
                     <c:choose>
                         <c:when test="${not empty purchaseList}">
                             <c:forEach var="pur" items="${purchaseList}">
-                                <div class="history-item-card">
-                                    <div class="history-date">
+                                <div class="dashboard-mini-card">
+                                    <div class="dashboard-history-date">
                                         <fmt:formatDate value="${pur.purchaseDate}" pattern="MM.dd HH:mm"/>
                                     </div>
-                                    <div class="history-main">
-                                        <img src="${pur.image.startsWith('http') ? pur.image : pageContext.request.contextPath.concat(pur.image)}" 
-                                             class="history-img" onerror="this.src='https://via.placeholder.com/50x75?text=No+Img' ">
-                                        <div class="history-info">
-                                            <p class="history-title text-truncate" style="max-width: 160px;">${pur.title}</p>
-                                            <p class="history-meta">수량: ${pur.quantity} | 결제액: <fmt:formatNumber value="${pur.totalPrice}" pattern="#,###"/> 원</p>
+                                    <div class="dashboard-history-main">
+                                        <img src="${pur.image}" class="dashboard-mini-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/50x75?text=No+Img'">
+                                        <div class="dashboard-mini-info">
+                                            <p class="dashboard-item-title history-title">${pur.title}</p>
+                                            <p class="dashboard-item-meta">수량: ${pur.quantity} | 결제액: <fmt:formatNumber value="${pur.totalPrice}" pattern="#,###"/> 원</p>
                                         </div>
                                         
-                                        <%-- 🌟 [배송 상태 분기] SHIPPING 상태일 때 가독성이 극대화된 커스텀 배지 클래스 장착 --%>
                                         <c:choose>
                                             <c:when test="${pur.status eq 'SHIPPING'}">
                                                 <span class="status-badge shipping">SHIPPING</span>
@@ -120,7 +116,7 @@
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <div class="empty-msg">아직 도서 구매 기록이 없습니다.</div>
+                            <div class="dashboard-empty-msg">아직 도서 구매 기록이 없습니다.</div>
                         </c:otherwise>
                     </c:choose>
                 </div>

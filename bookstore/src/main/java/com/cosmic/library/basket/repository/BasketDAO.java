@@ -36,4 +36,6 @@ public interface BasketDAO {
     int insertMarketBasket(int userRegNum, int saleId, int qty);
 
 	int updateQty(int basketId, int userRegNum, int qty);
+	
+	BasketVO findById(int basketId);
 }

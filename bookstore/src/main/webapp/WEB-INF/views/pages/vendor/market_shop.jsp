@@ -2,103 +2,89 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<div class="admin-wide-container mt-4">
+<div class="admin-wide-container">
 
-    <div class="mb-4 pb-2 border-bottom border-secondary">
-        <h2 class="fw-bold text-dark" style="font-size: 1.8rem; letter-spacing: -0.5px;">🪐 코스믹 도서 아카이브</h2>
-        <p class="text-secondary mb-0 fw-bold" style="font-size: 0.95rem;">
-            우주 연합의 모든 도서 원천 정보와 실제 입점 상점의 판매 리스트를 통합 관제합니다.
+    <%-- 상단 타이틀 섹션 (list.jsp와 완벽 동기화) --%>
+    <div class="cosmic-title-section">
+        <h2 class="cosmic-main-title">cosmic book archive</h2>
+        <p class="cosmic-subtitle-text">
+            우주 연합의 모든 도서 원천 정보와 실제 입점 상점의 판매 리스트를 관제합니다.
         </p>
     </div>
 
-    <ul class="nav nav-pills nav-justified cosmic-tabs mb-4" id="bookCatalogTabs" role="tablist" style="gap: 10px;">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold py-3" id="book-list-tab" type="button" role="tab" style="font-size: 1.05rem; border-radius: 12px; background-color: rgba(93, 95, 239, 0.1); color: #5d5fef;"
-                    onclick="location.href='${pageContext.request.contextPath}/book/list'">
-                📚 전체 도서 도감 (원천 정보)
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-bold py-3" id="vendor-shop-tab" data-bs-toggle="tab" data-bs-target="#vendor-shop-pane" type="button" role="tab" aria-controls="vendor-shop-pane" aria-selected="true" style="font-size: 1.05rem; border-radius: 12px;">
-                🛒 실시간 판매 중인 상점 (구매/장바구니 가능)
-            </button>
-        </li>
-    </ul>
+    <%-- 🎯 미니 탭 존 (교보문고 스타일 좌측 상단 소형 탭) --%>
+    <div class="cosmic-mini-tab-zone">
+        <button class="btn-mini-tab" id="book-list-tab" type="button" role="tab"
+                onclick="location.href='${pageContext.request.contextPath}/book/list'">
+            전체 도서 도감 (원천 정보)
+        </button>
+        <button class="btn-mini-tab active" id="vendor-shop-tab" data-bs-toggle="tab" data-bs-target="#vendor-shop-pane" type="button" role="tab" aria-controls="vendor-shop-pane" aria-selected="true">
+            실시간 판매 중인 상점
+        </button>
+    </div>
 
     <div class="tab-content" id="bookCatalogTabsContent">
         
         <div class="tab-pane fade show active" id="vendor-shop-pane" role="tabpanel" aria-labelledby="vendor-shop-tab" tabindex="0">
             
-            <div class="alert alert-success border-0 shadow-sm mb-4 fw-bold" style="background-color: rgba(13, 202, 240, 0.05); color: #0dcaf0; border-radius: 12px;">
+            <%-- 🎯 미니멀 안내 배너 (상점 전용 시안 테마) --%>
+            <div class="cosmic-notice-banner vendor-shop-banner">
                 🚀 <b>물류 창고 안내:</b> 이곳은 실제 입점 파트너들이 수량을 공급하여 판매 중인 마켓입니다. 원하는 지식 서적을 장바구니에 담아 결제할 수 있습니다!
             </div>
 
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            <%-- 🎯 2열 도서 리스트 그리드 이식 --%>
+            <div class="book-list">
                 <c:choose>
-                    <%-- 🌟 사령관의 원래 세션 데이터 변수명 marketProducts 완벽 매핑 --%>
+                    <%-- 📭 상품이 없을 때 --%>
                     <c:when test="${empty marketProducts}">
-                        <div class="col-12 text-center py-5">
+                        <div style="grid-column: 1 / -1;" class="text-center py-5">
                             <span class="display-1">📭</span>
                             <h4 class="fw-bold text-warning mt-3">현재 은하 상점에 개설된 상품이 없습니다.</h4>
                             <p class="text-secondary small">잠시 후 파트너사들의 물류 공급이 시작되면 리스트가 갱신됩니다.</p>
                         </div>
                     </c:when>
 
+                    <%-- 🛒 상품이 존재할 때 --%>
                     <c:otherwise>
                         <c:forEach var="product" items="${marketProducts}">
-                            <div class="col">
-                                <div class="card bg-dark text-white shadow h-100 border-secondary hover-shadow">
+                            <%-- 🎯 카드 본체 클릭 이벤트 (list.jsp 스타일 가로 레이아웃 적용) --%>
+                            <div class="book-item" 
+                                 onclick="location.href='${pageContext.request.contextPath}/book/view?id=${product.bookId}&saleId=${product.saleId}&price=${product.price}&stockQty=${product.stockQty}&bizName=${product.bizName}'">
+                                
+                                <%-- 도서 표지 및 업체 배지 래퍼 --%>
+                                <div class="shop-img-wrapper">
+                                    <c:choose>
+                                        <c:when test="${not empty product.image}">
+                                            <img src="${product.image}" class="book-img" alt="cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/100x140?text=No+Image';">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="book-img bg-secondary text-white d-flex align-items-center justify-content-center" style="font-size: 11px; font-weight: bold;">No Image</div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <span class="badge-vendor-cosmic">🏢 ${product.bizName}</span>
+                                </div>
+
+                                <%-- 도서 텍스트 정보 존 --%>
+                                <div class="book-info">
+                                    <h3 class="book-title text-truncate" style="max-width: 250px;">${product.title}</h3>
+                                    <p class="book-author">개척자: ${product.writer} | ${product.publisher}</p>
                                     
-                                    <%-- 🗺️ 1. 이미지 클릭 구역: 닫는 괄호 '>' 교정 및 하이브리드 파라미터 풀 패키지 탑재 --%>
-                                    <div class="position-relative text-center p-3 bg-gradient" 
-                                         style="background: rgba(255,255,255,0.03); cursor: pointer;"
-                                         onclick="location.href='${pageContext.request.contextPath}/book/view?id=${product.bookId}&saleId=${product.saleId}&price=${product.price}&stockQty=${product.stockQty}&bizName=${product.bizName}'">
-                                        
-                                        <c:choose>
-                                            <c:when test="${not empty product.image}">
-                                                <img src="${product.image}" class="card-img-top rounded shadow shop-book-cover" alt="cover" style="width: 130px; height: 185px; object-fit: cover;">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <div class="bg-secondary rounded d-flex align-items-center justify-content-center text-dark mx-auto shadow shop-book-no-cover" style="width: 130px; height: 185px; font-weight: bold;">No Image</div>
-                                            </c:otherwise>
-                                        </c:choose>
-                                        
-                                        <span class="badge bg-info text-dark position-absolute top-0 start-0 m-2 fw-bold">
-                                            🏢 ${product.bizName}
-                                        </span>
-                                    </div>
-
-                                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                                        <div class="mb-2">
-                                            <%-- 🗺️ 2. 도서 제목 클릭 구역: 호버 이펙트 및 하이브리드 파라미터 풀 패키지 탑재 --%>
-                                            <h5 class="card-title fw-bold text-white text-truncate mb-1" 
-                                                title="${product.title}"
-                                                style="cursor: pointer; transition: color 0.2s;"
-                                                onmouseover="this.style.color='#0dcaf0'" 
-                                                onmouseout="this.style.color='#fff'"
-                                                onclick="location.href='${pageContext.request.contextPath}/book/view?id=${product.bookId}&saleId=${product.saleId}&price=${product.price}&stockQty=${product.stockQty}&bizName=${product.bizName}'">
-                                                ${product.title}
-                                            </h5>
-                                            <small class="text-secondary d-block text-truncate">${product.writer} | ${product.publisher}</small>
+                                    <%-- 상점 전용: 재고 및 가격 정보 라인 --%>
+                                    <div class="shop-price-row">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="price-label-mini">실시간 잔여 재고</span>
+                                            <span class="badge-stock-left">${product.stockQty}개 남음</span>
                                         </div>
-
-                                        <div class="mt-3 border-top border-secondary pt-2">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="text-secondary small">실시간 잔여 재고</span>
-                                                <span class="badge bg-dark border border-info text-info fw-bold">${product.stockQty}개 남음</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="text-secondary small">우주 할인가</span>
-                                                <h4 class="text-warning fw-bold mb-0">
-                                                    <fmt:formatNumber value="${product.price}" type="number"/>원
-                                                </h4>
-                                            </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="price-label-mini">우주 할인가</span>
+                                            <span class="shop-price-value"><fmt:formatNumber value="${product.price}" type="number"/>원</span>
                                         </div>
                                     </div>
-
-                                    <div class="card-footer bg-transparent border-secondary p-3 d-grid gap-2">
-                                        <button type="button" class="btn btn-outline-info btn-sm fw-bold py-2" 
-                                                onclick="addBasket('${product.saleId}', '${product.title}')">
+                                    
+                                    <%-- 장바구니 제어 밸브 (이벤트 버블링 차단 장착!) --%>
+                                    <div class="book-action-row w-100 mt-0">
+                                        <button type="button" class="btn-cosmic btn-shop-cart w-100" 
+                                                onclick="event.stopPropagation(); addBasket('${product.saleId}', '${product.title}')">
                                             🛒 장바구니 담기
                                         </button>
                                     </div>
@@ -113,8 +99,8 @@
     </div>
 </div>
 
+<%-- 📡 통신 관제 스크립트 (무결성 보존) --%>
 <script>
-// 🛒 장바구니 담기 비동기 통신 관제 함수
 function addBasket(saleId, title) {
     var formData = new URLSearchParams();
     formData.append("saleId", saleId);
@@ -147,4 +133,23 @@ function addBasket(saleId, title) {
         alert("🛰️ 사령부 서버와 통신이 두절되었습니다.");
     });
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    // 🔥 [하얀 박스 가두리 격파 치트키] 상점 페이지 로드 시 상위 부모 레이아웃의 max-width 강제 해제
+    var wideContainer = document.querySelector('.admin-wide-container');
+    if (wideContainer) {
+        var parent = wideContainer.parentElement;
+        while (parent && parent.tagName !== 'BODY') {
+            parent.style.maxWidth = '100%';
+            parent.style.width = '100%';
+            // 부모 컨테이너(form-container 등)가 존재하면 도서 도감과 동일한 1500px 급으로 확장
+            if(parent.classList.contains('form-container') || parent.className.includes('container')) {
+                parent.style.maxWidth = '1500px'; 
+                parent.style.margin = '0 auto';
+                parent.style.padding = '0';
+            }
+            parent = parent.parentElement;
+        }
+    }
+});
 </script>

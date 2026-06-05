@@ -25,4 +25,10 @@ public interface ProductSaleDAO {
 
     // 7. 판매 상품 마켓에서 완전 내리기 (삭제)
     int delete(int saleId);
+    
+    // 🛰️ [신규 관제 오더] 특정 업체의 특정 도서 입고 정보 매핑 확인
+    int findStockIdByBookIdAndVendor(int bookId, int vRegNum);
+    
+    // 🛰️ [신규 관제 오더] 필수 필드(업체번호, 수량, 원가)를 대동한 입고 데이터 빌드
+    int insertStockIn(int bookId, int vRegNum, int qty, int cost);
 }

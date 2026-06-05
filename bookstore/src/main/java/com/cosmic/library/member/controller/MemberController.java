@@ -17,6 +17,18 @@ import com.cosmic.library.member.model.MemberVO;
 import com.cosmic.library.member.service.MemberService;
 import com.cosmic.library.purchase.service.PurchaseService;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.cosmic.library.basket.model.BasketVO;
+import com.cosmic.library.purchase.model.Purchase;
+
 @Controller
 @RequestMapping("/member")
 public class MemberController {
@@ -149,7 +161,7 @@ public class MemberController {
     // 7. 마이페이지 관제소
     @GetMapping("/mypage")
     public String myPage(
-            @RequestParam(value = "msg", required = false) String msg, // 🪐 결제 방어선에서 토스한 가이드 문구 수집 레이더 장착
+            @RequestParam(value = "msg", required = false) String msg, 
             HttpSession session, 
             Model model) {
         
@@ -158,16 +170,26 @@ public class MemberController {
             return "redirect:/member/login";
         }
 
-        // 🪐 [추가] 리다이렉트되어 넘어온 안내 메시지가 존재하면 뷰 레이어(JSP)로 그대로 전송!
         if (msg != null && !msg.trim().isEmpty()) {
             model.addAttribute("addressAlert", msg);
         }
 
-        // 핵심 개편: 장바구니 조회를 위해 세션에서 정수형 고유 식별자인 user_reg_num을 추출합니다.
         int userRegNum = loginMember.getUser_reg_num();
+        
+        // 1. 장바구니 데이터 수집 및 표지 레이더 가동
+        List<BasketVO> basketList = basketService.getList(userRegNum);
+        for(BasketVO basket : basketList) {
+            basket.setImage(getNaverBookCover(basket.getTitle()));
+        }
 
-        model.addAttribute("basketList", basketService.getList(userRegNum));
-        model.addAttribute("purchaseList", purchaseService.getMyPurchases(userRegNum));
+        // 2. 구매 기록 데이터 수집 및 표지 레이더 가동 (⚠️ Purchase 객체에 setTitle이 있다고 가정)
+        List<Purchase> purchaseList = purchaseService.getMyPurchases(userRegNum);
+        for(Purchase pur : purchaseList) {
+            pur.setImage(getNaverBookCover(pur.getTitle()));
+        }
+
+        model.addAttribute("basketList", basketList);
+        model.addAttribute("purchaseList", purchaseList);
 
         model.addAttribute("pageName", "pages/member/mypage");
         return "common/layout";
@@ -194,5 +216,52 @@ public class MemberController {
             return "OK";
         }
         return "FAIL";
+    }
+    
+ // ==============================================================
+    // 🛰️ [마이페이지 전용 레이더] 네이버 실시간 도서 표지 수집 통신 파이프라인
+    // ==============================================================
+    private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
+    private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
+
+    private String getNaverBookCover(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://via.placeholder.com/50x75?text=No+Img";
+        }
+        try {
+            // 한글 제목 검색 시 통신 에러 방지를 위한 URL 정밀 인코딩!
+            String pureTitle = keyword.split(":")[0].trim();
+            String encodedKeyword = URLEncoder.encode(pureTitle, "UTF-8");
+            
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            URL url = new URL(apiURL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", NAVER_CLIENT_ID);
+            con.setRequestProperty("X-Naver-Client-Secret", NAVER_CLIENT_SECRET);
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200) { 
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONArray items = jsonObject.getJSONArray("items");
+                
+                if (items.length() > 0) {
+                    JSONObject bookItem = items.getJSONObject(0);
+                    return bookItem.getString("image");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("🚨 마이페이지 네이버 표지 통신 장애: " + e.getMessage());
+        }
+        return "https://via.placeholder.com/50x75?text=No+Img";
     }
 }

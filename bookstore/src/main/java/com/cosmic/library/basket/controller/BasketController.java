@@ -11,6 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 @Controller
 @RequestMapping("/basket")
 public class BasketController {
@@ -24,10 +32,14 @@ public class BasketController {
 
         MemberVO member = getLoginMember(session);
         if (member == null)
-            return "redirect:/member/login"; // 🔒 로그인 안 되어 있으면 로그인 폼으로 워프
+            return "redirect:/member/login";
 
-        // 🌟 변경: member.getId() ➔ member.getUser_reg_num()
         List<BasketVO> list = basketService.getList(member.getUser_reg_num());
+
+        // 📡 [레이더 포격 추가!] 장바구니에 담긴 책들도 제목을 기반으로 네이버 표지를 강제 매핑!
+        for (BasketVO vo : list) {
+            vo.setImage(getNaverBookCover(vo.getTitle()));
+        }
 
         model.addAttribute("basketList", list);
         model.addAttribute("pageName", "pages/basket/basket");
@@ -155,5 +167,53 @@ public class BasketController {
     // 로그인 멤버 가져오기 도우미
     private MemberVO getLoginMember(HttpSession session) {
         return (MemberVO) session.getAttribute("loginMember");
+    }
+    
+    // 🪐 [네이버 발급 토큰 장착] 
+    private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
+    private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
+
+    // ==============================================================
+    // 🛰️ [장바구니 전용 레이더] 네이버 실시간 도서 표지 수집 통신 파이프라인
+    // ==============================================================
+    private String getNaverBookCover(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://via.placeholder.com/100x150?text=No+Img";
+        }
+        try {
+            // 💥 한글 제목 통신 에러 방지 (콜론 앞 순수 제목 추출 및 인코딩)
+            String pureTitle = keyword.split(":")[0].trim();
+            String encodedKeyword = URLEncoder.encode(pureTitle, "UTF-8");
+            
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            URL url = new URL(apiURL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", NAVER_CLIENT_ID);
+            con.setRequestProperty("X-Naver-Client-Secret", NAVER_CLIENT_SECRET);
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200) { 
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONArray items = jsonObject.getJSONArray("items");
+                
+                if (items.length() > 0) {
+                    JSONObject bookItem = items.getJSONObject(0);
+                    return bookItem.getString("image");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("🚨 장바구니 네이버 표지 통신 장애: " + e.getMessage());
+        }
+        return "https://via.placeholder.com/100x150?text=No+Img";
     }
 }
