@@ -138,6 +138,8 @@ body {
     letter-spacing: -0.5px;
     text-decoration: none;
     text-transform: lowercase;
+    /* 💥 원인 격파: 로고 우측에 40px의 강력한 방어막(여백)을 전개하여 도서목록을 밀어낸다! */
+    margin-right: 40px !important; 
 }
 
 /* 헤더 텍스트 메뉴들 검은색 고정 */
@@ -614,8 +616,9 @@ body {
 
 .view-container {
     width: 100%;
-    margin-top: 30px;
-    margin-bottom: 50px;
+    max-width: 1300px !important; /* 다시 1300px로 단정하게 제한 */
+    margin: 50px auto 80px auto !important; /* 화면 정중앙에 배치하고 위아래 여백 확보 */
+    padding: 0 20px !important; /* 창이 좁아져도 벽에 텍스트가 긁히지 않게 안전 여백 추가 */
 }
 
 /* 상단 정보창 레이아웃 재배치 (가로 2열 대칭 격리) */
@@ -624,6 +627,13 @@ body {
     grid-template-columns: 350px 1fr !important; /* 왼쪽 이미지 영역 확보, 오른쪽 텍스트 */
     gap: 60px !important;
     align-items: flex-start;
+    
+    /* 💥 밋밋하게 퍼져있던 배경을 깔끔한 카드 형태로 묶어 고급스러움 극대화! */
+    background: #ffffff !important;
+    padding: 40px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 40px rgba(11, 19, 43, 0.04) !important;
+    border: 1px solid #f1f3f5 !important;
 }
 
 /* 🎯 [사령관 조건 3 해결] 메인 도서 표지 잘림 방지 (네이버 API 규격 대응) */
@@ -681,10 +691,12 @@ body {
 }
 
 .spec-row strong {
-    width: 120px !important;
+    width: 150px !important; /* 💥 기존 120px에서 150px로 너비 대폭 확장! */
     color: #7f8c8d !important;
     font-weight: 600 !important;
     text-transform: uppercase;
+    white-space: nowrap !important; /* 💥 글자가 길어도 절대 밑으로 꺾이지 않도록 강제 락온 */
+    flex-shrink: 0 !important; /* 브라우저 창이 좁아져도 라벨 영역이 찌그러지지 않게 방어 */
 }
 
 .spec-row span {
@@ -1716,7 +1728,8 @@ body {
     background: #ffffff !important;
     border: 1px solid #edeff2 !important;
     border-radius: 12px !important;
-    overflow: hidden !important; /* 모서리 둥글게 깎기 */
+    /* 💥 원인 격파: hidden을 visible로 변경하여 드롭다운이 밖으로 탈출할 수 있게 허용! */
+    overflow: visible !important; 
     box-shadow: 0 10px 30px rgba(11, 19, 43, 0.03) !important;
 }
 
@@ -1735,6 +1748,13 @@ body {
     font-weight: 700 !important;
     vertical-align: middle !important;
     border: none !important;
+}
+
+.cosmic-table th:first-child {
+    border-top-left-radius: 12px !important;
+}
+.cosmic-table th:last-child {
+    border-top-right-radius: 12px !important;
 }
 
 .cosmic-table td {
@@ -1794,6 +1814,8 @@ body {
     border: 1px solid rgba(255,255,255,0.1) !important;
     border-radius: 12px !important;
     padding: 8px 0 !important;
+    /* 💥 드롭다운 메뉴를 Z축 최상단으로 강제 부양! */
+    z-index: 9999 !important; 
 }
 .cosmic-dropdown-menu .dropdown-item {
     color: #ffffff !important;
@@ -3299,7 +3321,6 @@ body.modal-open .modal-backdrop {
     pointer-events: auto !important;
 }
 
-@charset "UTF-8";
 
 /* ==========================================================================
    🪐 PURCHASE.JSP 전용 - 장바구니 테마 완벽 동기화 (Cosmic Checkout)
@@ -3751,3 +3772,139 @@ body.modal-open .modal-backdrop {
         width: 100%;
     }
 }
+
+/* ==========================================================================
+       🚨 [최종 진압 CSS] 부모 컨테이너(main-content)의 족쇄를 완벽히 파괴합니다!
+       이제 억지로 화면을 늘리는 해킹 CSS가 필요 없으며, 무조건 '위 -> 아래' 순서로 배치됩니다.
+       ========================================================================== */
+    
+    /* 1. layout.jsp의 main-content를 100% 풀와이드 블록으로 강제 전환 */
+    main.main-content {
+        display: block !important; /* 💥 가로 나열(Flex) 절대 금지, 무조건 세로 나열 */
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important; /* 💥 헤더에 틈 없이 딱 붙이기 위해 마진 0 강제 부여 */
+        padding: 0 !important;
+    }
+
+    /* 🚀 1. 풀와이드 히어로 배너 (위쪽 구역) */
+    .univ-hero-section {
+        position: relative;
+        width: 100%; /* 부모 제약이 풀렸으므로 자연스럽게 100% 꽉 참 */
+        height: 600px;
+        background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center;
+        background-size: cover;
+        display: flex; /* 내부 텍스트 상하좌우 중앙 정렬용 */
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .univ-hero-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(11, 19, 43, 0.65);
+        z-index: 1; /* 오버레이가 밖으로 튀어나오지 않고 배너 안에서만 머묾 */
+    }
+
+    /* 텍스트는 1300px 중앙에 예쁘게 정렬 */
+    .univ-hero-content {
+        position: relative;
+        z-index: 2;
+        color: #ffffff;
+        width: 100%;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .hero-main-title {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 900;
+        margin-bottom: 20px;
+        letter-spacing: -2px;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .hero-sub-desc {
+        font-size: 1.2rem;
+        color: #d2dae2;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+
+    .btn-hero-primary {
+        display: inline-block;
+        border: 2px solid #ffffff;
+        color: #ffffff;
+        padding: 15px 40px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: 0.3s;
+    }
+
+    .btn-hero-primary:hover {
+        background: #ffffff;
+        color: #0b132b;
+        transform: translateY(-3px);
+    }
+
+    /* 🌌 2. 신규 입고 도서 섹션 (스크롤 내리면 등장하는 아래쪽 구역) */
+    .univ-new-books-section {
+        position: relative;
+        width: 100%;
+        background: #ffffff;
+        padding: 100px 0;
+        display: block; /* 💥 겹침 절대 불가, 수직 흐름 완벽 보장 */
+    }
+
+    .univ-section-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .section-title-group {
+        margin-bottom: 60px;
+    }
+
+    .section-main-title {
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 30px;
+        letter-spacing: -2px;
+        color: #2f3542;
+    }
+
+    .section-main-title span { color: #cf8c3f; }
+    .section-sub-title { color: #7f8c8d; font-size: 1.1rem; }
+
+    .new-books-showcase {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+    }
+
+    .showcase-card {
+        text-align: center;
+        transition: transform 0.3s;
+        cursor: pointer;
+    }
+
+    .showcase-card:hover { transform: translateY(-10px); }
+
+    .showcase-img-box {
+        background: #f8fafc;
+        height: 380px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+
+    .showcase-text { font-weight: 700; color: #333; font-size: 1.1rem; }

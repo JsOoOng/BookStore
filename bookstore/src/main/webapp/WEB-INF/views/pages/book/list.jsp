@@ -35,7 +35,18 @@
             <div class="book-list">
                 <c:forEach var="book" items="${bookList}">
                     <div class="book-item" onclick="location.href='${pageContext.request.contextPath}/book/view?id=${book.id}'">
-                        <img src="${book.image}" alt="Cover" class="book-img" onerror="this.src='https://via.placeholder.com/100x140?text=No+Image'">
+                        <c:choose>
+						    <c:when test="${not empty book.image}">
+						        <%-- 🚀 [방어막 1] 하이브리드 경로 탐색 및 [방어막 2] onerror 무한 루프 절단! --%>
+						        <img src="${book.image.startsWith('http') ? book.image : pageContext.request.contextPath.concat(book.image)}" 
+						             alt="Cover" 
+						             class="book-img" 
+						             onerror="this.onerror=null; this.src='https://via.placeholder.com/100x140?text=No+Cover';">
+						    </c:when>
+						    <c:otherwise>
+						        <img src="https://via.placeholder.com/100x140?text=No+Cover" alt="No Cover" class="book-img">
+						    </c:otherwise>
+						</c:choose>
                         <div class="book-info">
                             <h3 class="book-title">${book.title}</h3>
                             <p class="book-author">개척자: ${book.writer} | ${book.publisher}</p>

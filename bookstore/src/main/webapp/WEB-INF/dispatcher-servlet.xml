@@ -35,6 +35,7 @@
 	        <mvc:exclude-mapping path="/vendor/login"/>
 	        <mvc:exclude-mapping path="/vendor/join"/>
 	        <mvc:exclude-mapping path="/vendor/checkId"/>
+	        <mvc:exclude-mapping path="/vendor/shop"/>
 	        
 	        <mvc:exclude-mapping path="/admin/login"/>
 	        
