@@ -18,6 +18,12 @@ public class ReviewServiceImple implements ReviewService {
     @Override
     public void writeReview(Long bookId, String userId, double rating, String content) {
 
+    	// 2. review_book 존재 여부 확인 후 없으면 생성
+    	 ReviewBookVo exist = reviewDao.findReviewBook(bookId);
+         if(exist == null) {
+             reviewDao.insertReviewBook(bookId);
+         }
+    	
         // 1. ReviewUser 생성 및 저장
         ReviewUserVo review = new ReviewUserVo();
         review.setBookid(bookId);
@@ -25,19 +31,14 @@ public class ReviewServiceImple implements ReviewService {
         review.setStar(rating);
         review.setReview(content);
         reviewDao.insertReview(review);
-
-        // 2. review_book 존재 여부 확인 후 없으면 생성
-        ReviewBookVo exist = reviewDao.findReviewBook(bookId);
-        if(exist == null) {
-            reviewDao.insertReviewBook(bookId);
-        }
+        
 
         // 3. 평균/리뷰 수 계산
         double avg = reviewDao.selectAvgStar(bookId);
         int count = reviewDao.selectReviewCount(bookId);
 
         // 4. review_book 업데이트
-        reviewDao.updateReviewBook(avg, count, bookId);
+        reviewDao.upsertReviewBook(bookId, avg, count);
     }
 
     @Override

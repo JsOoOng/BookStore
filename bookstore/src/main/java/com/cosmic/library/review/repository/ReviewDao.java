@@ -22,4 +22,6 @@ public interface ReviewDao {
     // ✅ 새로 추가
     ReviewBookVo findReviewBook(Long bookid); // review_book 조회
     int insertReviewBook(Long bookid);      // review_book 새로 생성
+
+	void upsertReviewBook(Long bookid, double avg, int count);
 }

@@ -89,4 +89,22 @@ public class ReviewDAOH2 implements ReviewDao {
         String sql = "INSERT INTO review_book (bookid, rating, review_count) VALUES (?, 0, 0)";
         return jdbcTemplate.update(sql, bookid);
     }
+    
+    
+    @Override
+    public void upsertReviewBook(Long bookid, double avg, int count) {
+
+        String sql = 
+            "MERGE INTO review_book AS rb " +
+            "USING (VALUES (?, ?, ?)) AS vals(bookid, rating, review_count) " +
+            "ON rb.bookid = vals.bookid " +
+            "WHEN MATCHED THEN " +
+            "    UPDATE SET rb.rating = vals.rating, rb.review_count = vals.review_count " +
+            "WHEN NOT MATCHED THEN " +
+            "    INSERT (bookid, rating, review_count) " +
+            "    VALUES (vals.bookid, vals.rating, vals.review_count)";
+
+        jdbcTemplate.update(sql, bookid, avg, count);
+    }
+    
 }
