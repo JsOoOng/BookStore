@@ -59,10 +59,16 @@
                 <div class="form-actions-login">
                     <button type="submit" class="btn-confirm-cosmic btn-member-submit">login (대원 입성)</button>
                 </div>
+                <!-- 주소 맨 뒤에 &prompt=login 을 꼭 붙여주세요! -->
+				<a href="https://kauth.kakao.com/oauth/authorize?client_id=5704fcbe13d27f9fb045d4e38a2feab2&redirect_uri=http://localhost:8888/login/kakao&response_type=code&prompt=login">
+				    <img src="kakao_login_btn.png" alt="카카오 로그인">
+				</a>
                 <div class="login-footer-links text-center">
                     <p class="login-footer-text">아직 탐사대원이 아니신가요?</p>
                     <a href="${pageContext.request.contextPath}/member/join" class="login-redirect-link link-member-color">신규 대원 등록 (Sign Up) &rarr;</a>
                 </div>
+                
+                
             </form>
         </div>
 
