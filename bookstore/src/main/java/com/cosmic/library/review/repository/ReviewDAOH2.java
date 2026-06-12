@@ -1,4 +1,4 @@
-package com.cosmic.library.review.controller;
+package com.cosmic.library.review.repository;
 
 import java.util.List;
 
@@ -7,6 +7,9 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.cosmic.library.review.model.ReviewBookVo;
+import com.cosmic.library.review.model.ReviewUserVo;
+
 @Repository
 public class ReviewDAOH2 implements ReviewDao {
 
@@ -14,7 +17,7 @@ public class ReviewDAOH2 implements ReviewDao {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public int insertReview(ReviewUser vo) {
+    public int insertReview(ReviewUserVo vo) {
         String sql = "INSERT INTO review_user (bookid, userid, review, star) VALUES (?, ?, ?, ?)";
         
         System.out.println("🔥 insertReview 실행");
@@ -28,12 +31,12 @@ public class ReviewDAOH2 implements ReviewDao {
     }
     
     @Override
-    public List<ReviewUser> selectReviewList(Long bookid) {
+    public List<ReviewUserVo> selectReviewList(Long bookid) {
 
         String sql = "SELECT * FROM review_user WHERE bookid = ? ORDER BY id DESC";
 
         return jdbcTemplate.query(sql,
-                new BeanPropertyRowMapper<>(ReviewUser.class),
+                new BeanPropertyRowMapper<>(ReviewUserVo.class),
                 bookid);
     }
 
@@ -63,7 +66,7 @@ public class ReviewDAOH2 implements ReviewDao {
 
     // 🔥 중요: 제거하거나 제대로 구현해야 함
     @Override
-    public int updateReviewBook(ReviewBook reviewBook) {
+    public int updateReviewBook(ReviewBookVo reviewBook) {
         String sql = "UPDATE review_book SET rating=?, review_count=? WHERE bookid=?";
         return jdbcTemplate.update(sql,
                 reviewBook.getRating(),
@@ -73,10 +76,10 @@ public class ReviewDAOH2 implements ReviewDao {
 
     
     @Override
-    public ReviewBook findReviewBook(Long bookid) {
+    public ReviewBookVo findReviewBook(Long bookid) {
         String sql = "SELECT * FROM review_book WHERE bookid = ?";
-        List<ReviewBook> list = jdbcTemplate.query(sql,
-                new BeanPropertyRowMapper<>(ReviewBook.class),
+        List<ReviewBookVo> list = jdbcTemplate.query(sql,
+                new BeanPropertyRowMapper<>(ReviewBookVo.class),
                 bookid);
         return list.isEmpty() ? null : list.get(0);
     }

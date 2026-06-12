@@ -1,11 +1,11 @@
-package com.cosmic.library.review.controller;
+package com.cosmic.library.review.model;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ReviewBook {
+public class ReviewBookVo {
 
     private Long id;
     private Long bookid;

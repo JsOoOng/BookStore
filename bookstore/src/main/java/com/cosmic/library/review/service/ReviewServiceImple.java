@@ -1,11 +1,16 @@
-package com.cosmic.library.review.controller;
+package com.cosmic.library.review.service;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
+
+import com.cosmic.library.review.model.ReviewBookVo;
+import com.cosmic.library.review.model.ReviewUserVo;
+import com.cosmic.library.review.repository.ReviewDao;
 
 @Service
-public class ReviewServiceImpl implements ReviewService {
+public class ReviewServiceImple implements ReviewService {
 
     @Autowired
     private ReviewDao reviewDao;
@@ -14,7 +19,7 @@ public class ReviewServiceImpl implements ReviewService {
     public void writeReview(Long bookId, String userId, double rating, String content) {
 
         // 1. ReviewUser 생성 및 저장
-        ReviewUser review = new ReviewUser();
+        ReviewUserVo review = new ReviewUserVo();
         review.setBookid(bookId);
         review.setUserid(userId);
         review.setStar(rating);
@@ -22,7 +27,7 @@ public class ReviewServiceImpl implements ReviewService {
         reviewDao.insertReview(review);
 
         // 2. review_book 존재 여부 확인 후 없으면 생성
-        ReviewBook exist = reviewDao.findReviewBook(bookId);
+        ReviewBookVo exist = reviewDao.findReviewBook(bookId);
         if(exist == null) {
             reviewDao.insertReviewBook(bookId);
         }
@@ -36,13 +41,13 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewUser> getReviewList(Long bookId) {
+    public List<ReviewUserVo> getReviewList(Long bookId) {
         return reviewDao.selectReviewList(bookId);
     }
 
     @Override
-    public ReviewBook getReviewSummary(Long bookId) {
-        ReviewBook rb = new ReviewBook();
+    public ReviewBookVo getReviewSummary(Long bookId) {
+        ReviewBookVo rb = new ReviewBookVo();
         rb.setBookid(bookId);
         rb.setRating(reviewDao.selectAvgStar(bookId));
         rb.setReviewCount(reviewDao.selectReviewCount(bookId));

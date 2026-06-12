@@ -16,9 +16,9 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
-import com.cosmic.library.review.controller.ReviewBook;
-import com.cosmic.library.review.controller.ReviewService;
-import com.cosmic.library.review.controller.ReviewUser;
+import com.cosmic.library.review.model.ReviewBookVo;
+import com.cosmic.library.review.model.ReviewUserVo;
+import com.cosmic.library.review.service.ReviewService;
 import com.cosmic.library.vendor.model.ProductSaleVO;
 import com.cosmic.library.vendor.repository.ProductSaleDAO;
 
@@ -141,8 +141,8 @@ public class BookController {
         // ⭐ 리뷰 데이터 추가 (핵심)
         // ==========================
 
-        List<ReviewUser> reviewList = reviewService.getReviewList((long) id);
-        ReviewBook reviewSummary = reviewService.getReviewSummary((long) id);
+        List<ReviewUserVo> reviewList = reviewService.getReviewList((long) id);
+        ReviewBookVo reviewSummary = reviewService.getReviewSummary((long) id);
 
         model.addAttribute("reviewList", reviewList);
         model.addAttribute("avgRating", reviewSummary.getRating());
