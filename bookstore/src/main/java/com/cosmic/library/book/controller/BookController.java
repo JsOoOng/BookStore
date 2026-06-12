@@ -16,6 +16,9 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
+import com.cosmic.library.review.controller.ReviewBook;
+import com.cosmic.library.review.controller.ReviewService;
+import com.cosmic.library.review.controller.ReviewUser;
 import com.cosmic.library.vendor.model.ProductSaleVO;
 import com.cosmic.library.vendor.repository.ProductSaleDAO;
 
@@ -28,6 +31,9 @@ public class BookController {
     
     @Autowired
     private ProductSaleDAO productSaleDAO;
+    
+    @Autowired
+    private ReviewService reviewService;
 
     // 🪐 [네이버 발급 토큰 장착] 발급받은 실제 Client ID와 Secret 값을 여기에 입력해 줘!
     private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
@@ -118,34 +124,47 @@ public class BookController {
         @RequestParam(value = "stockQty", required = false, defaultValue = "0") int stockQty,
         @RequestParam(value = "bizName", required = false, defaultValue = "") String bizName,
         Model model) {
-        
+
         BookVO book = bookService.findBookById(id);
-        
-        // 📡 [레이더 포격] 상세 페이지에 진입한 이 책의 진짜 네이버 표지를 강제 주입한다!
+
         if (book != null) {
             book.setImage(getNaverBookCover(book.getIsbn()));
         }
-        
+
         List<BookVO> recommendList = bookService.findRandomBooks(5, id);
-        // 추천 도서 5권의 표지도 엑스박스 방지를 위해 레이더망 연동!
+
         for (BookVO recBook : recommendList) {
             recBook.setImage(getNaverBookCover(recBook.getIsbn()));
         }
-        
+
+        // ==========================
+        // ⭐ 리뷰 데이터 추가 (핵심)
+        // ==========================
+
+        List<ReviewUser> reviewList = reviewService.getReviewList((long) id);
+        ReviewBook reviewSummary = reviewService.getReviewSummary((long) id);
+
+        model.addAttribute("reviewList", reviewList);
+        model.addAttribute("avgRating", reviewSummary.getRating());
+        model.addAttribute("reviewCount", reviewSummary.getReviewCount());
+
+        // ==========================
+
         model.addAttribute("book", book);
         model.addAttribute("recommendList", recommendList);
-        
+
         if (saleId > 0 && price > 0) {
             ProductSaleVO mockMarket = new ProductSaleVO();
             mockMarket.setSaleId(saleId);
             mockMarket.setPrice(price);
             mockMarket.setStockQty(stockQty);
             mockMarket.setBizName(bizName);
-            
+
             model.addAttribute("market", mockMarket);
         } else {
             List<ProductSaleVO> allSales = productSaleDAO.findAllWithDetails();
             ProductSaleVO bestMarket = null;
+
             for (ProductSaleVO sale : allSales) {
                 if (sale.getBookId() == id) {
                     if (bestMarket == null || sale.getPrice() < bestMarket.getPrice()) {
@@ -153,11 +172,12 @@ public class BookController {
                     }
                 }
             }
+
             if (bestMarket != null) {
                 model.addAttribute("market", bestMarket);
             }
         }
-        
+
         model.addAttribute("pageName", "pages/book/view");
         return "common/layout";
     }

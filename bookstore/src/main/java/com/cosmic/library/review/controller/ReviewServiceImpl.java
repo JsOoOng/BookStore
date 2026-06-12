@@ -1,0 +1,53 @@
+package com.cosmic.library.review.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class ReviewServiceImpl implements ReviewService {
+
+    @Autowired
+    private ReviewDao reviewDao;
+
+    @Override
+    public void writeReview(Long bookId, String userId, double rating, String content) {
+
+        // 1. ReviewUser 생성 및 저장
+        ReviewUser review = new ReviewUser();
+        review.setBookid(bookId);
+        review.setUserid(userId);
+        review.setStar(rating);
+        review.setReview(content);
+        reviewDao.insertReview(review);
+
+        // 2. review_book 존재 여부 확인 후 없으면 생성
+        ReviewBook exist = reviewDao.findReviewBook(bookId);
+        if(exist == null) {
+            reviewDao.insertReviewBook(bookId);
+        }
+
+        // 3. 평균/리뷰 수 계산
+        double avg = reviewDao.selectAvgStar(bookId);
+        int count = reviewDao.selectReviewCount(bookId);
+
+        // 4. review_book 업데이트
+        reviewDao.updateReviewBook(avg, count, bookId);
+    }
+
+    @Override
+    public List<ReviewUser> getReviewList(Long bookId) {
+        return reviewDao.selectReviewList(bookId);
+    }
+
+    @Override
+    public ReviewBook getReviewSummary(Long bookId) {
+        ReviewBook rb = new ReviewBook();
+        rb.setBookid(bookId);
+        rb.setRating(reviewDao.selectAvgStar(bookId));
+        rb.setReviewCount(reviewDao.selectReviewCount(bookId));
+        return rb;
+    }
+    
+    
+}

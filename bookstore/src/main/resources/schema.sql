@@ -12,6 +12,9 @@ DROP TABLE IF EXISTS basket;
 DROP TABLE IF EXISTS PRODUCT_SALE;
 DROP TABLE IF EXISTS STOCK_IN;
 
+drop table REVIEW_USER;
+drop table REVIEW_BOOK;
+
 -- 4단계: 활동 등록부 및 도서 원천 데이터 소거
 DROP TABLE IF EXISTS VENDOR_REGISTRATION;
 DROP TABLE IF EXISTS USER_REGISTRATION;
@@ -186,6 +189,36 @@ CREATE TABLE QNA_CHAT (
     send_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_pid) REFERENCES PARTICIPANT(p_id),
     FOREIGN KEY (receiver_pid) REFERENCES PARTICIPANT(p_id)
+);
+
+-- 15. review_book : 리뷰 도서 연결
+CREATE TABLE review_book (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    bookid BIGINT NOT NULL UNIQUE,
+    rating DECIMAL(2,1) NOT NULL,
+    review_count INT DEFAULT 0,
+    CONSTRAINT fk_review_book_book FOREIGN KEY (bookid)
+        REFERENCES book(id)
+        ON DELETE CASCADE
+);
+
+--16. review_user : 리뷰 유져
+CREATE TABLE review_user (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    bookid BIGINT NOT NULL,
+    userid VARCHAR(100) NOT NULL,
+    review CLOB NOT NULL,
+    star DECIMAL(2,1) NOT NULL,
+
+    CONSTRAINT fk_review_user_book
+        FOREIGN KEY (bookid)
+        REFERENCES review_book(bookid)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_review_user_user
+        FOREIGN KEY (userid)
+        REFERENCES cosmic_user(user_id)
+        ON DELETE CASCADE
 );
 
 
