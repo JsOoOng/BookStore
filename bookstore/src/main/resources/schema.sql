@@ -221,6 +221,9 @@ CREATE TABLE review_user (
         ON DELETE CASCADE
 );
 
+ALTER TABLE review_user
+ADD CONSTRAINT uk_review_user UNIQUE (bookid, userid);
+
 
 INSERT INTO BASE_ADMIN (admin_id, admin_pw, admin_name, role, regDate) VALUES ('admin', '1234', '최고 사령관', 'SUPER', NOW());
 INSERT INTO COSMIC_USER (user_id, user_pw, user_name, is_member, points, email, address, regDate) VALUES ('user', '1234', '박대원', 1, 1000, 'member@cosmic.com', '경기도 고양시 일산동구 백마로 195', NOW());

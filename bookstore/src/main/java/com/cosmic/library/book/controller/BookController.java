@@ -6,6 +6,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +16,16 @@ import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
+import com.cosmic.library.member.model.MemberVO;
 import com.cosmic.library.review.model.ReviewBookVo;
 import com.cosmic.library.review.model.ReviewUserVo;
 import com.cosmic.library.review.service.ReviewService;
@@ -123,6 +133,7 @@ public class BookController {
         @RequestParam(value = "price", required = false, defaultValue = "0") int price,
         @RequestParam(value = "stockQty", required = false, defaultValue = "0") int stockQty,
         @RequestParam(value = "bizName", required = false, defaultValue = "") String bizName,
+        HttpSession session,
         Model model) {
 
         BookVO book = bookService.findBookById(id);
@@ -149,6 +160,20 @@ public class BookController {
         model.addAttribute("reviewCount", reviewSummary.getReviewCount());
 
         // ==========================
+        
+        MemberVO loginUser = (MemberVO) session.getAttribute("loginMember");
+
+        boolean userAlreadyReviewed = false;
+
+        if (loginUser != null) {
+            userAlreadyReviewed =
+                reviewService.isUserReviewed((long) id, loginUser.getId());
+        }
+        
+        //===========================
+
+        model.addAttribute("userAlreadyReviewed", userAlreadyReviewed);
+        
 
         model.addAttribute("book", book);
         model.addAttribute("recommendList", recommendList);

@@ -14,4 +14,13 @@ public interface ReviewService {
     ReviewBookVo getReviewSummary(Long bookId);
 
 	void writeReview(Long bookId, String userId, double rating, String content);
+	
+	
+	//추가
+	
+	void updateReview(Long reviewId, double rating, String content, String loginUserId);
+
+	void deleteReview(Long reviewId, String loginUserId);
+	
+	public boolean isUserReviewed(Long bookId, String userId);
 }

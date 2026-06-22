@@ -107,4 +107,42 @@ public class ReviewDAOH2 implements ReviewDao {
         jdbcTemplate.update(sql, bookid, avg, count);
     }
     
+    
+    //추가
+    
+    @Override
+    public int updateReview(Long reviewId, String content, double star) {
+        String sql = "UPDATE review_user SET review=?, star=? WHERE id=?";
+        return jdbcTemplate.update(sql, content, star, reviewId);
+    }
+    
+    @Override
+    public int deleteReview(Long reviewId) {
+        String sql = "DELETE FROM review_user WHERE id=?";
+        return jdbcTemplate.update(sql, reviewId);
+    }
+    
+    @Override
+    public ReviewUserVo findById(Long reviewId) {
+        String sql = "SELECT * FROM review_user WHERE id=?";
+        return jdbcTemplate.queryForObject(
+            sql,
+            new BeanPropertyRowMapper<>(ReviewUserVo.class),
+            reviewId
+        );
+    }
+    
+    @Override
+    public int countUserReview(Long bookId, String userId) {
+        String sql = "SELECT COUNT(*) FROM review_user WHERE bookid=? AND userid=?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, bookId, userId);
+    }
+    
+    @Override
+    public int checkUserReviewed(Long bookId, String userId) {
+        String sql = "SELECT COUNT(*) FROM review_user WHERE bookid=? AND userid=?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, bookId, userId);
+    }
+    
+    
 }

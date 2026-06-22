@@ -52,15 +52,57 @@ public class ReviewController {
         
         if (userIdStr == null || userIdStr.trim().isEmpty()) {
             return "NOT_LOGIN";
+        }try {
+
+            reviewService.writeReview(bookId, userIdStr, rating, content);
+
+            return "OK";
+
+        } catch (RuntimeException e) {
+
+            if ("ALREADY_REVIEWED".equals(e.getMessage())) {
+                return "ALREADY_REVIEWED";
+            }
+
+            return "FAIL";
         }
+    }
+    
+    //추가
+    
+    @PostMapping("/update")
+    @ResponseBody
+    public String updateReview(@RequestParam Long reviewId,
+                               @RequestParam double rating,
+                               @RequestParam String content,
+                               HttpSession session) {
 
+        if (session.getAttribute("loginMember") == null) {
+            return "NOT_LOGIN";
+        }
         
+        MemberVO loginUser = (MemberVO) session.getAttribute("loginMember");
+        String userId = loginUser.getId();
 
-        reviewService.writeReview(bookId, userIdStr, rating, content);
-        
+        reviewService.updateReview(reviewId, rating, content, userId);
         return "OK";
     }
     
+    @PostMapping("/delete")
+    @ResponseBody
+    public String deleteReview(@RequestParam Long reviewId,
+                               HttpSession session) {
+
+        if (session.getAttribute("loginMember") == null) {
+            return "NOT_LOGIN";
+        }
+        
+        MemberVO loginUser = (MemberVO) session.getAttribute("loginMember");
+        String userId = loginUser.getId();
+
+        reviewService.deleteReview(reviewId, userId);
+        return "OK";
+    }
     
     
     

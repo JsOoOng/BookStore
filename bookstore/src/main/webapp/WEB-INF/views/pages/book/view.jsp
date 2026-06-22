@@ -133,22 +133,37 @@
 
             <c:forEach var="review" items="${reviewList}">
     <div class="review-card">
-
+    	<div class="review-writer">
+                ${fn:substring(review.userid,0,2)}****
+        </div>
+    
         <div class="review-header">
-
+			
             <div class="review-star"
                  data-rating="${review.star}">
             </div>
-
-            <div class="review-writer">
-                ${fn:substring(review.userid,0,2)}****
-            </div>
-
+            
         </div>
 
         <div class="review-content">
             ${review.review}
         </div>
+        
+        <c:if test="${loginMember.id eq review.userid}">
+    <div class="review-actions">
+
+    <button class="review-btn edit"
+            onclick="openEditModal(${review.id}, `${fn:escapeXml(review.review)}`, ${review.star})">
+        ✏ 수정
+    </button>
+
+    <button class="review-btn delete"
+            onclick="openDeleteModal(${review.id})">
+        🗑 삭제
+    </button>
+
+</div>
+</c:if>
 
 
     </div>
@@ -170,13 +185,13 @@
 
 
 <div class="review-write-area">
-
+<c:if test="${not userAlreadyReviewed}">
     <button type="button"
             class="btn-cosmic btn-review-write"
             onclick="openReviewModal()">
         ✍ 리뷰 작성하기
     </button>
-
+</c:if>
 </div>
     
 </div>
@@ -219,6 +234,57 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" onclick="submitReview()">작성 완료</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">리뷰 삭제</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        정말 이 리뷰를 삭제하시겠습니까?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">삭제</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">리뷰 수정</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div id="editRatingSelector"></div>
+
+        <textarea id="editContent" class="form-control mt-2"></textarea>
+
+        <input type="hidden" id="editRating">
+        <input type="hidden" id="editId">
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button class="btn btn-primary" onclick="submitEdit()">수정</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -331,8 +397,7 @@
                 }
                 else if(rating >= i-0.5){
 
-                    html += `
-                    <span style="
+                    html += `<span style="
                         background:linear-gradient(
                         to right,
                         #ffc107 50%,
@@ -477,5 +542,116 @@
 
         });
     }
+    
+    let deleteTargetId = null;
+
+    function openDeleteModal(id){
+        deleteTargetId = id;
+        new bootstrap.Modal(document.getElementById("deleteModal")).show();
+    }
+
+    function confirmDelete(){
+
+        fetch("${pageContext.request.contextPath}/review/delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "reviewId=" + deleteTargetId
+        })
+        .then(res => res.text())
+        .then(data => {
+            if(data === "OK"){
+                location.reload();
+            } else {
+                alert("삭제 실패");
+            }
+        });
+    }
+    
+    function openEditModal(id, content, star){
+
+        document.getElementById("editId").value = id;
+        document.getElementById("editContent").value = content;
+
+        document.getElementById("editRating").value = star;
+
+        renderEditRating(star); // ⭐ 이거 반드시 호출
+
+        new bootstrap.Modal(
+            document.getElementById("editModal")
+        ).show();
+    }
+    
+    function submitEdit(){
+
+        const id = document.getElementById("editId").value;
+        const content = document.getElementById("editContent").value;
+        const rating = document.getElementById("editRating").value;
+
+        fetch("${pageContext.request.contextPath}/review/update", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body:
+                "reviewId=" + id +
+                "&content=" + encodeURIComponent(content) +
+                "&rating=" + rating
+        })
+        .then(res => res.text())
+        .then(data => {
+            if(data === "OK"){
+                location.reload();
+            } else {
+                alert("수정 실패");
+            }
+        });
+    }
+    
+    function renderEditRating(rating){
+
+        const selector = document.getElementById("editRatingSelector");
+        selector.innerHTML = "";
+
+        for(let i=1;i<=5;i++){
+
+            const star = document.createElement("span");
+            star.style.cursor = "pointer";
+            star.style.fontSize = "28px";
+            star.style.marginRight = "2px";
+
+            if(rating >= i){
+                star.innerHTML = "★";
+                star.style.color = "#ffc107";
+
+            } else if(rating >= i - 0.5){
+                star.innerHTML = "★";
+                star.style.background =
+                    "linear-gradient(to right,#ffc107 50%,#ccc 50%)";
+                star.style.webkitBackgroundClip = "text";
+                star.style.webkitTextFillColor = "transparent";
+
+            } else {
+                star.innerHTML = "★";
+                star.style.color = "#ccc";
+            }
+
+            // ⭐ 클릭 이벤트 (핵심)
+            star.onclick = function(e){
+                const rect = this.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const half = clickX < rect.width / 2 ? 0.5 : 1;
+
+                const newRating = i - 1 + half;
+
+                document.getElementById("editRating").value = newRating;
+
+                renderEditRating(newRating);
+            };
+
+            selector.appendChild(star);
+        }
+    }	
     
 </script>

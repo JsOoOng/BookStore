@@ -24,4 +24,17 @@ public interface ReviewDao {
     int insertReviewBook(Long bookid);      // review_book 새로 생성
 
 	void upsertReviewBook(Long bookid, double avg, int count);
+	
+	
+	//추가
+	int updateReview(Long reviewId, String content, double star);
+
+	int deleteReview(Long reviewId);
+
+	ReviewUserVo findById(Long reviewId);	
+	
+	int countUserReview(Long bookId, String userId);
+	
+	int checkUserReviewed(Long bookId, String userId);
+	
 }
