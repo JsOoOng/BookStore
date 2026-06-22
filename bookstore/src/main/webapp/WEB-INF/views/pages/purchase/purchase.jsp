@@ -25,11 +25,11 @@
 
                         <div class="purchase-info">
                             <div class="purchase-badge-row">
-							    <span class="purchase-badge">🚀 전송 대기 중</span>
-							    <c:if test="${not empty book.genre}">
-							        <span class="purchase-badge">${book.genre}</span>
-							    </c:if>
-							</div>
+                                <span class="purchase-badge">🚀 전송 대기 중</span>
+                                <c:if test="${not empty book.genre}">
+                                    <span class="purchase-badge">${book.genre}</span>
+                                </c:if>
+                            </div>
 
                             <h3 class="item-title">${book.title}</h3>
 
@@ -43,7 +43,6 @@
                             <div class="purchase-price-row">
                                 <span class="price-label">데이터 가치</span>
                                 <span class="item-price">
-                                    <%-- 🌟 [수정] 단가 대신 진짜 수량이 곱해진 총 가격을 뿜어냅니다! --%>
                                     <fmt:formatNumber value="${book.price * book.quantity}" pattern="#,###"/> 원
                                 </span>
                             </div>
@@ -56,23 +55,36 @@
                 <div class="summary-inner">
                     <h3 class="purchase-summary-title">결제 요약</h3>
 
-                    <form action="${pageContext.request.contextPath}/purchase/buy" method="post">
+                    <%-- 로그인 여부에 따라 action 경로를 다르게 설정 --%>
+                    <c:set var="actionUrl" value="${pageContext.request.contextPath}/purchase/buy" />
+                    <c:if test="${empty sessionScope.user}">
+                        <c:set var="actionUrl" value="${pageContext.request.contextPath}/cookie/purchase/buy" />
+                    </c:if>
+
+                    <form action="${actionUrl}" method="post">
                         <c:choose>
-                            <%-- 장바구니에서 넘어온 경우 --%>
                             <c:when test="${not empty basketIds}">
                                 <input type="hidden" name="basketIds" value="${basketIds}">
                             </c:when>
-                            <%-- 상세페이지에서 바로구매로 넘어온 경우 --%>
                             <c:otherwise>
-                                <input type="hidden" name="bookId" value="${purchaseList[0].bookId}">
+                                <input type="hidden" name="bookId" value="${purchaseList[0].saleId}">
                             </c:otherwise>
                         </c:choose>
 
                         <div class="purchase-summary-details">
+                            <%-- 비회원일 경우 배송 정보 입력 폼 추가 --%>
+                            <c:if test="${empty sessionScope.user}">
+                                <div class="guest-info-section" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                    <h4 style="margin-bottom: 10px;">배송 정보</h4>
+                                    <input type="text" name="name" placeholder="받으시는 분 성함" required style="width: 100%; margin-bottom: 5px; padding: 8px;">
+                                    <input type="text" name="phone" placeholder="전화번호" required style="width: 100%; margin-bottom: 5px; padding: 8px;">
+                                    <input type="text" name="address" placeholder="배송지 주소" required style="width: 100%; padding: 8px;">
+                                </div>
+                            </c:if>
+
                             <div class="summary-row">
                                 <span>선택된 지식 수</span>
                                 <span>
-                                    <%-- 🌟 [수정] 리스트의 종류 개수가 아닌 모든 도서 수량의 총합을 실시간 연산 --%>
                                     <c:set var="totalQuantity" value="0" />
                                     <c:forEach var="b" items="${purchaseList}">
                                         <c:set var="totalQuantity" value="${totalQuantity + b.quantity}" />
@@ -93,6 +105,7 @@
                                 <strong class="total-amount">
                                     <fmt:formatNumber value="${totalPrice}" pattern="#,###"/> 원
                                 </strong>
+                                <input type="hidden" name="totalPrice" value="${totalPrice}">
                             </div>
                         </div>
 
@@ -108,6 +121,5 @@
                 </div>
             </aside>
         </div>
-
     </div>
 </div>

@@ -123,4 +123,30 @@ public class BookDAOH2 implements BookDAO {
         String sql = "SELECT * FROM BOOK WHERE id != ? ORDER BY RAND() LIMIT ?";
         return jdbcTemplate.query(sql, rowMapper, excludeId, count);
     }
+
+    @Override
+    public BookVO selectBookBySaleId(int saleId) {
+        // 💡 PRODUCT_SALE 테이블의 SALE_ID를 조건으로, 
+        // BOOK 테이블의 ID와 PRODUCT_SALE의 STOCK_ID를 연결합니다.
+        String sql = "SELECT b.*, p.PRICE " +
+                     "FROM BOOK b " +
+                     "JOIN PRODUCT_SALE p ON b.id = p.STOCK_ID " +
+                     "WHERE p.SALE_ID = ?"; 
+        
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+                BookVO book = new BookVO();
+                book.setId(rs.getInt("id"));
+                book.setTitle(rs.getString("title"));
+                book.setWriter(rs.getString("writer"));
+                book.setImage(rs.getString("image"));
+                book.setPrice(rs.getInt("PRICE")); // PRODUCT_SALE 테이블의 가격 컬럼 매핑
+                book.setSaleId(saleId);
+                return book;
+            }, saleId);
+        } catch (Exception e) {
+            System.out.println("❌ 데이터 조회 실패: " + e.getMessage());
+            return null;
+        }
+    }
 }

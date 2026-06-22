@@ -110,6 +110,18 @@
                     </c:when>
             
                     <c:otherwise>
+						<li class="nav-item">
+						    <c:choose>
+						        <%-- 로그인 정보(loginMember)가 있다면 DB 장바구니로 --%>
+						        <c:when test="${not empty sessionScope.loginMember}">
+						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/basket">장바구니</a>
+						        </c:when>
+						        <%-- 로그인 정보가 없다면 쿠키 장바구니로 --%>
+						        <c:otherwise>
+						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/basket/list">장바구니</a>
+						        </c:otherwise>
+						    </c:choose>
+						</li>
                         <li class="nav-item">
                             <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/member/login">로그인</a>
                         </li>

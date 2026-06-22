@@ -42,5 +42,13 @@ public interface BookDAO {
 	public BookVO findById(int id);
 
 	List<BookVO> selectRandom(int count, int excludeId);
+	
+	BookVO selectBookBySaleId(int saleId);
+	
+    
+	
+	
+
+	
 }
 

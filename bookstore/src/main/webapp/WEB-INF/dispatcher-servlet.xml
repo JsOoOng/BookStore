@@ -40,6 +40,14 @@
 	        <mvc:exclude-mapping path="/admin/login"/>
 	        <mvc:exclude-mapping path="/login/kakao"/>
 	        
+        
+	        <mvc:exclude-mapping path="/member/login"/>
+	        
+	        <mvc:exclude-mapping path="/basket"/>              
+	        <mvc:exclude-mapping path="/basket/add"/>          
+	        <mvc:exclude-mapping path="/basket/addMarketProduct"/> 
+	        <mvc:exclude-mapping path="/cookie/**"/>           
+	        
 	        <bean class="com.cosmic.library.common.filter.LoginInterceptor" />
 	    </mvc:interceptor>
 	</mvc:interceptors>

@@ -14,4 +14,13 @@ public class BookVO {
     private String language;    // 도서 기록 언어 (기본값: 'Korean')
     private String isbn;        // 국제 표준 식별 번호 (UNIQUE)
     private String image;       // 표지 이미지 경로
+    private int saleId; 
+ // ★ 추가: DB에는 없지만 장바구니 기능을 위해 필요한 필드
+    private int quantity; 
+    
+   
+    
+    // ★ 추가: 화면에서 가격을 표시하려면 price 필드도 필요할 수 있습니다. 
+    // 만약 DB에 price 컬럼이 있다면 추가해 주세요!
+    private int price;
 }

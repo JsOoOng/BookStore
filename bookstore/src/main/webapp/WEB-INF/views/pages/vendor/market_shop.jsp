@@ -117,17 +117,21 @@ function addBasket(saleId, title) {
         return response.text(); 
     })
     .then(function(data) {
-        if (data.trim() === "ok") {
-            if (confirm("🪐 [" + title + "] 상품이 장바구니 궤도에 안착했습니다!\n지금 장바구니 화면으로 워프하시겠습니까?")) {
-                location.href = "${pageContext.request.contextPath}/basket"; 
-            }
-        } else if (data.trim() === "NOT_LOGIN") {
-            alert("🔒 이 임무는 일반 대원 로그인 후 수행 가능합니다.\n로그인 행성으로 이동해 주세요.");
-            location.href = "${pageContext.request.contextPath}/member/login";
-        } else {
-            alert("🚨 장바구니 담기 실패 또는 시스템 장애가 발생했습니다.");
+    console.log("서버 응답값:", data); 
+    var result = data.trim();
+    
+    // 💡 수정: 응답값에 'ok'가 포함되어 있는지 확인
+    if (result.includes("ok")) {
+        if (confirm("🪐 상품이 장바구니 들어갔습니다\n지금 바로 결제하시겠습니까?")) {
+            location.href = "${pageContext.request.contextPath}/cookie/basket/checkout"; 
         }
-    })
+    } else if (result === "NOT_LOGIN") {
+        alert("🔒 로그인 후 수행 가능합니다.");
+        location.href = "${pageContext.request.contextPath}/member/login";
+    } else {
+        alert("🚨 장바구니 담기 실패: " + result);
+    }
+})
     .catch(function(error) {
         console.error("Error:", error);
         alert("🛰️ 사령부 서버와 통신이 두절되었습니다.");

@@ -1,5 +1,6 @@
 package com.cosmic.library.purchase.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.basket.service.BasketService;
+import com.cosmic.library.book.model.BookVO;
+import com.cosmic.library.book.repository.BookDAO;
+import com.cosmic.library.cookie.model.CookieOrderVO;
+import com.cosmic.library.cookie.repository.CookiePurchaseRepository;
 import com.cosmic.library.purchase.model.Purchase;
 import com.cosmic.library.purchase.repository.PurchaseRepository;
 import com.cosmic.library.vendor.model.ProductSaleVO;
@@ -24,30 +29,31 @@ public class PurchaseService {
 
     @Autowired
     private BasketService basketService; // 장바구니 멸균 처리기
+    
+    @Autowired
+    private CookiePurchaseRepository cookiePurchaseRepository;
+    
+    @Autowired
+    private BookDAO bookDAO; // 도서 상세 정보를 가져오기 위한 DAO
 
     // =========================================================================
     // 🚀 [대통합 결제 엔진] 마스터-디테일 생성 + 재고 차감 + 장바구니 비우기
     // =========================================================================
-    @Transactional // 단 하나의 에러라도 발생하면 100% 원상복구(Rollback) 시키는 절대 방어막!
+    @Transactional
     public void executeCheckout(int userRegNum, List<BasketVO> itemsToBuy, int[] basketIdsToRemove) {
         
-        // 1. 장바구니 리스트를 스캔하여 총 결제 금액(total_price) 산출
         int grandTotal = 0;
         for (BasketVO item : itemsToBuy) {
             grandTotal += (item.getPrice() * item.getQuantity());
         }
 
-        // 2. 마스터(PURCHASE) 테이블에 '영수증 헤더' 발급 및 번호 가로채기
         int purchaseId = purchaseRepository.insertMaster(userRegNum, grandTotal);
         if (purchaseId <= 0) throw new RuntimeException("🚨 마스터 영수증 발급 실패!");
 
-        // 3. 구매한 품목들을 순회하며 '세부 품목(DETAIL)' 기록 및 재고 차감
         for (BasketVO item : itemsToBuy) {
-            // 해당 마켓 상품의 파트너사 정보(v_reg_num)를 스캔
             ProductSaleVO saleInfo = productSaleDAO.findById(item.getSaleId());
             if (saleInfo == null) throw new RuntimeException("🚨 마켓 상품 데이터 소실!");
             
-            // 디테일 기록 저장
             purchaseRepository.insertDetail(
                 purchaseId, 
                 item.getSaleId(), 
@@ -56,34 +62,86 @@ public class PurchaseService {
                 item.getPrice()
             );
 
-            // 💥 구매한 수량만큼 마켓의 실시간 창고 재고 자동 차감!
             productSaleDAO.updateStock(item.getSaleId(), -item.getQuantity());
         }
 
-        // 4. 결제가 무사히 끝났다면, 장바구니에 담겨있던 흔적을 완전히 소각!
         if (basketIdsToRemove != null && basketIdsToRemove.length > 0) {
             basketService.delete(userRegNum, basketIdsToRemove);
         }
     }
 
     // =========================================================================
-    // 📜 대원별 마이페이지 탐사(구매) 기록 호출
+    // 🍪 [비회원 대통합 결제 엔진] 쿠키 데이터 기반 주문 처리
+    // =========================================================================
+    @Transactional
+    public void executeCookieCheckout(CookieOrderVO cookieOrder) {
+        
+        // 1. 주문 기본 정보 저장 후 생성된 purchaseId를 받아옴 (JdbcTemplate KeyHolder 활용)
+        int purchaseId = cookiePurchaseRepository.insertCookieOrder(cookieOrder);
+        
+        if (purchaseId <= 0) throw new RuntimeException("🚨 비회원 영수증 발급 실패!");
+
+        // 2. 쿠키에 담긴 품목 순회하며 상세 기록 및 재고 차감
+        for (BasketVO item : cookieOrder.getItems()) {
+            
+            ProductSaleVO saleInfo = productSaleDAO.findById(item.getSaleId());
+            if (saleInfo == null) throw new RuntimeException("🚨 상품 데이터 소실!");
+            
+            // 상세 주문 기록 저장 (회원 결제와 동일한 디테일 테이블 사용)
+            purchaseRepository.insertDetail(
+                purchaseId, 
+                item.getSaleId(), 
+                saleInfo.getVRegNum(), 
+                item.getQuantity(), 
+                item.getPrice()
+            );
+
+            // 실시간 재고 차감
+            productSaleDAO.updateStock(item.getSaleId(), -item.getQuantity());
+        }
+    }
+
+    // =========================================================================
+    // 📜 기타 유틸리티 및 조회 메서드
     // =========================================================================
     public List<Purchase> getMyPurchases(int userRegNum) {
         return purchaseRepository.findByMemberId(userRegNum);
     }
     
-    // =========================================================================
-    // 🏢 파트너 대시보드용 주문서 스캔
-    // =========================================================================
     public List<Purchase> getVendorOrders(int vendorRegNum) {
         return purchaseRepository.findByVendorRegNum(vendorRegNum);
     }
 
-    // =========================================================================
-    // 🚚 [배송하기] 파트너사 배송 상태 워프 엔진 (READY ➔ SHIPPING)
-    // =========================================================================
     public boolean startShipping(int purchaseId) {
         return purchaseRepository.updateStatus(purchaseId, "SHIPPING") > 0;
+    }
+   
+    public List<BookVO> getBasketDetails(List<BasketVO> basketList) {
+        List<BookVO> purchaseList = new ArrayList<>();
+        
+        if (basketList != null) {
+            for (BasketVO basket : basketList) {
+                // 1. saleId를 기준으로 DB에서 상세 정보를 조회
+                BookVO book = bookDAO.selectBookBySaleId(basket.getSaleId());
+                
+                if (book != null) {
+                    // 2. 쿠키의 수량(quantity) 주입
+                    book.setQuantity(basket.getQuantity());
+                    
+                    // 3. 가격 보정 (중요!)
+                    // DB에서 가져온 가격이 0이거나 데이터가 부족할 경우, 
+                    // 쿠키에 담겨있던 가격(basket.getPrice())을 우선적으로 사용하도록 설계
+                    if (book.getPrice() <= 0 && basket.getPrice() > 0) {
+                        book.setPrice(basket.getPrice());
+                    }
+                    
+                    purchaseList.add(book);
+                } else {
+                    // 디버깅용: 상품 정보를 찾지 못했을 경우 콘솔에 출력
+                    System.out.println("⚠️ [경고] saleId " + basket.getSaleId() + "에 해당하는 도서 정보를 찾을 수 없습니다.");
+                }
+            }
+        }
+        return purchaseList;
     }
 }

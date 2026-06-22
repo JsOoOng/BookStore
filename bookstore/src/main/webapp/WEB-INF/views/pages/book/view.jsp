@@ -158,18 +158,56 @@
         })
         .then(res => res.text())
         .then(data => {
-            if (data.trim() === "ok") {
+            let response = data.trim();
+            
+            // 1. 회원 장바구니 성공 시
+            if (response === "ok") {
                 if (confirm("🪐 [" + title + "] 상품이 장바구니 궤도에 안착했습니다!\n지금 장바구니 화면으로 워프하시겠습니까?")) {
                     location.href = "${pageContext.request.contextPath}/basket"; 
                 }
-            } else if (data.trim() === "NOT_LOGIN") {
-                alert("🔒 이 임무는 일반 대원 로그인 후 수행 가능합니다.");
-                location.href = "${pageContext.request.contextPath}/member/login";
-            } else {
-                alert("🚨 장바구니 담기에 실패했습니다.");
+            } 
+            // 2. 비회원(쿠키) 장바구니 성공 시 (서버가 보내준 'ok_cookie' 처리)
+            else if (response === "ok_cookie") {
+                if (confirm("🍪 비회원 보관소에 상품이 담겼습니다.\n임시 보관소를 확인하시겠습니까?")) {
+                    location.href = "${pageContext.request.contextPath}/cookie/basket/list"; 
+                }
+            }
+            // 3. 로그인이 필요한 경우
+            else if (response === "NOT_LOGIN") {
+                addBasketToCookie(saleId, title);
+            } 
+            else {
+                alert("🚨 장바구니 담기 실패 (서버 응답: " + response + ")");
             }
         })
-        .catch(err => alert("🛰️ 사령부 통신 두절"));
+        .catch(err => {
+            alert("🛰️ 사령부 통신 두절");
+            console.error(err);
+        });
+    }
+
+    // 🪐 비회원 전용 쿠키 장바구니 추가 함수
+    function addBasketToCookie(saleId, title) {
+        var formData = new URLSearchParams();
+        formData.append("saleId", saleId);
+        formData.append("qty", 1);
+
+        fetch("${pageContext.request.contextPath}/cookie/basket/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data.trim() === "ok") {
+                if (confirm("🍪 비회원 보관소에 상품이 담겼습니다.\n임시 보관소를 확인하시겠습니까?")) {
+                    location.href = "${pageContext.request.contextPath}/cookie/basket/list"; 
+                }
+            } else {
+                alert("🚨 비회원 보관함 동기화 실패");
+            }
+        })
+        .catch(err => alert("🛰️ 시스템 통신 오류"));
     }
     
     let currentOrderParam = { bookId: '', saleId: '', price: '' };
@@ -194,7 +232,6 @@
 
         if (inputAddress === "" || inputAddress === "은하계 미지정 구역") {
             alert("보급품을 정상 전달받을 유효한 주소를 입력해 주세요!");
-            document.getElementById('modalAddressInput').focus();
             return;
         }
 
@@ -209,16 +246,13 @@
         .then(res => res.text())
         .then(data => {
             if (data.trim() === "OK") {
-                alert("🏠 배송지 주소가 은하 네트워크에 성공적으로 등록되었습니다!\n주문서 페이지로 도약합니다.");
+                alert("🏠 배송지 주소 등록 완료! 주문서 페이지로 도약합니다.");
                 proceedToPurchasePage();
-            } else if (data.trim() === "NOT_LOGIN") {
-                alert("🔒 인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
-                location.href = "${pageContext.request.contextPath}/member/login";
             } else {
-                alert("🚨 시스템 통신 장애로 주소 등록에 실패했습니다.");
+                alert("🚨 주소 등록 실패");
             }
         })
-        .catch(err => alert("🛰️ 사령부 메인 서버 인프라 통신 두절"));
+        .catch(err => alert("🛰️ 통신 두절"));
     }
 
     function proceedToPurchasePage() {
