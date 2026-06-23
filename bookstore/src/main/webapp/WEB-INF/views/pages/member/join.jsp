@@ -31,10 +31,45 @@
 
             <%-- 통신 이메일 --%>
             <div class="input-group-cosmic">
-                <label for="email">통신 이메일 주소</label>
-                <input type="email" id="email" name="email" placeholder="example@cosmic.com" required>
-                <small class="form-desc-text">기지 주요 공지 및 보급 현황이 전송되는 통신 주소입니다.</small>
-            </div>
+		    <label for="email">통신 이메일 주소</label>
+		
+		    <div class="cosmic-id-check-row">
+		        <input type="email"
+		               id="email"
+		               name="email"
+		               placeholder="example@cosmic.com"
+		               required>
+		
+		        <button type="button"
+		                id="btn_email_auth"
+		                class="btn-cosmic-inline">
+		            인증코드 보내기
+		        </button>
+		    </div>
+		
+		    <div class="cosmic-id-check-row mt-2">
+		        <input type="text"
+		               id="emailAuthCode"
+		               placeholder="인증코드 입력"
+		               disabled>
+		               
+		               <button type="button"
+				        id="btn_verify_auth"
+				        class="btn-cosmic-inline">
+						    인증확인
+						</button>
+		
+		        <span id="authTimer"
+		              style="display:none; min-width:60px; line-height:40px;">
+		            05:00
+		        </span>
+		    </div>
+		
+		    <small id="email_auth_msg"
+		           class="form-msg-text msg-ready">
+		        이메일 인증이 필요합니다.
+		    </small>
+		</div>
 
             <%-- 배송지 주소 --%>
             <div class="input-group-cosmic">
@@ -73,6 +108,12 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+let idChecked = false;
+let emailVerified = false;
+
+let timerInterval = null;
+let remainSeconds = 300;
+
     $(document).ready(function() {
         // 아이디 입력값이 변경되면 즉시 가입 버튼을 다시 잠그고 확인 메시지를 초기화합니다.
         $("#id").on("input", function() {
@@ -115,17 +156,165 @@
 
     // 폼 제출 전 최종 관문 (비밀번호 일치 여부 확인)
     function validateForm() {
-        const pw = document.getElementById('pw').value;
-        const pwConfirm = document.getElementById('pw_confirm').value;
-        const errorMsg = document.getElementById('pw_error');
 
-        if (pw !== pwConfirm) {
-            errorMsg.style.display = 'block'; // 스크립트 제어용 속성 보존
-            document.getElementById('pw_confirm').focus();
-            return false; 
+	    if(!emailVerified){
+	        alert("이메일 인증을 완료해주세요.");
+	        return false;
+	    }
+	
+	    const pw = document.getElementById('pw').value;
+	    const pwConfirm = document.getElementById('pw_confirm').value;
+	
+	    if (pw !== pwConfirm) {
+	
+	        document.getElementById('pw_error').style.display = 'block';
+	
+	        return false;
+	    }
+	
+	    return true;
+	}
+    
+    $("#btn_email_auth").click(function() {
+
+        const email = $("#email").val().trim();
+
+        if(email === ""){
+            alert("이메일을 입력해주세요.");
+            return;
         }
-        
-        errorMsg.style.display = 'none';
-        return true; 
+
+        $.ajax({
+            url : "${pageContext.request.contextPath}/emailauth/send",
+            type : "POST",
+            data : {
+                email : email
+            },
+
+            success : function(){
+
+                $("#emailAuthCode").prop("disabled", false);
+
+                $("#authTimer").show();
+
+                startAuthTimer();
+
+                $("#email_auth_msg")
+                    .text("인증코드가 발송되었습니다.")
+                    .removeClass("msg-error")
+                    .addClass("msg-success");
+            },
+
+            error : function(){
+                alert("인증코드 발송 실패");
+            }
+        });
+
+    });
+    
+    function startAuthTimer(){
+
+        clearInterval(timerInterval);
+
+        remainSeconds = 300;
+
+        timerInterval = setInterval(function(){
+
+            let minute = Math.floor(remainSeconds / 60);
+            let second = remainSeconds % 60;
+
+            $("#authTimer").text(
+                String(minute).padStart(2,'0')
+                + ":"
+                + String(second).padStart(2,'0')
+            );
+
+            remainSeconds--;
+
+            if(remainSeconds < 0){
+
+                clearInterval(timerInterval);
+
+                $("#authTimer").text("만료");
+
+                $("#emailAuthCode").prop("disabled", true);
+
+                emailVerified = false;
+
+            }
+
+        },1000);
     }
+    
+    $("#btn_verify_auth").click(function(){
+
+        const email = $("#email").val().trim();
+        const code = $("#emailAuthCode").val().trim();
+
+        if(code === ""){
+            alert("인증코드를 입력해주세요.");
+            return;
+        }
+
+        $.ajax({
+
+            url : "${pageContext.request.contextPath}/emailauth/verify",
+
+            type : "POST",
+
+            data : {
+                email : email,
+                authCode : code
+            },
+
+            success : function(res){
+
+                if(res === "Y"){
+
+                    emailVerified = true;
+
+                    clearInterval(timerInterval);
+
+                    $("#authTimer").text("인증완료");
+
+                    $("#emailAuthCode").prop("disabled", true);
+
+                    $("#email_auth_msg")
+                        .text("이메일 인증이 완료되었습니다.")
+                        .removeClass("msg-error")
+                        .addClass("msg-success");
+
+                }else{
+
+                    $("#email_auth_msg")
+                        .text("인증코드가 올바르지 않습니다.")
+                        .removeClass("msg-success")
+                        .addClass("msg-error");
+
+                }
+
+            }
+
+        });
+
+    });
+    
+    $("#email").on("input", function(){
+
+        emailVerified = false;
+
+        $("#emailAuthCode").val("");
+
+        $("#emailAuthCode").prop("disabled", true);
+
+        clearInterval(timerInterval);
+
+        $("#authTimer").hide();
+
+        $("#email_auth_msg")
+            .text("이메일 인증이 필요합니다.")
+            .removeClass("msg-success msg-error")
+            .addClass("msg-ready");
+
+    });
 </script>
