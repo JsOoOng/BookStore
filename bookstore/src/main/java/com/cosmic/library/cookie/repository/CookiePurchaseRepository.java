@@ -40,4 +40,16 @@ public class CookiePurchaseRepository {
             throw new RuntimeException("주문 ID를 가져오는데 실패했습니다.");
         }
     }
+    
+    // 비회원 주문 상세 내역(아이템) 저장
+    public void insertCookieOrderDetail(int orderId, com.cosmic.library.basket.model.BasketVO item) {
+        String sql = "INSERT INTO COOKIE_ORDER_DETAIL (order_id, sale_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
+        
+        jdbcTemplate.update(sql, 
+            orderId, 
+            item.getSaleId(), 
+            item.getQuantity(), 
+            item.getPrice()
+        );
+    }
 }

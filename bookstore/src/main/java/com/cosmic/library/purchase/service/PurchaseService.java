@@ -71,37 +71,6 @@ public class PurchaseService {
     }
 
     // =========================================================================
-    // 🍪 [비회원 대통합 결제 엔진] 쿠키 데이터 기반 주문 처리
-    // =========================================================================
-    @Transactional
-    public void executeCookieCheckout(CookieOrderVO cookieOrder) {
-        
-        // 1. 주문 기본 정보 저장 후 생성된 purchaseId를 받아옴 (JdbcTemplate KeyHolder 활용)
-        int purchaseId = cookiePurchaseRepository.insertCookieOrder(cookieOrder);
-        
-        if (purchaseId <= 0) throw new RuntimeException("🚨 비회원 영수증 발급 실패!");
-
-        // 2. 쿠키에 담긴 품목 순회하며 상세 기록 및 재고 차감
-        for (BasketVO item : cookieOrder.getItems()) {
-            
-            ProductSaleVO saleInfo = productSaleDAO.findById(item.getSaleId());
-            if (saleInfo == null) throw new RuntimeException("🚨 상품 데이터 소실!");
-            
-            // 상세 주문 기록 저장 (회원 결제와 동일한 디테일 테이블 사용)
-            purchaseRepository.insertDetail(
-                purchaseId, 
-                item.getSaleId(), 
-                saleInfo.getVRegNum(), 
-                item.getQuantity(), 
-                item.getPrice()
-            );
-
-            // 실시간 재고 차감
-            productSaleDAO.updateStock(item.getSaleId(), -item.getQuantity());
-        }
-    }
-
-    // =========================================================================
     // 📜 기타 유틸리티 및 조회 메서드
     // =========================================================================
     public List<Purchase> getMyPurchases(int userRegNum) {

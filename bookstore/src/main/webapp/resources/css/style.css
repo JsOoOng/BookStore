@@ -3957,3 +3957,604 @@ body.modal-open .modal-backdrop {
     
 }
 
+/* ==========================================================================
+   🍪 Cookie Basket 전용 - 비회원 장바구니 통합 스타일
+   ========================================================================== */
+
+/* ⚙️ 상단 제어 바 (전체 선택 및 버튼 그룹) */
+.cosmic-basket-top-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-bottom: 15px !important;
+    border-bottom: 2px solid #0b132b !important;
+    margin-bottom: 25px !important;
+}
+
+.cosmic-check-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #2f3542;
+}
+
+.cosmic-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer;
+    accent-color: #5d5fef !important; /* 체크 시 코스믹 퍼플로 변환 */
+}
+
+/* 🎯 상단 제어 바 버튼 전용 */
+.cosmic-basket-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic,
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    white-space: nowrap !important; 
+}
+
+/* 서브 액션 (선택 삭제) */
+.cosmic-basket-btn-group .btn-cancel-cosmic {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* 메인 액션 (선택 구매) */
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    border: 1px solid #0b132b !important;
+}
+
+.cosmic-basket-btn-group .btn-confirm-cosmic:hover {
+    background: #5d5fef !important; 
+    border-color: #5d5fef !important;
+}
+
+/* 📚 장바구니 리스트 래퍼 */
+.cosmic-basket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 🃏 개별 도서 아이템 카드 */
+.cosmic-basket-card {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px !important;
+    background: #ffffff !important;
+    border: 1px solid #edeff2 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 15px rgba(11, 19, 43, 0.02) !important;
+    transition: all 0.2s ease !important;
+}
+
+.cosmic-basket-card:hover {
+    border-color: rgba(93, 95, 239, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(93, 95, 239, 0.08) !important;
+    transform: translateY(-2px);
+}
+
+.basket-checkbox-wrap {
+    margin-right: 20px;
+}
+
+/* 💥 기존 JSP에 있던 인라인 스타일을 CSS로 완전 통합! */
+.basket-item-img {
+    width: 100px !important;
+    height: 150px !important;
+    object-fit: cover !important;
+    background: #fcfcfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    margin-right: 25px;
+}
+
+/* 텍스트 정보 구역 */
+.basket-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.basket-item-title {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    margin: 0 0 6px 0 !important;
+}
+
+.basket-item-author {
+    font-size: 13px !important;
+    color: #7f8c8d !important;
+    margin: 0 0 15px 0 !important;
+}
+
+/* 수량 및 개별 총액 가로 배치 */
+.basket-price-qty-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #57606f;
+}
+
+.cosmic-qty-input {
+    width: 70px !important;
+    padding: 6px 10px !important;
+    border: 1px solid #dfe4ea !important;
+    border-radius: 6px !important;
+    text-align: center;
+    font-weight: 700 !important;
+    color: #2f3542 !important;
+}
+
+.cosmic-qty-input:focus {
+    border-color: #5d5fef !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(93, 95, 239, 0.1) !important;
+}
+
+.book-price.totalPrice {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #5d5fef !important;
+}
+
+/* 🕳️ 빈 장바구니 상태 */
+.cosmic-empty-basket {
+    padding: 80px 0 !important;
+    background: #fcfcfd !important;
+    border: 1px dashed #dfe4ea !important;
+    border-radius: 12px !important;
+}
+
+.cosmic-empty-basket .empty-icon {
+    font-size: 3rem !important;
+    display: block !important;
+    margin-bottom: 15px !important;
+}
+
+.cosmic-empty-basket p {
+    color: #a4b0be !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin-bottom: 0 !important;
+}
+
+/* 💳 하단 총 결제 금액 패널 */
+.cosmic-total-panel {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    padding: 25px 30px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 20px !important;
+    box-shadow: 0 10px 30px rgba(11, 19, 43, 0.15) !important;
+}
+
+.total-label {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #a4b0be !important;
+}
+
+.total-amount {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #2ed573 !important; 
+}
+
+/* 💥 장바구니 하단 결제 전용 마스터 버튼 */
+.btn-checkout-cosmic {
+    background: #5d5fef !important; 
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    margin-left: 15px !important; 
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.3) !important; 
+}
+
+.btn-checkout-cosmic:hover {
+    background: #4b4cdb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(93, 95, 239, 0.45) !important;
+}
+
+/* ==========================================================================
+   🚀 Cosmic Checkout Success - 결제 완료 전용 스타일
+   ========================================================================== */
+
+/* 🌌 화면 중앙 배치를 위한 래퍼 */
+.cosmic-success-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh; 
+    padding: 60px 20px;
+    background: transparent;
+}
+
+/* 🃏 중앙 성공 알림 카드 */
+.cosmic-success-card {
+    background: #ffffff;
+    border: 1px solid #edeff2;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(11, 19, 43, 0.08);
+    padding: 60px 50px;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    /* 💥 로드 시 살짝 떠오르는 애니메이션 장착 */
+    animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ✨ 에메랄드 그린 발광 아이콘 */
+.success-icon-circle {
+    width: 90px;
+    height: 90px;
+    background: rgba(46, 213, 115, 0.1); /* 에메랄드 반투명 배경 */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px auto;
+    font-size: 42px;
+    box-shadow: 0 0 25px rgba(46, 213, 115, 0.25);
+}
+
+/* 텍스트 타이포그래피 */
+.cosmic-success-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #0b132b; /* 사령부 딥 네이비 */
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
+.cosmic-success-desc {
+    font-size: 16px;
+    color: #57606f; /* 부드러운 그레이 */
+    line-height: 1.7;
+    margin-bottom: 45px;
+}
+
+/* 🔘 버튼 그룹 정렬 */
+.cosmic-success-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap; /* 모바일 호환성 대응 */
+}
+
+/* 🚀 메인 액션 버튼 (코스믹 퍼플) */
+.btn-cosmic-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #5d5fef;
+    color: #ffffff !important;
+    text-decoration: none;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 6px 20px rgba(93, 95, 239, 0.3);
+}
+
+.btn-cosmic-primary:hover {
+    background: #4b4cdb;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(93, 95, 239, 0.45);
+}
+
+/* 🛸 서브 액션 버튼 (라이트 모드) */
+.btn-cosmic-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: #0b132b !important;
+    text-decoration: none;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 700;
+    border: 1px solid #dfe4ea;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-cosmic-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0b132b;
+}
+
+/* 💫 부드러운 등장 애니메이션 키프레임 */
+@keyframes floatUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   🍪 Cookie Basket 전용 - 비회원 장바구니 통합 스타일
+   ========================================================================== */
+
+/* ⚙️ 상단 제어 바 */
+.cosmic-basket-top-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-bottom: 15px !important;
+    border-bottom: 2px solid #0b132b !important;
+    margin-bottom: 25px !important;
+}
+
+.cosmic-check-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #2f3542;
+}
+
+.cosmic-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer;
+    accent-color: #5d5fef !important; 
+}
+
+/* 🎯 버튼 그룹 */
+.cosmic-basket-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic,
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    white-space: nowrap !important; 
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
+}
+
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    border: 1px solid #0b132b !important;
+}
+
+.cosmic-basket-btn-group .btn-confirm-cosmic:hover {
+    background: #5d5fef !important; 
+    border-color: #5d5fef !important;
+}
+
+/* 📚 리스트 & 카드 */
+.cosmic-basket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cosmic-basket-card {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px !important;
+    background: #ffffff !important;
+    border: 1px solid #edeff2 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 15px rgba(11, 19, 43, 0.02) !important;
+    transition: all 0.2s ease !important;
+}
+
+.cosmic-basket-card:hover {
+    border-color: rgba(93, 95, 239, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(93, 95, 239, 0.08) !important;
+    transform: translateY(-2px);
+}
+
+.basket-checkbox-wrap {
+    margin-right: 20px;
+}
+
+/* 💥 도서 표지 이미지 스타일 통합 적용! */
+.basket-item-img {
+    width: 100px !important;
+    height: 150px !important;
+    object-fit: cover !important;
+    background: #fcfcfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    margin-right: 25px;
+}
+
+/* 텍스트 정보 */
+.basket-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.basket-item-title {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    margin: 0 0 6px 0 !important;
+}
+
+.basket-item-author {
+    font-size: 13px !important;
+    color: #7f8c8d !important;
+    margin: 0 0 15px 0 !important;
+}
+
+/* 수량 및 가격 */
+.basket-price-qty-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #57606f;
+}
+
+.cosmic-qty-input {
+    width: 70px !important;
+    padding: 6px 10px !important;
+    border: 1px solid #dfe4ea !important;
+    border-radius: 6px !important;
+    text-align: center;
+    font-weight: 700 !important;
+    color: #2f3542 !important;
+}
+
+.cosmic-qty-input:focus {
+    border-color: #5d5fef !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(93, 95, 239, 0.1) !important;
+}
+
+.book-price.totalPrice {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #5d5fef !important;
+}
+
+/* 🕳️ 빈 장바구니 */
+.cosmic-empty-basket {
+    padding: 80px 0 !important;
+    background: #fcfcfd !important;
+    border: 1px dashed #dfe4ea !important;
+    border-radius: 12px !important;
+}
+
+.cosmic-empty-basket .empty-icon {
+    font-size: 3rem !important;
+    display: block !important;
+    margin-bottom: 15px !important;
+}
+
+.cosmic-empty-basket p {
+    color: #a4b0be !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin-bottom: 0 !important;
+}
+
+/* 💳 총 결제 금액 패널 */
+.cosmic-total-panel {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    padding: 25px 30px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 20px !important;
+    box-shadow: 0 10px 30px rgba(11, 19, 43, 0.15) !important;
+}
+
+.total-label {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #a4b0be !important;
+}
+
+.total-amount {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #2ed573 !important; 
+}
+
+.btn-checkout-cosmic {
+    background: #5d5fef !important; 
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    margin-left: 15px !important; 
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.3) !important; 
+}
+
+.btn-checkout-cosmic:hover {
+    background: #4b4cdb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(93, 95, 239, 0.45) !important;
+}

@@ -79,15 +79,15 @@ public class CookieService {
      */
     @Transactional // 💡 여러 테이블에 저장하므로 트랜잭션 필수
     public void executeCookieCheckout(CookieOrderVO cookieOrder) {
-        // 1. 주문 헤더 저장 후 생성된 ID 반환
+        // 1. 주문 헤더(COOKIE_ORDER) 저장 후 생성된 ID 반환
         int orderId = cookiePurchaseRepository.insertCookieOrder(cookieOrder);
         
-        // 2. 💡 상세 내역(items) 저장 로직 추가 (DB 테이블 구조에 맞춰 수정하세요)
+        // 2. 💡 [수리 완료] 에러를 뿜던 기존 코드를 삭제하고 비회원 전용 상세 테이블로 인서트!
         if (cookieOrder.getItems() != null) {
             for (BasketVO item : cookieOrder.getItems()) {
-                // 예시: cookiePurchaseRepository.insertOrderDetail(orderId, item);
-                // 이 메서드가 없으면 리포지토리에 추가해야 합니다.
-                System.out.println("주문 상세 저장 - OrderID: " + orderId + ", 상품ID: " + item.getSaleId());
+                // 비회원 전용 상세 테이블에 상품을 하나씩 꽂아 넣는다
+                cookiePurchaseRepository.insertCookieOrderDetail(orderId, item);
+                System.out.println("✅ 비회원 주문 상세 저장 성공 - OrderID: " + orderId + ", 상품ID: " + item.getSaleId());
             }
         }
     }

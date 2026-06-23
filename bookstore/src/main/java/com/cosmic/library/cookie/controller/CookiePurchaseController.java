@@ -13,21 +13,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.cosmic.library.cookie.model.CookieOrderVO;
-import com.cosmic.library.purchase.service.PurchaseService;
+import com.cosmic.library.cookie.service.CookieService; // 💥 [수정] 완벽하게 빌드된 비회원 서비스 임포트!
 
 @Controller
 @RequestMapping("/cookie/purchase")
 public class CookiePurchaseController {
 
     @Autowired
-    private PurchaseService purchaseService; 
+    private CookieService cookieService; // 💥 [수정] PurchaseService 라인을 끊고 CookieService로 교체 주입!
 
     @PostMapping("/buy")
     public String cookiePurchase(@ModelAttribute("cookieOrderVO") CookieOrderVO order, 
                                  HttpServletRequest request, 
                                  HttpServletResponse response) {
         
-    	System.out.println("--- 🔎 [디버깅] 실제 넘어온 모든 파라미터 이름 ---");
+        System.out.println("--- 🔎 [디버깅] 실제 넘어온 모든 파라미터 이름 ---");
         java.util.Enumeration<String> params = request.getParameterNames();
         while (params.hasMoreElements()) {
             String paramName = params.nextElement();
@@ -35,19 +35,17 @@ public class CookiePurchaseController {
             System.out.println("파라미터 이름: " + paramName + " / 값: " + paramValue);
         }
         System.out.println("-------------------------------------------");
-    	
-        // 1. 디버깅 로그
+        
         System.out.println("--- 🚀 결제 요청 데이터 분석 ---");
         request.getParameterMap().forEach((k, v) -> System.out.println(k + " : " + Arrays.toString(v)));
 
-        // 2. 바인딩된 데이터 검증
         if (order.getItems() == null || order.getItems().isEmpty()) {
             System.out.println("❌ 상품 데이터 바인딩 실패 또는 비어있음");
             return "redirect:/cookie/basket/checkout?error=no_items";
         }
 
-        // 3. 서비스 실행
-        purchaseService.executeCookieCheckout(order); 
+        // 3. 💥 [수정 완료] 사령관이 만든 무결성 비회원 결제 엔진 다이렉트 가동!
+        cookieService.executeCookieCheckout(order); 
         
         // 4. 장바구니 쿠키 삭제
         Cookie cookie = new Cookie("cookie_basket", null);

@@ -4,7 +4,7 @@
 
 <div class="admin-wide-container mt-4 mb-5">
 
-    <%-- ⚙️ 상단 제어 바 --%>
+    <%-- 상단 제어 바 --%>
     <div class="cosmic-basket-top-bar">
         <div class="cosmic-check-group">
             <input type="checkbox" id="selectAll" class="cosmic-checkbox">
@@ -16,18 +16,19 @@
         </div>
     </div>
 
-    <%-- 📚 장바구니 도서 목록 --%>
+    <%-- 장바구니 도서 목록 --%>
     <div class="cosmic-basket-list">
         <c:choose>
             <c:when test="${not empty purchaseList}">
                 <c:forEach var="item" items="${purchaseList}" varStatus="status">
                     <div class="cosmic-basket-card book-item">
                         <div class="basket-checkbox-wrap">
-                            <%-- 중요: item.saleId 가 없는 경우를 대비해 item.id 등으로 변경 필요할 수 있음 --%>
                             <input type="checkbox" name="ids" value="${item.saleId}" class="selectItem cosmic-checkbox" checked>
                         </div>
 
-                        <img src="${item.image}" class="basket-item-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/100x150?text=No+Img';">
+                        <%-- 💥 인라인 스타일 삭제 및 CSS 클래스로 이관! --%>
+                        <img src="${item.image.trim()}" class="basket-item-img" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/100x150?text=No+Cover';">
 
                         <div class="basket-item-info">
                             <h3 class="basket-item-title">${item.title}</h3>
@@ -36,7 +37,6 @@
                             <div class="basket-price-qty-row">
                                 <div class="qty-control">
                                     <label>수량:</label>
-                                    <%-- item.quantity, item.price가 VO에 존재하는지 반드시 확인하세요 --%>
                                     <input type="number" value="${item.quantity}" min="1" class="quantity cosmic-qty-input" 
                                            data-price="${item.price}" data-saleid="${item.saleId}">
                                 </div>
@@ -57,7 +57,7 @@
         </c:choose>
     </div>
 
-    <%-- 💳 총 결제 금액 패널 --%>
+    <%-- 총 결제 금액 패널 --%>
     <div class="cosmic-total-panel mt-4">
         <span class="total-label">💳 총 결제 예정 금액:</span>
         <span class="total-amount"><span id="totalPrice">0</span> 원</span>
@@ -66,19 +66,16 @@
 </div>
 
 <script>
-    // 1. 전체 선택 로직
     document.getElementById("selectAll").addEventListener("change", function() {
         document.querySelectorAll(".selectItem").forEach(cb => cb.checked = this.checked);
         updateTotal();
     });
 
-    // 2. 수량 변경 시: 서버 쿠키 갱신(AJAX) 후 합계 재계산
     document.querySelectorAll(".quantity").forEach(input => {
         input.addEventListener("change", function() {
             const saleId = this.dataset.saleid;
             const newQty = this.value;
 
-            // 서버 쿠키 업데이트 요청
             fetch("${pageContext.request.contextPath}/cookie/basket/update", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -87,7 +84,7 @@
             .then(res => res.text())
             .then(data => {
                 if(data.trim() === "ok") {
-                    updateTotal(); // 성공 시 화면 업데이트
+                    updateTotal(); 
                 } else {
                     alert("수량 변경에 실패했습니다.");
                 }
@@ -95,7 +92,6 @@
         });
     });
 
-    // 3. 금액 계산 엔진
     function updateTotal() {
         let total = 0;
         document.querySelectorAll(".book-item").forEach(item => {
@@ -111,13 +107,17 @@
         document.getElementById("totalPrice").innerText = total.toLocaleString();
     }
 
-    // 4. 결제 이동 (체크된 상품 정보가 필요하면 여기를 보완해야 합니다)
+    // 결제선 워프 함수
     function goToCheckout() {
         location.href = "${pageContext.request.contextPath}/cookie/basket/checkout";
     }
     document.getElementById("buyBtn").addEventListener("click", goToCheckout);
     document.getElementById("finalBuyBtn").addEventListener("click", goToCheckout);
 
-    // 초기 실행
+    // 삭제 버튼 동작 스텁 (필요시 백엔드 연결)
+    function deleteSelected() {
+        alert("비회원 선택 삭제 기능은 백엔드 통신이 필요합니다!");
+    }
+
     updateTotal();
 </script>
