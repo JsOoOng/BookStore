@@ -1,10 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<%-- 🌟 부트스트랩 다크 테마 원천 차단: bg-white navbar-light 강제 주입 --%>
 <nav class="navbar navbar-expand-lg navbar-light bg-white navbar-cosmic sticky-top">
     <div class="container-fluid px-4">
-        <%-- 브랜드 로고 --%>
         <a class="logo-text" href="${pageContext.request.contextPath}/">cosmic library</a>
         
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#cosmicNavbar">
@@ -12,18 +10,17 @@
         </button>
 
         <div class="collapse navbar-collapse" id="cosmicNavbar">
-            <%-- 좌측 기본 메뉴 --%>
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                 <li class="nav-item">
                     <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/book/list">도서목록</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/qna/chat">
+                    <%-- 💥 상단 바의 링크를 누르거나 우측 하단 챗 버튼을 누르거나 동일하게 작동하도록 일원화 가능 --%>
+                    <a class="nav-link fw-bold text-dark" href="javascript:void(0);" onclick="toggleCosmicPanel()">
                         실시간 상담 <span id="chatAlarmBadge" class="badge bg-danger ms-1" style="display:none; font-size: 0.65rem;">New</span>
                     </a>
                 </li>
 
-                <%-- 👑 관리자 권한 드롭다운 --%>
                 <c:if test="${not empty sessionScope.loginAdmin}">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -45,10 +42,8 @@
                 </c:if>
             </ul>
 
-            <%-- 🎯 [수정 1단계] 검색창 래퍼: form-control을 지우고 input-naver로 변경 --%>
             <div class="search-naver-wrapper mx-auto">
                 <form action="${pageContext.request.contextPath}/book/find" method="get" class="search-frame-naver">
-                    <%-- 여기서 form-control을 날려버려서 부트스트랩의 방해를 원천 차단함! --%>
                     <input type="text" name="title" class="input-naver shadow-none" placeholder="지식 탐험..." autocomplete="off" aria-label="Search">
                     <button class="btn-search-nav" type="submit">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -59,7 +54,6 @@
                 </form>
             </div>
             
-            <%-- 오른쪽 사용자 인증 관제 메뉴 --%>
             <ul class="navbar-nav ms-auto align-items-center">
                 <c:choose>
                     <c:when test="${not empty sessionScope.loginAdmin}">
@@ -112,11 +106,9 @@
                     <c:otherwise>
 						<li class="nav-item">
 						    <c:choose>
-						        <%-- 로그인 정보(loginMember)가 있다면 DB 장바구니로 --%>
 						        <c:when test="${not empty sessionScope.loginMember}">
 						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/basket">장바구니</a>
 						        </c:when>
-						        <%-- 로그인 정보가 없다면 쿠키 장바구니로 --%>
 						        <c:otherwise>
 						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/basket/list">장바구니</a>
 						        </c:otherwise>
@@ -140,86 +132,28 @@
     </div>
 </nav>
 
-<%-- 💥 드롭다운 작동을 위한 부트스트랩 JS 엔진 강제 주입 --%>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<%-- 웹소켓 스크립트 무결성 유지 --%>
-<script>
-    var globalWs; var loginId = ""; var role = "GUEST";
-    <c:choose>
-        <c:when test="${not empty sessionScope.loginAdmin}">loginId = "${sessionScope.loginAdmin.adminId}"; role = "${sessionScope.loginAdmin.role}";</c:when>
-        <c:when test="${not empty sessionScope.loginMember}">loginId = "${sessionScope.loginMember.id}"; role = "MEMBER";</c:when>
-        <c:when test="${not empty sessionScope.loginVendor}">loginId = "${sessionScope.loginVendor.vendorId}"; role = "VENDOR";</c:when>
-    </c:choose>
-    document.addEventListener("DOMContentLoaded", function() { if (loginId !== "") { connectGlobalWs(); } });
-    function connectGlobalWs() {
-        var path = window.location.host + "${pageContext.request.contextPath}";
-        globalWs = new WebSocket("ws://" + path + "/chat-ws");
-        globalWs.onopen = function() {
-            var currentUrl = window.location.href;
-            var isChatRoom = currentUrl.indexOf("/qna/chat") !== -1;
-            var enterType = isChatRoom ? "ENTER_CHATROOM" : "ENTER_GLOBAL";
-            var initMsg = { senderId: loginId, senderRole: role, message: enterType, receiverId: "SERVER" };
-            globalWs.send(JSON.stringify(initMsg));
-        };
-        globalWs.onmessage = function(event) {
-            var data = JSON.parse(event.data);
-            if (typeof window.receiveMessageFromGlobal === "function") { window.receiveMessageFromGlobal(data); } 
-            else { if (data.senderId !== "SERVER" && data.senderId !== loginId && data.message.indexOf("ENTER_") === -1) { var badge = document.getElementById("chatAlarmBadge"); if (badge) badge.style.display = "inline-block"; } }
-        };
-    }
-</script>
-
-<%-- ==========================================================================
-     🚀 [드롭다운 강제 개방 엔진] 부트스트랩 충돌을 무시하고 해치를 엽니다.
-     ========================================================================== --%>
 <style>
-    /* 강제 개방 시 적용될 애니메이션과 디스플레이 속성 */
-    .dropdown-menu.cosmic-force-show {
-        display: block !important;
-        animation: cosmicDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    
-    @keyframes cosmicDrop {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    .dropdown-menu.cosmic-force-show { display: block !important; animation: cosmicDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes cosmicDrop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // 모든 드롭다운 토글 버튼 색출
         const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-        
         dropdownToggles.forEach(toggle => {
             toggle.addEventListener('click', function(e) {
-                e.preventDefault(); // 기본 링크 이동 차단
-                e.stopPropagation(); // 부모 요소로의 이벤트 전파 차단 (충돌 방지)
-                
+                e.preventDefault(); e.stopPropagation();
                 const menu = this.nextElementSibling;
-                
                 if (menu && menu.classList.contains('dropdown-menu')) {
                     const isShowing = menu.classList.contains('cosmic-force-show');
-                    
-                    // 1. 현재 열려있는 모든 해치를 강제 폐쇄
-                    document.querySelectorAll('.dropdown-menu.cosmic-force-show').forEach(m => {
-                        m.classList.remove('cosmic-force-show');
-                    });
-                    
-                    // 2. 내가 클릭한 해치가 닫혀있었다면 즉시 개방
-                    if (!isShowing) {
-                        menu.classList.add('cosmic-force-show');
-                    }
+                    document.querySelectorAll('.dropdown-menu.cosmic-force-show').forEach(m => { m.classList.remove('cosmic-force-show'); });
+                    if (!isShowing) { menu.classList.add('cosmic-force-show'); }
                 }
             });
         });
-
-        // 3. 화면의 빈 공간(우주 배경)을 클릭하면 열려있던 해치 자동 폐쇄
         document.addEventListener('click', function(e) {
             if (!e.target.matches('.dropdown-toggle')) {
-                document.querySelectorAll('.dropdown-menu.cosmic-force-show').forEach(m => {
-                    m.classList.remove('cosmic-force-show');
-                });
+                document.querySelectorAll('.dropdown-menu.cosmic-force-show').forEach(m => { m.classList.remove('cosmic-force-show'); });
             }
         });
     });

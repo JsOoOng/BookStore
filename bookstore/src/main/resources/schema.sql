@@ -51,7 +51,7 @@ CREATE TABLE COSMIC_USER (
     is_member INT DEFAULT 1,                   
     points INT DEFAULT 0,                      
     email VARCHAR(100),                        
-    address VARCHAR(500) DEFAULT '銀河系 未指定 區域' NOT NULL,
+    address VARCHAR(500) DEFAULT '배송지 미입력' NOT NULL,
     regDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 
