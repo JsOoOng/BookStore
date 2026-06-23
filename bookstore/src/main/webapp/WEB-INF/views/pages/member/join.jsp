@@ -59,10 +59,7 @@
 						    인증확인
 						</button>
 		
-		        <span id="authTimer"
-		              style="display:none; min-width:60px; line-height:40px;">
-		            05:00
-		        </span>
+		        
 		    </div>
 		
 		    <small id="email_auth_msg"
@@ -224,7 +221,6 @@ let remainSeconds = 300;
     function startAuthTimer(){
 
         clearInterval(timerInterval);
-
         remainSeconds = 300;
 
         timerInterval = setInterval(function(){
@@ -232,27 +228,30 @@ let remainSeconds = 300;
             let minute = Math.floor(remainSeconds / 60);
             let second = remainSeconds % 60;
 
+            // 🔥 input placeholder에 표시
+            $("#emailAuthCode").attr("placeholder",
+                "인증코드 입력 (" +
+                String(minute).padStart(2,'0') + ":" +
+                String(second).padStart(2,'0') + ")"
+            );
+
+            // 기존 타이머 span도 유지 가능
             $("#authTimer").text(
-                String(minute).padStart(2,'0')
-                + ":"
-                + String(second).padStart(2,'0')
+                String(minute).padStart(2,'0') + ":" +
+                String(second).padStart(2,'0')
             );
 
             remainSeconds--;
 
             if(remainSeconds < 0){
-
                 clearInterval(timerInterval);
 
                 $("#authTimer").text("만료");
-
                 $("#emailAuthCode").prop("disabled", true);
-
                 emailVerified = false;
-
             }
 
-        },1000);
+        }, 1000);
     }
     
     $("#btn_verify_auth").click(function(){
@@ -314,7 +313,11 @@ let remainSeconds = 300;
 
         $("#emailAuthCode").val("");
 
-        $("#emailAuthCode").prop("disabled", true);
+        $("#emailAuthCode").attr("placeholder",
+        	    "인증코드 입력 (" +
+        	    String(minute).padStart(2,'0') + ":" +
+        	    String(second).padStart(2,'0') + ")"
+        	);
 
         clearInterval(timerInterval);
 
