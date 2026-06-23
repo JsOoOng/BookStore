@@ -1238,6 +1238,13 @@ body {
 .link-member-color { color: #5d5fef !important; }
 .link-vendor-color { color: #17a2b8 !important; }
 
+.login-form-panel .form-actions-login button {
+    width: 100% !important; 
+    padding: 16px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+}
+
 /* ==========================================================================
    🚀 애니메이션 시퀀스 정의
    ========================================================================== */
@@ -1250,6 +1257,49 @@ body {
 @keyframes panelFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   💛 카카오 OAUTH 로그인 버튼 전용 코스믹 정렬 파이프라인 (CSS 순수 렌더링)
+   ========================================================================== */
+.cosmic-kakao-wrap {
+    width: 100% !important;
+}
+
+/* 💥 파란 로그인 버튼 풀 와이드 확장 */
+.login-form-panel .form-actions-login button.btn-member-submit {
+    width: 100% !important; 
+    padding: 16px !important;
+    font-size: 16px !important;
+}
+
+/* 💥 CSS로 직접 깎아 만든 영롱한 카카오 버튼 */
+.btn-kakao-css {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    background-color: #FEE500 !important; /* 카카오 공식 옐로우 */
+    color: #000000 !important; /* 카카오 공식 텍스트 컬러 (블랙 85% 호환) */
+    padding: 16px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+/* 마우스 호버 시 옐로우 글로우 충전 및 공중 부양 */
+.btn-kakao-css:hover {
+    box-shadow: 0 8px 25px rgba(254, 229, 0, 0.4) !important; 
+    transform: translateY(-2px); 
+}
+
+/* 카카오 말풍선 벡터 아이콘 사이즈 제어 */
+.kakao-icon {
+    width: 22px !important;
+    height: 22px !important;
+    margin-right: 8px !important;
 }
 
 /* ==========================================================================
@@ -4838,4 +4888,109 @@ body.modal-open .modal-backdrop {
     background: #f1f2f6;
     color: #a4b0be;
     border-color: #dfe4ea;
+}
+
+/* ==========================================================================
+   📍 Location.jsp 전용 - 우주 도서관 위치 안내 스타일
+   ========================================================================== */
+
+/* 전체 외곽 프레임워크 슬림화 및 중앙 정렬 */
+.form-container {
+    max-width: 850px !important;
+    margin: 40px auto !important;
+    background: #ffffff !important;
+    padding: 50px 40px !important;
+    border: 1px solid #edeff2 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 50px rgba(11, 19, 43, 0.06) !important;
+}
+
+/* 🗺️ 구글 지도 컨테이너 볼륨업 및 입체감 패치 */
+.map-container {
+    position: relative;
+    border-radius: 20px !important;
+    overflow: hidden; /* 내부 iframe의 모서리가 삐져나오지 않도록 강제 차단 */
+    box-shadow: 0 8px 25px rgba(11, 19, 43, 0.08) !important;
+    margin-bottom: 35px !important;
+    border: 1px solid #edeff2;
+    transition: transform 0.3s ease;
+}
+
+.map-container:hover {
+    transform: translateY(-2px); /* 마우스 호버 시 살짝 떠오르는 효과 */
+}
+
+/* 🚀 본부 위치 정보 안내 블록 */
+.location-info {
+    padding: 25px 30px !important;
+    background: #f8fafc !important; /* 부드러운 화이트 그레이 베이스 */
+    border-left: 5px solid #5d5fef !important; /* 왼쪽 보더에 코스믹 퍼플 포인트 락온 */
+    border-radius: 8px !important;
+    margin-bottom: 40px !important;
+}
+
+.location-info h4 {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #0b132b !important; /* 사령부 딥 네이비 */
+    margin-bottom: 12px !important;
+}
+
+.location-info p {
+    font-size: 14px !important;
+    color: #57606f !important; /* 가독성 높은 차분한 그레이 */
+    margin-bottom: 6px !important;
+    line-height: 1.6 !important;
+}
+
+.location-info p:last-child {
+    margin-bottom: 0 !important; /* 마지막 문장의 하단 여백 제거 */
+    color: #747d8c !important;
+}
+
+/* 🔘 하단 이동 제어 버튼 그룹 */
+.form-actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    margin-top: 20px !important;
+}
+
+/* 길찾기 (Google Maps) 메인 액션 버튼 */
+.form-actions .btn-confirm {
+    background: #5d5fef !important; /* 코스믹 퍼플 */
+    color: #ffffff !important;
+    border: none !important;
+    padding: 14px 35px !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.2) !important;
+}
+
+.form-actions .btn-confirm:hover {
+    background: #4b4cdb !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(93, 95, 239, 0.35) !important;
+}
+
+/* 돌아가기 서브 액션 버튼 */
+.form-actions .btn-cancel {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+    padding: 14px 35px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.form-actions .btn-cancel:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
 }
