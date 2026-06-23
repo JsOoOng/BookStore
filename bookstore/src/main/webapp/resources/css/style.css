@@ -4008,6 +4008,102 @@ body.modal-open .modal-backdrop {
 }
 
 /* ==========================================================================
+   ✏️ Review Buttons - 개별 리뷰 수정 및 삭제 버튼 세트
+   ========================================================================== */
+
+/* 리뷰 버튼 공통 분모 규격 정의 */
+.review-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important; /* 아이콘과 텍스트 사이의 우주 안전거리 */
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+}
+
+/* ✏️ 수정 버튼 전용 관제 파이프라인 (클린 미니멀 그레이) */
+.review-btn.edit {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+}
+
+/* 수정 버튼 호버 시 사령부 딥 네이비로 해치 개방 */
+.review-btn.edit:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-1px);
+}
+
+/* 🗑 삭제 버튼 전용 관제 파이프라인 (경고 레드 오렌지) */
+.review-btn.delete {
+    background: rgba(255, 71, 87, 0.05) !important; /* 은은한 붉은 반투명 베이스 */
+    color: #ff4757 !important;
+    border: 1px solid rgba(255, 71, 87, 0.2) !important;
+    margin-left: 6px !important; /* 수정 버튼과의 최소 이격 거리 락온 */
+}
+
+/* 삭제 버튼 호버 시 강렬한 파괴 에너지를 뿜어냄 */
+.review-btn.delete:hover {
+    background: #ff4757 !important; /* 풀 레드 백그라운드 전환 */
+    color: #ffffff !important;
+    border-color: #ff4757 !important;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25) !important; /* 레드 글로우 효과 */
+    transform: translateY(-1px);
+}
+
+/* 버튼 내부 아이콘 이모지 크기 보정 */
+.review-btn fill {
+    font-size: 14px !important;
+}
+
+/* ==========================================================================
+   ✍️ Review Write Area - 리뷰 작성 구역 및 메인 액션 버튼
+   ========================================================================== */
+
+/* 1. 리뷰 작성 구역 컨테이너 (우측 정렬 및 상단 여백) */
+.review-write-area {
+    display: flex !important;
+    justify-content: flex-end !important; /* 기본 우측 정렬 (원할 경우 center로 변경 가능) */
+    margin-bottom: 25px !important;
+    padding-top: 20px !important;
+    /* 상단에 은은한 점선을 그어 다른 콘텐츠와 시각적으로 분리 */
+    border-top: 1px dashed #edeff2 !important; 
+}
+
+/* 2. ✍ 리뷰 작성 메인 버튼 (코스믹 퍼플 베이스) */
+.btn-cosmic.btn-review-write {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #5d5fef !important; /* 사령부 코스믹 퍼플 */
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.2) !important; /* 기본 퍼플 그림자 */
+    letter-spacing: -0.5px !important;
+}
+
+/* 3. 버튼 호버(Hover) 시 공중 부양 및 퍼플 글로우 발광 효과 */
+.btn-cosmic.btn-review-write:hover {
+    background: #4b4cdb !important; /* 살짝 짙고 선명해지는 퍼플 */
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(93, 95, 239, 0.45) !important; /* 광량 증폭 */
+}
+
+/* ==========================================================================
    🍪 Cookie Basket 전용 - 비회원 장바구니 통합 스타일
    ========================================================================== */
 
