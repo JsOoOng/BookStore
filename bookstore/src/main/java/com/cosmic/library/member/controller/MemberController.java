@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.cosmic.library.basket.service.BasketService;
 import com.cosmic.library.member.model.MemberVO;
@@ -78,17 +79,20 @@ public class MemberController {
 
     // 5. 회원가입 처리 (POST)
     @PostMapping("/join")
-    public String joinProcess(@ModelAttribute MemberVO member) {
-        // 🪐 [방어 코드] 회원가입 폼에서 주소를 입력하지 않았을 때 기본값 강제 할당
+    public String joinProcess(@ModelAttribute MemberVO member, RedirectAttributes rttr) {
+
         if (member.getAddress() == null || member.getAddress().trim().isEmpty()) {
             member.setAddress("은하계 미지정 구역");
         }
-        
+
         int result = memberService.join(member);
+
         if (result > 0) {
-            return "redirect:/member/login?joinSuccess=true";
+            rttr.addFlashAttribute("joinSuccess", true);
+            return "redirect:/member/login";
         } else {
-            return "redirect:/member/join?error=id_exists";
+            rttr.addFlashAttribute("joinError", true);
+            return "redirect:/member/join";
         }
     }
 
