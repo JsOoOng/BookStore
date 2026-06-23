@@ -92,4 +92,13 @@ public class MemberDAOH2 implements MemberDAO {
                      "ORDER BY u.regDate DESC";
         return jdbcTemplate.query(sql, rowMapper);
     }
+    
+    //추가
+    @Override
+    public int countByEmail(String email) {
+
+        String sql = "SELECT COUNT(*) FROM COSMIC_USER WHERE email = ?";
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, email);
+    }
 }

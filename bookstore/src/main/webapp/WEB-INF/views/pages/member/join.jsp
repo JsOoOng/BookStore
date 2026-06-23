@@ -191,7 +191,16 @@ let remainSeconds = 300;
                 email : email
             },
 
-            success : function(){
+            success : function(res){
+            	
+            	if(res === "DUPLICATE"){
+            	    $("#email_auth_msg")
+            	        .text("이미 가입된 이메일입니다.")
+            	        .removeClass("msg-success msg-ready")
+            	        .addClass("msg-error");
+
+            	    return;
+            	}
 
                 $("#emailAuthCode").prop("disabled", false);
 

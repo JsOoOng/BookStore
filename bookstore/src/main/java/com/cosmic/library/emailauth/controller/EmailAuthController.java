@@ -18,9 +18,7 @@ public class EmailAuthController {
     @PostMapping("/send")
     public String send(@RequestParam String email) {
 
-        service.sendAuth(email);
-        System.out.println("보내기");
-        return "OK";
+        return service.sendAuth(email);
     }
 
     @ResponseBody
