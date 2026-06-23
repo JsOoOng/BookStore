@@ -7,6 +7,9 @@
     
     <form action="${pageContext.request.contextPath}/cookie/purchase/buy" method="post">
         
+        <%-- 📡 [추가] 결제한 상품들의 ID를 서버로 다시 전달하기 위한 히든 필드 --%>
+        <input type="hidden" name="ids" value="${param.ids}">
+        
         <c:if test="${isGuest}">
             <div class="card mb-4">
                 <div class="card-header">배송 정보 입력</div>
@@ -30,10 +33,10 @@
         <div class="card mb-4">
             <div class="card-header">주문 상품</div>
             <div class="card-body">
-                <table class="table align-middle"> <%-- 📡 정렬 라인 밸런싱 --%>
+                <table class="table align-middle">
                     <thead>
                         <tr>
-                            <th style="width: 120px;">표지</th> <%-- 📡 표지 구역 신설 --%>
+                            <th style="width: 120px;">표지</th>
                             <th>상품명</th>
                             <th>수량</th>
                             <th>가격</th>
@@ -42,7 +45,6 @@
                     <tbody>
                         <c:forEach items="${purchaseList}" var="item" varStatus="status">
                             <tr class="item-row">
-                                <%-- 💥 [신설 패치] 누락되었던 네이버 실시간 고화질 이미지 전광판 가동! --%>
                                 <td>
                                     <img src="${item.image}" alt="Cover"
                                          onerror="this.onerror=null; this.src='https://via.placeholder.com/70x100?text=No+Cover';">

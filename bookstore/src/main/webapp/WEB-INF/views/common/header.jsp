@@ -79,7 +79,7 @@
             
                     <c:when test="${not empty sessionScope.loginMember}">
                         <li class="nav-item me-2">
-                            <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/basket">🛒 장바구니</a>
+                            <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/basket">장바구니</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -122,6 +122,9 @@
 						        </c:otherwise>
 						    </c:choose>
 						</li>
+						<li class="nav-item">
+                            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/member/login">주문번호 확인</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/member/login">로그인</a>
                         </li>
