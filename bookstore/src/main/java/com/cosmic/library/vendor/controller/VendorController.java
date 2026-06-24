@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.cosmic.library.vendor.model.VendorVO;
 import com.cosmic.library.vendor.model.ProductSaleVO;
+import com.cosmic.library.vendor.model.SalesVolumeVO;
 import com.cosmic.library.vendor.service.VendorService;
 import com.cosmic.library.vendor.service.ProductSaleService;
 
@@ -307,5 +308,42 @@ public class VendorController {
         
         // 2. 검색 결과가 0건이거나 통신 에러 시 안전한 외부 디폴트 이미지 반환
         return "https://via.placeholder.com/100x140?text=No+Image";
+    }
+
+    /**
+     * 📊 도서 판매량 페이지 이동
+     */
+    @GetMapping("/purchase/salesvolume")
+    public String salesVolumePage(HttpSession session, Model model) {
+
+        VendorVO loginVendor = (VendorVO) session.getAttribute("loginVendor");
+        Integer vRegNum = (Integer) session.getAttribute("vRegNum");
+
+        if (loginVendor == null || vRegNum == null) {
+            return "redirect:/member/login";
+        }
+
+        model.addAttribute("vendorInfo", loginVendor);
+        model.addAttribute("pageName", "pages/vendor/salesvolume");
+
+        return "common/layout";
+    }
+
+    /**
+     * 📊 도서 판매량 그래프 데이터 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/data")
+    public List<SalesVolumeVO> salesVolumeData(
+            @RequestParam(value = "period", defaultValue = "hour") String period,
+            HttpSession session) {
+
+        Integer vRegNum = (Integer) session.getAttribute("vRegNum");
+
+        if (vRegNum == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getSalesVolume(vRegNum, period);
     }
 }

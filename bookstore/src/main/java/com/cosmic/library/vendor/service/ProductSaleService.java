@@ -2,6 +2,7 @@ package com.cosmic.library.vendor.service;
 
 import java.util.List;
 import com.cosmic.library.vendor.model.ProductSaleVO;
+import com.cosmic.library.vendor.model.SalesVolumeVO;
 
 public interface ProductSaleService {
     
@@ -26,4 +27,7 @@ public interface ProductSaleService {
     // 🛰️ 관제 통신망 추가
     int findStockIdByBookIdAndVendor(int bookId, int vRegNum);
     int insertStockIn(int bookId, int vRegNum, int qty, int cost);
+    
+    // 📊 실제 판매량 통계 조회
+    List<SalesVolumeVO> getSalesVolume(int vRegNum, String period);
 }

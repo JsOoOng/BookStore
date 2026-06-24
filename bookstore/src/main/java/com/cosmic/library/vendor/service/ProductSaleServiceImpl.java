@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cosmic.library.vendor.model.ProductSaleVO;
 import com.cosmic.library.vendor.repository.ProductSaleDAO;
+import com.cosmic.library.vendor.model.SalesVolumeVO;
 
 @Service
 public class ProductSaleServiceImpl implements ProductSaleService {
@@ -54,5 +55,10 @@ public class ProductSaleServiceImpl implements ProductSaleService {
     @Override
     public int insertStockIn(int bookId, int vRegNum, int qty, int cost) {
         return productSaleDAO.insertStockIn(bookId, vRegNum, qty, cost);
+    }
+
+    @Override
+    public List<SalesVolumeVO> getSalesVolume(int vRegNum, String period) {
+        return productSaleDAO.selectSalesVolume(vRegNum, period);
     }
 }

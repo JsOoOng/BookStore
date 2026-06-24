@@ -188,16 +188,6 @@ CREATE TABLE QNA_CHAT (
     FOREIGN KEY (receiver_pid) REFERENCES PARTICIPANT(p_id)
 );
 
-
-INSERT INTO BASE_ADMIN (admin_id, admin_pw, admin_name, role, regDate) VALUES ('admin', '1234', '최고 사령관', 'SUPER', NOW());
-INSERT INTO COSMIC_USER (user_id, user_pw, user_name, is_member, points, email, address, regDate) VALUES ('user', '1234', '박대원', 1, 1000, 'member@cosmic.com', '경기도 고양시 일산동구 백마로 195', NOW());
-INSERT INTO USER_REGISTRATION (user_id, reg_status, regDate) VALUES ('user', 'ACTIVE', NOW());
-INSERT INTO VENDOR (vendor_id, vendor_pw, biz_name, biz_no, contact, regDate) VALUES ('vendor', '1234', '(주)은하서점', '123-45-67890', '02-1234-5678', NOW());
-INSERT INTO VENDOR_REGISTRATION (vendor_id, admin_id, is_active, regDate) VALUES ('vendor', 'admin', 1, NOW());
-INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('ADMIN', NULL, NULL, 'admin');
-INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('USER', 1, NULL, NULL);
-INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('VENDOR', NULL, 1, NULL);
-
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('작별하지 않는다 :한강 장편소설', '한강 지음', '문학동네', '2021-01-01', '소설/시', 'Korean', '9788954682152', 'https://covers.openlibrary.org/b/isbn/9788954682152-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('달리기를 말할 때 내가 하고 싶은 이야기 :세계적 작가 하루키의 달리기를 축으로 한 문학과 인생의 회고록 =What I talk about when I talk about running', '무라카미 하루키 지음', '문학사상', '2009-01-01', '소설/시', 'Korean', '9788970128337', 'https://covers.openlibrary.org/b/isbn/9788970128337-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('모순 :양귀자 장편소설', '양귀자 지음', '쓰다', '2013-01-01', '소설/시', 'Korean', '9788998441012', 'https://covers.openlibrary.org/b/isbn/9788998441012-M.jpg');
@@ -3131,3 +3121,74 @@ INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, imag
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('내가 사랑한 파리의 작은 미술관 :아주 특별하고 멋진 파리 탐방기', '신정아 지음', 'Hu:ine : 한국외국어대학교 지식출판콘텐츠원', '2024-01-01', '소설/시', 'Korean', '9791171992706', 'https://covers.openlibrary.org/b/isbn/9791171992706-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('내가 알고 있는 걸 당신도 알게 된다면 :전 세계가 주목한 코넬대학교의 인류 유산 프로젝트', '칼 필레머 지음', '토네이도: 토네이도미디어그룹', '2024-01-01', '소설/시', 'Korean', '9791158511432', 'https://covers.openlibrary.org/b/isbn/9791158511432-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('내가 죽은 뒤에 네가 해야 할 일들 :엄마가 딸에게 남기는 삶의 처방전', '수지 홉킨스 글', 'F(에프) : 푸른책들', '2024-01-01', '소설/시', 'Korean', '9788961707480', 'https://covers.openlibrary.org/b/isbn/9788961707480-M.jpg');
+
+/* ==========================================================================
+   📊 판매량 테스트용 기본 데이터
+   반드시 모든 CREATE TABLE, BOOK INSERT 이후에 실행
+   ========================================================================== */
+
+-- 관리자
+INSERT INTO BASE_ADMIN (admin_id, admin_pw, admin_name, role, regDate)
+VALUES ('admin', '1234', '최고관리자', 'SUPER', NOW());
+
+-- 사용자
+INSERT INTO COSMIC_USER (user_id, user_pw, user_name, is_member, points, email, address, regDate)
+VALUES ('user', '1234', '테스트유저', 1, 1000, 'user@test.com', '서울시 테스트구', NOW());
+
+INSERT INTO USER_REGISTRATION (user_reg_num, user_id, reg_status, regDate)
+VALUES (1, 'user', 'ACTIVE', NOW());
+
+-- 업체
+INSERT INTO VENDOR (vendor_id, vendor_pw, biz_name, biz_no, contact, regDate)
+VALUES ('vendor', '1234', '테스트서점', '123-45-67890', '010-1111-2222', NOW());
+
+INSERT INTO VENDOR_REGISTRATION (vendor_reg_num, vendor_id, admin_id, is_active, regDate)
+VALUES (1, 'vendor', 'admin', 1, NOW());
+
+-- 업체 입고
+INSERT INTO STOCK_IN (stock_id, v_reg_num, book_id, qty, cost, regDate)
+VALUES
+(990001, 1, 1, 200, 10000, TIMESTAMP '2026-06-01 09:00:00'),
+(990002, 1, 2, 100, 12000, TIMESTAMP '2026-06-01 09:10:00'),
+(990003, 1, 3, 80,  9000,  TIMESTAMP '2026-06-01 09:20:00'),
+(990004, 1, 4, 100, 15000, TIMESTAMP '2026-06-01 09:30:00');
+
+-- 판매 상품
+INSERT INTO PRODUCT_SALE (sale_id, stock_id, v_reg_num, price, stock_qty, sale_status, regDate)
+VALUES
+(990001, 990001, 1, 15000, 2,  'ON', TIMESTAMP '2026-06-01 10:00:00'),
+(990002, 990002, 1, 18000, 33, 'ON', TIMESTAMP '2026-06-01 10:10:00'),
+(990003, 990003, 1, 13000, 36, 'ON', TIMESTAMP '2026-06-01 10:20:00'),
+(990004, 990004, 1, 22000, 30, 'ON', TIMESTAMP '2026-06-01 10:30:00');
+
+-- 주문 마스터
+INSERT INTO purchase (purchase_id, user_reg_num, total_price, status, purchase_date)
+VALUES
+(990001, 1, 0, 'ORDERED', TIMESTAMP '2026-06-24 09:10:00'),
+(990002, 1, 0, 'ORDERED', TIMESTAMP '2026-06-24 14:30:00'),
+(990003, 1, 0, 'ORDERED', TIMESTAMP '2026-06-23 11:20:00'),
+(990004, 1, 0, 'ORDERED', TIMESTAMP '2026-06-22 16:40:00'),
+(990005, 1, 0, 'ORDERED', TIMESTAMP '2026-06-17 10:00:00'),
+(990006, 1, 0, 'ORDERED', TIMESTAMP '2026-06-10 13:00:00'),
+(990007, 1, 0, 'ORDERED', TIMESTAMP '2026-06-03 15:00:00'),
+(990008, 1, 0, 'ORDERED', TIMESTAMP '2026-05-15 12:00:00'),
+(990009, 1, 0, 'ORDERED', TIMESTAMP '2026-04-15 12:00:00'),
+(990010, 1, 0, 'ORDERED', TIMESTAMP '2026-03-15 12:00:00'),
+(990011, 1, 0, 'ORDERED', TIMESTAMP '2025-06-15 12:00:00'),
+(990012, 1, 0, 'ORDERED', TIMESTAMP '2024-06-15 12:00:00');
+
+-- 주문 상세
+INSERT INTO PURCHASE_DETAIL (detail_id, purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status)
+VALUES
+(990001, 990001, 990001, 1, 50,  15000, 'SVTEST-990001', 'DONE'),
+(990002, 990002, 990001, 1, 148, 15000, 'SVTEST-990002', 'DONE'),
+(990003, 990003, 990002, 1, 20,  18000, 'SVTEST-990003', 'DONE'),
+(990004, 990004, 990002, 1, 15,  18000, 'SVTEST-990004', 'DONE'),
+(990005, 990005, 990002, 1, 12,  18000, 'SVTEST-990005', 'DONE'),
+(990006, 990006, 990002, 1, 9,   18000, 'SVTEST-990006', 'DONE'),
+(990007, 990007, 990002, 1, 11,  18000, 'SVTEST-990007', 'DONE'),
+(990008, 990008, 990003, 1, 15,  13000, 'SVTEST-990008', 'DONE'),
+(990009, 990009, 990003, 1, 18,  13000, 'SVTEST-990009', 'DONE'),
+(990010, 990010, 990003, 1, 11,  13000, 'SVTEST-990010', 'DONE'),
+(990011, 990011, 990004, 1, 30,  22000, 'SVTEST-990011', 'DONE'),
+(990012, 990012, 990004, 1, 40,  22000, 'SVTEST-990012', 'DONE');

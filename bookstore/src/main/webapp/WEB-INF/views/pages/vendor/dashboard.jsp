@@ -61,13 +61,20 @@
                 <div class="card-header main-card-header">
                     <span class="main-card-title">📦 오픈마켓 물류 공급 및 상품 관리</span>
                     <div class="main-card-actions">
-                        <a href="${pageContext.request.contextPath}/vendor/purchase/list" class="btn-vendor-sub">
-                            🚚 주문·배송 관제탑 ➔
-                        </a>
-                        <a href="${pageContext.request.contextPath}/vendor/product/register" class="btn-vendor-primary">
-                            ➕ 신규 판매 상품 등록
-                        </a>
-                    </div>
+
+					    <a href="${pageContext.request.contextPath}/vendor/purchase/salesvolume" class="btn-vendor-salesvolume">
+					        📊 도서 판매량
+					    </a>
+					
+					    <a href="${pageContext.request.contextPath}/vendor/purchase/list" class="btn-vendor-sub">
+					        🚚 주문·배송 관제탑 ➔
+					    </a>
+					
+					    <a href="${pageContext.request.contextPath}/vendor/product/register" class="btn-vendor-primary">
+					        ➕ 신규 판매 상품 등록
+					    </a>
+					
+					</div>
                 </div>
                 
                 <div class="card-body p-0 main-card-body">
