@@ -45,10 +45,7 @@ public interface BookDAO {
 	
 	BookVO selectBookBySaleId(int saleId);
 	
-    
-	
-	
-
-	
+	List<BookVO> selectByWriterOnly(String writer, int limit);
+	List<BookVO> selectByGenreOnly(String genre, int limit);
 }
 

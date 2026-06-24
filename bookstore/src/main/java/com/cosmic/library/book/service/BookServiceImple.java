@@ -91,4 +91,14 @@ public class BookServiceImple implements BookService {
 	public List<BookVO> findRandomBooks(int count, int excludeId) {
 	    return bookDAO.selectRandom(count, excludeId);
 	}
+	
+	@Override
+    public List<BookVO> findBooksByWriter(String writer, int limit) {
+        return bookDAO.selectByWriterOnly(writer, limit);
+    }
+
+    @Override
+    public List<BookVO> findBooksByGenre(String genre, int limit) {
+        return bookDAO.selectByGenreOnly(genre, limit);
+    }
 }
