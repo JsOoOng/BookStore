@@ -8,9 +8,12 @@ import java.util.List;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,12 +35,19 @@ public class CookiePurchaseController {
     public String cookiePurchase(@ModelAttribute("cookieOrderVO") CookieOrderVO order, 
                                  @RequestParam("ids") String ids, 
                                  HttpServletRequest request, 
-                                 HttpServletResponse response) throws Exception {
+                                 HttpServletResponse response,
+                                 HttpSession session) throws Exception {
         
-        // 1. 결제 처리 로직
-        cookieService.executeCookieCheckout(order); 
+        // 1. 주문번호 생성 및 주문 정보 저장
+        String orderId = "G" + System.currentTimeMillis() + (int)(Math.random() * 900 + 100);
+        order.setOrderId(orderId);
         
-        // 2. 쿠키에서 현재 장바구니 리스트 가져오기 (이제 null 안전)
+        cookieService.executeCookieCheckout(order, ids); 
+        
+        // 성공 페이지에서 보여주기 위해 세션에 저장
+        session.setAttribute("guestOrderId", orderId);
+
+        // 2. 쿠키에서 현재 장바구니 리스트 가져오기
         List<BasketVO> allBasketList = getBasketListFromRequest(request);
         
         // 3. 삭제할 대상 ID들을 배열로 변환
@@ -62,22 +72,22 @@ public class CookiePurchaseController {
         Cookie cookie;
         if (remainingList.isEmpty()) {
             cookie = new Cookie("cookie_basket", null);
-            cookie.setMaxAge(0); // 쿠키 삭제
+            cookie.setMaxAge(0);
         } else {
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(remainingList);
             cookie = new Cookie("cookie_basket", URLEncoder.encode(json, "UTF-8"));
-            cookie.setMaxAge(60 * 60 * 24 * 7); // 7일 유지
+            cookie.setMaxAge(60 * 60 * 24 * 7);
         }
         cookie.setPath("/");
         response.addCookie(cookie);
         
+        // 리다이렉트하여 success 메서드 타게 함
         return "redirect:/cookie/purchase/success";
     }
 
-    // [중요] 장바구니 쿠키를 안전하게 가져오는 공통 메서드 구현
     private List<BasketVO> getBasketListFromRequest(HttpServletRequest request) {
-        List<BasketVO> basketList = new ArrayList<>(); // 기본값으로 빈 리스트 생성
+        List<BasketVO> basketList = new ArrayList<>();
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -96,35 +106,29 @@ public class CookiePurchaseController {
         return basketList;
     }
     
- // 🚀 결제 페이지 진입 (선택 상품 정보 조회)
-    @RequestMapping("/checkout")
-    public String checkout(@RequestParam("ids") String ids, 
-                           HttpServletRequest request, 
-                           org.springframework.ui.Model model) {
+    @PostMapping("/checkout")
+    public String processCheckout(CookieOrderVO cookieOrder, 
+                                 @RequestParam("ids") String ids, 
+                                 HttpSession session) {
         
-        // 1. 전체 장바구니에서 필요한 상품만 추출
-        List<BasketVO> allBasketList = getBasketListFromRequest(request);
-        List<BasketVO> checkoutList = new ArrayList<>();
+        String orderId = cookieService.executeCookieCheckout(cookieOrder, ids);
+        session.setAttribute("guestOrderId", orderId);
         
-        String[] targetIds = ids.split(",");
+        // 경로 수정: 리다이렉트 경로를 전체 경로로 명시
+        return "redirect:/cookie/purchase/success";
+    }
+    
+    @GetMapping("/success")
+    public String showSuccess(HttpSession session, Model model) {
+        String orderId = (String) session.getAttribute("guestOrderId");
         
-        for (BasketVO item : allBasketList) {
-            for (String id : targetIds) {
-                if (String.valueOf(item.getSaleId()).equals(id)) {
-                    checkoutList.add(item);
-                }
-            }
+        if (orderId == null) {
+            return "redirect:/";
         }
         
-        // 2. 모델에 담아서 결제 페이지로 전달
-        model.addAttribute("purchaseList", checkoutList);
-        model.addAttribute("ids", ids); // 결제 완료 시 다시 전달할 ID들
+        model.addAttribute("orderId", orderId);
+        session.removeAttribute("guestOrderId"); 
         
-        return "pages/purchase/cookie_purchase_form"; // 결제 폼 페이지 경로
-    }
-
-    @RequestMapping("/success")
-    public String purchaseSuccess() {
         return "pages/purchase/cookie_purchase_success";
     }
 }

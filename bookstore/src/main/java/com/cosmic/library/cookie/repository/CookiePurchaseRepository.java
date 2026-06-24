@@ -19,37 +19,37 @@ public class CookiePurchaseRepository {
     private JdbcTemplate jdbcTemplate;
 
     public int insertCookieOrder(CookieOrderVO cookieOrder) {
-        String sql = "INSERT INTO COOKIE_ORDER (NAME, PHONE, ADDRESS, TOTALPRICE, ORDERDATE) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        // 1. schema.sql에 정의된 GUEST_ORDER 테이블에 맞게 SQL 수정
+        String sql = "INSERT INTO GUEST_ORDER (ORDER_ID, CUSTOMER_NAME, CUSTOMER_PHONE, ADDRESS, TOTAL_PRICE, REGDATE) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
         
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        // 2. 이미 서비스단에서 생성한 G17822... 주문번호를 사용합니다.
+        // KeyHolder가 필요 없는 구조입니다 (PK를 이미 자바에서 생성했으므로).
+        int result = jdbcTemplate.update(sql, 
+            cookieOrder.getOrderId(), 
+            cookieOrder.getName(), 
+            cookieOrder.getPhone(), 
+            cookieOrder.getAddress(), 
+            cookieOrder.getTotalPrice()
+        );
         
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, cookieOrder.getName());
-            ps.setString(2, cookieOrder.getPhone());
-            ps.setString(3, cookieOrder.getAddress());
-            ps.setInt(4, cookieOrder.getTotalPrice() != null ? cookieOrder.getTotalPrice() : 0);
-            return ps;
-        }, keyHolder);
-
-        // 💡 수정: getKey() 대신 getKeys()를 사용하여 ID 컬럼만 명시적으로 추출
-        Map<String, Object> keys = keyHolder.getKeys();
-        if (keys != null && keys.containsKey("ID")) {
-            return ((Number) keys.get("ID")).intValue();
-        } else {
-            throw new RuntimeException("주문 ID를 가져오는데 실패했습니다.");
-        }
+        return result; // 저장된 행의 개수(1) 반환
     }
     
-    // 비회원 주문 상세 내역(아이템) 저장
-    public void insertCookieOrderDetail(int orderId, com.cosmic.library.basket.model.BasketVO item) {
-        String sql = "INSERT INTO COOKIE_ORDER_DETAIL (order_id, sale_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
+ // 비회원 주문 상세 내역 저장 (데이터베이스에 입력된 행의 개수를 반환)
+    public int insertCookieOrderDetail(String orderId, com.cosmic.library.basket.model.BasketVO item) {
+        // 테이블명을 GUEST_ORDER_DETAIL로 수정 (이전 논의된 내용)
+        String sql = "INSERT INTO GUEST_ORDER_DETAIL (order_id, sale_id, qty, price) VALUES (?, ?, ?, ?)";
         
-        jdbcTemplate.update(sql, 
+        return jdbcTemplate.update(sql, 
             orderId, 
             item.getSaleId(), 
             item.getQuantity(), 
             item.getPrice()
         );
+    }
+    
+    public int decreaseStock(int saleId, int quantity) {
+        String sql = "UPDATE PRODUCT_SALE SET stock_qty = stock_qty - ? WHERE sale_id = ?";
+        return jdbcTemplate.update(sql, quantity, saleId);
     }
 }

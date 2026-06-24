@@ -18,6 +18,7 @@ public class CookieOrderVO {
     private Integer totalPrice;      // 총 결제 금액
     private String status;       // 상태 (기본값 'ORDERED')
     private String purchaseDate; // 주문 일시
-    private int orderId; // insert 후 생성된 키를 담을 용도
+    private String orderId; // int에서 String으로 변경
     private List<BasketVO> items = new ArrayList<>();
+    
 }

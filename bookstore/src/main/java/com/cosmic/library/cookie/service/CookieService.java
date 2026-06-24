@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.cookie.model.CookieOrderVO;
@@ -25,9 +27,13 @@ public class CookieService {
     @Autowired
     private CookiePurchaseRepository cookiePurchaseRepository;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
     private static final String COOKIE_NAME = "cookie_basket";
     private final ObjectMapper mapper = new ObjectMapper();
 
+    // 1. 쿠키에서 장바구니 리스트 가져오기
     public List<BasketVO> getBasketListFromCookie(String cookieValue) {
         if (cookieValue == null || cookieValue.isEmpty()) {
             return new ArrayList<>();
@@ -41,6 +47,7 @@ public class CookieService {
         }
     }
 
+    // 2. 쿠키에 장바구니 상품 추가
     public void addBasketToCookie(BasketVO basket, HttpServletRequest request, HttpServletResponse response) throws Exception {
         List<BasketVO> basketList = new ArrayList<>();
         Cookie[] cookies = request.getCookies();
@@ -74,21 +81,45 @@ public class CookieService {
         response.addCookie(newCookie);
     }
 
-    /**
-     * 주문 저장 로직: 헤더와 상세 정보를 트랜잭션으로 처리
-     */
-    @Transactional // 💡 여러 테이블에 저장하므로 트랜잭션 필수
-    public void executeCookieCheckout(CookieOrderVO cookieOrder) {
-        // 1. 주문 헤더(COOKIE_ORDER) 저장 후 생성된 ID 반환
-        int orderId = cookiePurchaseRepository.insertCookieOrder(cookieOrder);
+    public String executeCookieCheckout(CookieOrderVO cookieOrder, String ids) {
+        System.out.println("DEBUG: 주문 시작 - 주문번호: " + cookieOrder.getOrderId());
         
-        // 2. 💡 [수리 완료] 에러를 뿜던 기존 코드를 삭제하고 비회원 전용 상세 테이블로 인서트!
-        if (cookieOrder.getItems() != null) {
-            for (BasketVO item : cookieOrder.getItems()) {
-                // 비회원 전용 상세 테이블에 상품을 하나씩 꽂아 넣는다
-                cookiePurchaseRepository.insertCookieOrderDetail(orderId, item);
-                System.out.println("✅ 비회원 주문 상세 저장 성공 - OrderID: " + orderId + ", 상품ID: " + item.getSaleId());
+        // 1. 헤더 저장
+        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        try {
+            int headerResult = cookiePurchaseRepository.insertCookieOrder(cookieOrder);
+            if (headerResult == 0) throw new RuntimeException("헤더 저장 실패");
+            transactionManager.commit(status);
+            System.out.println("DEBUG: 헤더 커밋 완료");
+        } catch (Exception e) {
+            transactionManager.rollback(status);
+            throw e;
+        }
+
+        // 2. 상세 저장
+        TransactionStatus detailStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        try {
+            String[] idArray = ids.split(",");
+            if (cookieOrder.getItems() != null) {
+                for (BasketVO item : cookieOrder.getItems()) {
+                    for (String selectedId : idArray) {
+                        if (String.valueOf(item.getSaleId()).equals(selectedId)) {
+                            // 상세 저장 시 쿼리 파라미터를 명시적으로 넘김
+                            // 여기서 order_id는 위에서 이미 커밋된 헤더의 order_id와 100% 일치해야 함
+                            cookiePurchaseRepository.insertCookieOrderDetail(cookieOrder.getOrderId(), item);
+                            cookiePurchaseRepository.decreaseStock(item.getSaleId(), item.getQuantity());
+                            break;
+                        }
+                    }
+                }
             }
+            transactionManager.commit(detailStatus);
+            System.out.println("DEBUG: 상세 저장 완료");
+            return cookieOrder.getOrderId();
+        } catch (Exception e) {
+            transactionManager.rollback(detailStatus);
+            System.err.println("DEBUG: 상세 저장 중 에러 발생: " + e.getMessage());
+            throw e;
         }
     }
 }
