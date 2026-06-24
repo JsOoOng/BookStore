@@ -245,6 +245,7 @@ body::before {
     gap: 8px; /* 버튼 사이 간격 */
 }
 
+<<<<<<< Updated upstream
 .cosmic-pagination .page-link {
     background: rgba(255, 255, 255, 0.5); /* 반투명 배경 */
     backdrop-filter: blur(10px);
@@ -253,6 +254,360 @@ body::before {
     border-radius: 12px !important; /* 둥글둥글한 버튼 */
     padding: 10px 20px;
     font-weight: bold;
+=======
+/* 우측 단위 표시 블록 (원, 개) - 깔끔한 라이트 그레이 블록 */
+.input-unit-text {
+    padding: 0 18px;
+    color: #57606f;
+    font-weight: 800;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid #ced4da;
+    font-size: 14.5px;
+}
+
+/* 🛰️ 6. 일반 인풋 & 셀렉트 박스 통일성 강화 (크기, 테두리, 배경 완벽 일치) */
+.vendor-input-group > input[type="number"],
+.cosmic-select-box {
+    width: 100%;
+    height: 50px !important;
+    padding: 0 16px;
+    border: 1px solid #ced4da !important;
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+    color: #2f3542 !important;
+    font-weight: 700 !important;
+    font-size: 14.5px !important;
+    transition: all 0.2s ease;
+}
+
+.vendor-input-group > input[type="number"]:focus,
+.cosmic-select-box:focus {
+    border-color: #17a2b8 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.15) !important;
+}
+
+/* 보조 설명 텍스트 간격 정돈 */
+.vendor-form-sub-text {
+    display: block;
+    margin-top: 8px;
+    font-size: 12.5px;
+    color: #a4b0be;
+    font-weight: 600;
+}
+
+/* 🛠️ 7. 하단 버튼 제어 구역 (싸구려 점선 제거 -> 여백 듬뿍 + 깔끔한 실선) */
+.vendor-action-btn-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #f1f3f5 !important; 
+    margin-top: 40px !important; 
+    padding-top: 25px !important;
+}
+
+/* 취소 버튼 (높이 및 규격 고정) */
+.btn-vendor-cancel-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    height: 48px;
+    background: #ffffff;
+    color: #7f8c8d;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 14.5px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-vendor-cancel-action:hover {
+    background: #f8fafc;
+    color: #2f3542;
+    border-color: #a4b0be;
+}
+
+/* ==========================================================================
+   📊 Vendor Dashboard - 도서 판매량 버튼
+   기존 btn-vendor-sub / btn-vendor-primary 규격에 맞춤
+   ========================================================================== */
+
+.main-card-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* 도서 판매량 버튼도 상단 관제 바 버튼 규격으로 통일 */
+.vendor-salesvolume {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    height: 34px !important;
+    padding: 0 16px !important;
+
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+
+    border-radius: 30px !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+
+    background: transparent !important;
+    color: #17a2b8 !important;
+    border: 1px solid #17a2b8 !important;
+
+    transition: all 0.2s ease !important;
+}
+
+.vendor-salesvolume:hover {
+    background: rgba(23, 162, 184, 0.1) !important;
+    color: #17a2b8 !important;
+    text-decoration: none !important;
+    transform: translateY(-1px);
+}
+
+.vendor-salesvolume:visited,
+.vendor-salesvolume:active,
+.vendor-salesvolume:focus {
+    color: #17a2b8 !important;
+    text-decoration: none !important;
+}
+
+/* ==========================================================================
+   🪐 도서 검색 모달 전용 - 초정밀 스타일 백업 (Cosmic Minimalism Modal)
+   ========================================================================== */
+.cosmic-modal-content {
+    border-radius: 16px !important;
+    border: 1px solid rgba(23, 162, 184, 0.3) !important;
+    box-shadow: 0 20px 50px rgba(11, 19, 43, 0.2) !important;
+    overflow: hidden;
+    background: #ffffff !important;
+}
+
+.cosmic-modal-header {
+    background: #0b132b !important; /* 사령부 딥 네이비 장악 */
+    border-bottom: 1px solid #f1f3f5 !important;
+    padding: 18px 24px !important;
+}
+
+.cosmic-modal-body {
+    background: #ffffff !important;
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+/* 모달 검색창 인풋 필드 */
+.cosmic-modal-search-box input {
+    width: 100%;
+    height: 48px !important;
+    padding: 0 16px;
+    border: 2px solid #0b132b !important; /* 볼드 블랙 라인 테마 연동 */
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+    color: #2f3542 !important;
+    font-weight: 700 !important;
+    font-size: 14.5px !important;
+}
+.cosmic-modal-search-box input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(11, 19, 43, 0.1) !important;
+}
+
+/* 검색 리스트 컨테이너 */
+.modal-book-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 검색 결과 한 칸 (교보문고형 가로 리스트 미니 캡슐 버전) */
+.modal-book-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    background: #f8fafc;
+    border: 1px solid #edeff2;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-book-item:hover {
+    background: rgba(23, 162, 184, 0.04) !important;
+    border-color: #17a2b8 !important;
+    transform: scale(1.01);
+}
+
+.modal-book-img {
+    width: 42px !important;
+    height: 60px !important;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #dfe4ea;
+    flex-shrink: 0;
+}
+
+.modal-book-info {
+    margin-left: 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.modal-book-title {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    margin: 0 0 4px 0 !important;
+}
+
+.modal-book-meta {
+    font-size: 12.5px !important;
+    color: #57606f !important;
+    margin: 0 0 2px 0 !important;
+    font-weight: 600;
+}
+
+.modal-book-sub-meta {
+    font-size: 11px !important;
+    color: #a4b0be !important;
+    margin: 0 !important;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   🪐 원천 도서 매핑 입력창 및 도서 찾기 버튼 전용 스타일 (규격 동기화 패치)
+   ========================================================================== */
+
+/* 1. 도서 선택 라인 전체 가로폭 및 높이 밸런스 정렬 */
+.vendor-id-check-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    align-items: stretch; /* 입력창과 버튼의 높이를 완벽하게 똑같이 맞춤 */
+}
+
+/* 2. 읽기 전용(Readonly) 도서 제목 입력창 딥 클리닝 */
+.vendor-id-check-row input[type="text"] {
+    flex: 1; /* 남은 가로 공간을 100% 꽉 채우도록 강제 팽창 */
+    min-width: 0;
+    height: 50px !important; /* 다른 폼들과 동일한 하이엔드 규격 */
+    padding: 0 16px;
+    border: 1px solid #ced4da !important;
+    border-radius: 8px !important;
+    background-color: #f8fafc !important; /* 읽기 전용임을 나타내는 아주 연한 회색 */
+    color: #2f3542 !important;
+    font-weight: 700 !important;
+    font-size: 14.5px !important;
+    cursor: not-allowed; /* 클릭 불가 상태 명시 */
+    transition: all 0.2s ease;
+}
+
+/* 3. [도서 찾기] 버튼 규격 벌크업 */
+.vendor-id-check-row .btn-vendor-check-inline {
+    height: 50px !important; /* 입력창과 높이 완벽 일치 */
+    padding: 0 24px !important;
+    background: #ffffff !important;
+    color: #17a2b8 !important; /* 테크 시안 락온 */
+    border: 1px solid #17a2b8 !important;
+    border-radius: 8px !important;
+    font-weight: 800 !important;
+    font-size: 14.5px !important;
+    cursor: pointer;
+    transition: all 0.2s ease !important;
+    white-space: nowrap; /* 글씨 줄바꿈 차단 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vendor-id-check-row .btn-vendor-check-inline:hover {
+    background: #17a2b8 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2) !important; /* 시안색 후광 */
+    transform: translateY(-1px) !important;
+}
+
+/* ==========================================================================
+   🪐 긴급 UI 픽스: 금지 커서 멸균 및 모달 검색창 프리미엄 업그레이드
+   ========================================================================== */
+
+/* 1. 읽기 전용 인풋창 빨간 금지 커서(not-allowed) 멸균 -> 클릭 유도형 포인터로 변경 */
+.vendor-id-check-row input[readonly] {
+    cursor: pointer !important; /* 클릭을 유도하도록 손가락 모양으로 변경! */
+    background-color: #f8fafc !important; 
+}
+
+/* 2. 모달 내부 검색 박스 프리미엄 프레임 (회색 가두리 박스 씌우기) */
+.cosmic-modal-search-box {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #e3e5e8;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+    margin-bottom: 25px !important;
+}
+
+/* 모달 내부 인풋창과 버튼 간격 정렬 */
+.cosmic-modal-search-box .vendor-id-check-row {
+    gap: 10px;
+    margin-bottom: 0 !important;
+}
+
+/* 모달 전용 검색 인풋창 디자인 */
+.cosmic-modal-search-box input {
+    height: 50px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    padding: 0 18px !important;
+    box-shadow: none !important;
+}
+
+.cosmic-modal-search-box input:focus {
+    background: #ffffff !important;
+    border-color: #17a2b8 !important;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.15) !important;
+}
+
+/* 모달 전용 [검색] 버튼 테크 시안 코팅 */
+.cosmic-modal-search-box #btnModalSearch {
+    height: 50px !important;
+    padding: 0 30px !important;
+    background: #17a2b8 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 800 !important;
+    font-size: 15px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 10px rgba(23, 162, 184, 0.2) !important;
+}
+
+.cosmic-modal-search-box #btnModalSearch:hover {
+    background: #138496 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(23, 162, 184, 0.3) !important;
+}
+
+/* 3. 모달 상태 메시지 (대기/로딩/실패) 고급화 패널 */
+.modal-empty-state-cosmic {
+    background: #ffffff;
+    border: 1px dashed #ced4da;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 15px;
+>>>>>>> Stashed changes
     transition: all 0.3s ease;
 }
 
