@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -46,7 +46,7 @@
                     </div>
                     <div class="info-row-last border-0 pb-0 mb-0">
                         <small class="info-label">활동 승인 번호</small>
-                        <span class="badge-approval">No. ${sessionScope.vRegNum}</span>
+                        <span class="badge-approval">No. ${sessionScope.loginVendor.vendorRegNum}</span>
                     </div>
                 </div>
             </div>
@@ -57,7 +57,7 @@
             <div class="card cosmic-vendor-main-card h-100">
                 
                 <div class="card-header main-card-header">
-                    <span class="main-card-title">🚚 입점 파트너 주문 배송 관제탑</span>
+                    <span class="main-card-title">🚚 입점 파트너 비회원 주문 관제탑</span>
                     <div class="main-card-actions">
                         <a href="${pageContext.request.contextPath}/vendor/dashboard" class="btn-vendor-sub">
                             🔙 상품 관리 대시보드
@@ -73,7 +73,7 @@
                                     <th class="th-order-num">비회원 주문 번호</th>
                                     <th class="th-book-info text-start">도서 정보</th>
                                     <th class="th-order-qty">수량</th>
-                                    <th class="th-total-price text-end">결제 총액</th>
+                                    <th class="th-total-price text-end">품목 결제액</th>
                                     <th class="th-order-date">주문 일시</th>
                                     <th class="th-order-status">현재 상태</th>
                                     <th class="th-order-control">관제 제어</th>
@@ -84,16 +84,19 @@
                                     <c:when test="${not empty orderList}">
                                         <c:forEach var="order" items="${orderList}">
                                             <tr class="vendor-order-row">
-                                                <td class="td-order-num"># ${order.id}</td>
+                                                <%-- 💥 [수리 완료] order.id에서 정규화된 order.purchaseId 스펙으로 전면 체인지 --%>
+                                                <td class="td-order-num" style="font-size: 12px; font-weight: 700; color: #5d5fef;">
+                                                    ${order.purchaseId}
+                                                </td>
                                                 <td class="td-book-info">
                                                     <div class="vendor-order-book-item">
                                                         <c:choose>
                                                             <c:when test="${not empty order.image}">
-                                                                <%-- 📡 [하이브리드 스마트 바인더] 네이버 절대경로와 로컬경로 교차 판별 검문소 --%>
+                                                                <%-- 📡 [하이브리드 스마트 바인더] 네이버 표지 연동 및 안전 플레이스홀더 교체 --%>
                                                                 <img src="${order.image.startsWith('http') ? order.image : pageContext.request.contextPath.concat(order.image)}" 
                                                                      alt="${order.title}" 
                                                                      class="vendor-book-thumb-img" 
-                                                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/50x75?text=No+Cover';">
+                                                                     onerror="this.onerror=null; this.src='https://placehold.co/150x220/f8fafc/a4b0be?text=No+Cover';">
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <div class="vendor-book-no-img">No Cover</div>
@@ -105,8 +108,9 @@
                                                     </div>
                                                 </td>
                                                 <td class="td-order-qty">${order.quantity} 권</td>
-                                                <td class="td-total-price text-end">
-                                                    <fmt:formatNumber value="${order.totalPrice}" pattern="#,###"/> 원
+                                                <td class="td-total-price text-end fw-bold text-dark">
+                                                    <%-- 💥 [연산 엔진 정밀 정비] 마스터 총액이 아닌 해당 품목 단가 * 수량으로 제어 --%>
+                                                    <fmt:formatNumber value="${order.unitPrice * order.quantity}" pattern="#,###"/> 원
                                                 </td>
                                                 <td class="td-order-date">
 												    <div style="line-height: 1.4;">
@@ -134,7 +138,8 @@
                                                 <td class="td-order-control">
                                                     <c:choose>
                                                         <c:when test="${order.status eq 'READY'}">
-                                                            <button type="button" class="btn-vendor-action-ship" onclick="shipOrder('${order.id}')">
+                                                            <%-- 💥 [수리 완료] 비동기 함수 파라미터 타격을 정규화된 purchaseId로 변경 --%>
+                                                            <button type="button" class="btn-vendor-action-ship" onclick="shipOrder('${order.purchaseId}')">
                                                                 🚚 배송하기
                                                             </button>
                                                         </c:when>
@@ -153,7 +158,7 @@
                                             <td colspan="7" class="td-empty-state">
                                                 <div class="cosmic-empty-state py-5">
                                                     <div class="empty-icon-large" style="color: #a4b0be;">📡</div>
-                                                    <h4 class="empty-title">인입된 도서 주문 내역이 존재하지 않습니다.</h4>
+                                                    <h4 class="empty-title">인입된 비회원 도서 주문 내역이 존재하지 않습니다.</h4>
                                                 </div>
                                             </td>
                                         </tr>
@@ -173,6 +178,7 @@
 function shipOrder(purchaseId) {
     if (!confirm("해당 도서의 전송(배송)을 시작하시겠습니까?")) return;
     
+    // 💥 [타격 정밀 튜닝] 컨트롤러 수신 규격에 완벽 매핑되도록 처리
     var formData = new URLSearchParams();
     formData.append("purchaseId", purchaseId);
 
@@ -199,7 +205,7 @@ function shipOrder(purchaseId) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 🔥 [하얀 박스 가두리 격파 치트키] 페이지 로드 시 상위 부모 레이아웃의 max-width 강제 해제 및 확장
+    // 🔥 하얀 박스 가두리 격파 치트키 작동 유지
     var wideContainer = document.querySelector('.admin-wide-container');
     if (wideContainer) {
         var parent = wideContainer.parentElement;
@@ -207,10 +213,9 @@ document.addEventListener("DOMContentLoaded", function() {
             parent.style.maxWidth = '100%';
             parent.style.width = '100%';
             if(parent.classList.contains('form-container') || parent.className.includes('container')) {
-                // 💥 [격파 포인트] 기존 1400px ➔ 1650px 로 대폭 확장! (모니터에 꽉 차게 하려면 '95%' 로 입력해도 된다)
                 parent.style.maxWidth = '1650px'; 
                 parent.style.margin = '0 auto';
-                parent.style.padding = '0 20px'; /* 너무 벽에 붙지 않도록 양옆 안전 여백 추가 */
+                parent.style.padding = '0 20px';
             }
             parent = parent.parentElement;
         }

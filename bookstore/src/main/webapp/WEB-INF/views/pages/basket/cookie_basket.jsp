@@ -30,7 +30,8 @@
                         <div class="basket-checkbox-wrap">
                             <input type="checkbox" name="ids" value="${item.saleId}" class="selectItem cosmic-checkbox" checked>
                         </div>
-                        <img src="${item.image}" class="basket-item-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/100x150?text=No+Img';">
+                        <%-- 💥 [수리 완료] 차단당하지 않는 안전한 플레이스홀더 이미지 서버로 좌표 변경! --%>
+                        <img src="${item.image}" class="basket-item-img" onerror="this.onerror=null; this.src='https://placehold.co/100x150/f8fafc/a4b0be?text=No+Img';">
                         
                         <div class="basket-item-info">
                             <h3 class="basket-item-title">${item.title}</h3>
@@ -152,28 +153,28 @@
         location.href = "${pageContext.request.contextPath}/cookie/basket/checkout?ids=" + saleId;
     }
     
- // 체크박스
- // 페이지 로드 시 모든 상품이 체크되어 있다면 '전체 선택'도 체크
- function updateSelectAllCheckbox() {
-     const allItems = document.querySelectorAll(".selectItem");
-     const checkedItems = document.querySelectorAll(".selectItem:checked");
-     const selectAll = document.getElementById("selectAll");
-     
-     // 상품이 하나라도 있고, 모두 체크된 상태라면 전체 선택도 체크
-     if (allItems.length > 0 && allItems.length === checkedItems.length) {
-         selectAll.checked = true;
-     } else {
-         selectAll.checked = false;
-     }
- }
+    // 체크박스 제어
+    // 페이지 로드 시 모든 상품이 체크되어 있다면 '전체 선택'도 체크
+    function updateSelectAllCheckbox() {
+        const allItems = document.querySelectorAll(".selectItem");
+        const checkedItems = document.querySelectorAll(".selectItem:checked");
+        const selectAll = document.getElementById("selectAll");
+        
+        // 상품이 하나라도 있고, 모두 체크된 상태라면 전체 선택도 체크
+        if (allItems.length > 0 && allItems.length === checkedItems.length) {
+            selectAll.checked = true;
+        } else {
+            selectAll.checked = false;
+        }
+    }
 
- // 기존 개별 체크박스 이벤트에 '전체 선택 상태 업데이트' 추가
- document.querySelectorAll(".selectItem").forEach(cb => {
-     cb.addEventListener("change", function() {
-         updateTotal();
-         updateSelectAllCheckbox();
-     });
- });
+    // 기존 개별 체크박스 이벤트에 '전체 선택 상태 업데이트' 추가
+    document.querySelectorAll(".selectItem").forEach(cb => {
+        cb.addEventListener("change", function() {
+            updateTotal();
+            updateSelectAllCheckbox();
+        });
+    });
 
     // 초기 실행
     updateTotal();

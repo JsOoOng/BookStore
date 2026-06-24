@@ -18,7 +18,8 @@
                     <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/book/list">도서목록</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/qna/chat">
+                    <%-- 💥 [수리 완료] 파괴된 qna/chat 경로 대신 우측 오버레이 패널을 호출하도록 자바스크립트 락온! --%>
+                    <a class="nav-link fw-bold text-dark" href="#" onclick="toggleCosmicPanel(); return false;">
                         실시간 상담 <span id="chatAlarmBadge" class="badge bg-danger ms-1" style="display:none; font-size: 0.65rem;">New</span>
                     </a>
                 </li>
@@ -45,10 +46,9 @@
                 </c:if>
             </ul>
 
-            <%-- 🎯 [수정 1단계] 검색창 래퍼: form-control을 지우고 input-naver로 변경 --%>
+            <%-- 🎯 검색창 래퍼: 부트스트랩 form-control 방해 차단 --%>
             <div class="search-naver-wrapper mx-auto">
                 <form action="${pageContext.request.contextPath}/book/find" method="get" class="search-frame-naver">
-                    <%-- 여기서 form-control을 날려버려서 부트스트랩의 방해를 원천 차단함! --%>
                     <input type="text" name="title" class="input-naver shadow-none" placeholder="지식 탐험..." autocomplete="off" aria-label="Search">
                     <button class="btn-search-nav" type="submit">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -110,21 +110,13 @@
                     </c:when>
             
                     <c:otherwise>
+                        <%-- 💥 [수리 완료] 불필요한 내부 로그인 검증(데드코드) 제거 및 비회원 쿠키 장바구니로 다이렉트 연결 --%>
 						<li class="nav-item">
-						    <c:choose>
-						        <%-- 로그인 정보(loginMember)가 있다면 DB 장바구니로 --%>
-						        <c:when test="${not empty sessionScope.loginMember}">
-						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/basket">장바구니</a>
-						        </c:when>
-						        <%-- 로그인 정보가 없다면 쿠키 장바구니로 --%>
-						        <c:otherwise>
-						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/basket/list">장바구니</a>
-						        </c:otherwise>
-						    </c:choose>
+						    <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/basket/list">장바구니</a>
 						</li>
 						<li class="nav-item">
-                            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/member/login">주문번호 확인</a>
-                        </li>
+                            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/purchase/track">비회원 주문조회</a>
+    					</li>
                         <li class="nav-item">
                             <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/member/login">로그인</a>
                         </li>
@@ -154,21 +146,27 @@
         <c:when test="${not empty sessionScope.loginMember}">loginId = "${sessionScope.loginMember.id}"; role = "MEMBER";</c:when>
         <c:when test="${not empty sessionScope.loginVendor}">loginId = "${sessionScope.loginVendor.vendorId}"; role = "VENDOR";</c:when>
     </c:choose>
+    
     document.addEventListener("DOMContentLoaded", function() { if (loginId !== "") { connectGlobalWs(); } });
+    
     function connectGlobalWs() {
         var path = window.location.host + "${pageContext.request.contextPath}";
         globalWs = new WebSocket("ws://" + path + "/chat-ws");
         globalWs.onopen = function() {
-            var currentUrl = window.location.href;
-            var isChatRoom = currentUrl.indexOf("/qna/chat") !== -1;
-            var enterType = isChatRoom ? "ENTER_CHATROOM" : "ENTER_GLOBAL";
+            var enterType = "ENTER_GLOBAL";
             var initMsg = { senderId: loginId, senderRole: role, message: enterType, receiverId: "SERVER" };
             globalWs.send(JSON.stringify(initMsg));
         };
         globalWs.onmessage = function(event) {
             var data = JSON.parse(event.data);
             if (typeof window.receiveMessageFromGlobal === "function") { window.receiveMessageFromGlobal(data); } 
-            else { if (data.senderId !== "SERVER" && data.senderId !== loginId && data.message.indexOf("ENTER_") === -1) { var badge = document.getElementById("chatAlarmBadge"); if (badge) badge.style.display = "inline-block"; } }
+            else { 
+                // 통신 패널이 닫혀있을 때 알림 배지 켜기
+                if (data.senderId !== "SERVER" && data.senderId !== loginId && data.message.indexOf("ENTER_") === -1) { 
+                    var badge = document.getElementById("chatAlarmBadge"); 
+                    if (badge) badge.style.display = "inline-block"; 
+                } 
+            }
         };
     }
 </script>

@@ -39,51 +39,47 @@ public class CookiePurchaseController {
                                  HttpServletResponse response,
                                  HttpSession session) throws Exception {
         
-        // 1. 주문번호 생성 및 주문 정보 저장
-        String orderId = "G" + System.currentTimeMillis() + (int)(Math.random() * 900 + 100);
-        order.setOrderId(orderId);
+        // 💥 1. 정규화 3대장 테이블에 꽂아 넣을 식별자(ID) 이중 발급 엔진 기동!
+        String purchaseId = "GPUR-" + System.currentTimeMillis() + (int)(Math.random() * 900 + 100); // 영수증 번호
+        String guestId = "GST-" + session.getId().substring(0, 8) + System.currentTimeMillis();      // 비회원 원천 식별자
+
+        order.setPurchaseId(purchaseId);
+        order.setGuestId(guestId);
         
+        // 2. 서비스로 트랜잭션 전개
         cookieService.executeCookieCheckout(order, ids); 
         
-        // 성공 페이지에서 보여주기 위해 세션에 저장
-        session.setAttribute("guestOrderId", orderId);
+        // 기존 JSP 화면들과의 호환성을 위해 세션 이름은 guestOrderId 로 유지
+        session.setAttribute("guestOrderId", purchaseId);
 
-        // 2. 쿠키에서 현재 장바구니 리스트 가져오기
+        // 3. 결제 완료된 상품들만 쿠키(장바구니)에서 폭파(제거)
         List<BasketVO> allBasketList = getBasketListFromRequest(request);
-        
-        // 3. 삭제할 대상 ID들을 배열로 변환
         String[] purchaseIds = ids.split(",");
-        
-        // 4. 구매한 ID(purchaseIds)에 포함되지 않은 놈들만 남기기
         List<BasketVO> remainingList = new ArrayList<>();
+        
         for (BasketVO item : allBasketList) {
             boolean isPurchased = false;
             for (String id : purchaseIds) {
                 if (String.valueOf(item.getSaleId()).equals(id)) {
-                    isPurchased = true;
-                    break;
+                    isPurchased = true; break;
                 }
             }
-            if (!isPurchased) {
-                remainingList.add(item);
-            }
+            if (!isPurchased) remainingList.add(item);
         }
         
-        // 5. 쿠키 갱신 로직
+        // 4. 쿠키 잔해 갱신
         Cookie cookie;
         if (remainingList.isEmpty()) {
             cookie = new Cookie("cookie_basket", null);
             cookie.setMaxAge(0);
         } else {
-            ObjectMapper mapper = new ObjectMapper();
-            String json = mapper.writeValueAsString(remainingList);
+            String json = new ObjectMapper().writeValueAsString(remainingList);
             cookie = new Cookie("cookie_basket", URLEncoder.encode(json, "UTF-8"));
             cookie.setMaxAge(60 * 60 * 24 * 7);
         }
         cookie.setPath("/");
         response.addCookie(cookie);
         
-        // 리다이렉트하여 success 메서드 타게 함
         return "redirect:/cookie/purchase/success";
     }
 
@@ -95,42 +91,99 @@ public class CookiePurchaseController {
                 if ("cookie_basket".equals(cookie.getName())) {
                     try {
                         String jsonValue = URLDecoder.decode(cookie.getValue(), "UTF-8");
-                        ObjectMapper mapper = new ObjectMapper();
-                        basketList = mapper.readValue(jsonValue, 
-                                mapper.getTypeFactory().constructCollectionType(List.class, BasketVO.class));
-                    } catch (Exception e) { 
-                        e.printStackTrace(); 
-                    }
+                        basketList = new ObjectMapper().readValue(jsonValue, 
+                            new ObjectMapper().getTypeFactory().constructCollectionType(List.class, BasketVO.class));
+                    } catch (Exception e) { e.printStackTrace(); }
                 }
             }
         }
         return basketList;
     }
     
-    @PostMapping("/checkout")
-    public String processCheckout(CookieOrderVO cookieOrder, 
-                                 @RequestParam("ids") String ids, 
-                                 HttpSession session) {
-        
-        String orderId = cookieService.executeCookieCheckout(cookieOrder, ids);
-        session.setAttribute("guestOrderId", orderId);
-        
-        // 경로 수정: 리다이렉트 경로를 전체 경로로 명시
-        return "redirect:/cookie/purchase/success";
-    }
-    
     @GetMapping("/success")
     public String showSuccess(HttpSession session, Model model) {
         String orderId = (String) session.getAttribute("guestOrderId");
-        
-        if (orderId == null) {
-            return "redirect:/";
-        }
+        if (orderId == null) return "redirect:/";
         
         model.addAttribute("orderId", orderId);
         session.removeAttribute("guestOrderId"); 
-        
         return "pages/purchase/cookie_purchase_success";
     }
+    
+ // 🪐 [추적 레이더 전용] 네이버 발급 토큰 장착
+    private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
+    private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
 
+    // ==============================================================
+    // 🔍 비회원 주문 조회 (TRACKING) 파이프라인
+    // ==============================================================
+
+    // 1. 조회 폼 화면 띄우기 (GET)
+    @GetMapping("/track")
+    public String trackForm(Model model) {
+        model.addAttribute("pageName", "pages/purchase/guest_track");
+        return "common/layout";
+    }
+
+    // 2. 실제 조회 로직 가동 (POST)
+    @PostMapping("/trackDetail")
+    public String trackProcess(@RequestParam("purchaseId") String purchaseId,
+                               @RequestParam("phone") String phone,
+                               Model model) {
+        
+        // 서비스(레이더)에 주문번호와 연락처를 던져서 일치하는 품목들을 긁어온다!
+        List<GuestOrderVO> trackList = cookieService.trackGuestOrder(purchaseId, phone);
+        
+        // 관제 실패: 일치하는 데이터가 없을 경우 에러 메시지와 함께 폼으로 반환
+        if (trackList == null || trackList.isEmpty()) {
+            model.addAttribute("errorMsg", "일치하는 주문 정보가 관제 레이더에 잡히지 않습니다. 다시 확인해 주십시오.");
+            model.addAttribute("pageName", "pages/purchase/guest_track");
+            return "common/layout";
+        }
+        
+        // 관제 성공: 조회된 도서들의 네이버 표지 실시간 복구
+        for (GuestOrderVO order : trackList) {
+            String query = order.getTitle() != null ? order.getTitle().replaceAll("\\[.*?\\]", "").split(":")[0].trim() : "";
+            order.setImage(getNaverBookCover(query));
+        }
+        
+        // 결과를 뷰어 화면으로 포워딩
+        model.addAttribute("trackList", trackList);
+        // 💥 다음으로 우리가 만들어야 할 '조회 결과 출력 화면' 파일명이다!
+        model.addAttribute("pageName", "pages/purchase/guest_track_result");
+        return "common/layout";
+    }
+
+    // 📡 조회 결과 표지 전용 네이버 수집 엔진
+    private String getNaverBookCover(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://placehold.co/150x220/f8fafc/a4b0be?text=No+Img";
+        }
+        try {
+            Thread.sleep(150); // API 방어막 우회
+            String encodedKeyword = URLEncoder.encode(keyword, "UTF-8");
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            
+            URL url = new URL(apiURL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", NAVER_CLIENT_ID);
+            con.setRequestProperty("X-Naver-Client-Secret", NAVER_CLIENT_SECRET);
+
+            if (con.getResponseCode() == 200) { 
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                StringBuilder response = new StringBuilder();
+                String inputLine;
+                while ((inputLine = br.readLine()) != null) response.append(inputLine);
+                br.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONArray items = jsonObject.getJSONArray("items");
+                if (items.length() > 0) return items.getJSONObject(0).getString("image");
+            }
+        } catch (Exception e) {
+            System.out.println("🚨 비회원 조회 네이버 통신 장애: " + e.getMessage());
+        }
+        return "https://placehold.co/150x220/f8fafc/a4b0be?text=No+Img";
+    }
 }

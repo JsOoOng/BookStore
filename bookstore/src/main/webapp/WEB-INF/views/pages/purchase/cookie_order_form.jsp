@@ -7,8 +7,11 @@
     
     <form action="${pageContext.request.contextPath}/cookie/purchase/buy" method="post">
         
-        <%-- 📡 [추가] 결제한 상품들의 ID를 서버로 다시 전달하기 위한 히든 필드 --%>
+        <%-- 📡 [관제 동기화] 결제 대상 상품 ID 리스트 포워딩 --%>
         <input type="hidden" name="ids" value="${param.ids}">
+        
+        <%-- 🪐 [미래 자산] PG사 결제 연동 시 필요한 paymentKey 파이프라인 선제 확보 --%>
+        <input type="hidden" name="paymentKey" value="MOCK_PAYMENT_KEY_SUCCESS">
         
         <c:if test="${isGuest}">
             <div class="card mb-4">
@@ -46,14 +49,16 @@
                         <c:forEach items="${purchaseList}" var="item" varStatus="status">
                             <tr class="item-row">
                                 <td>
-                                    <img src="${item.image}" alt="Cover"
-                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/70x100?text=No+Cover';">
+                                    <%-- 💥 [수리 완료] 네트워크 차단 없는 안전한 이미지 플레이스홀더 주소로 동기화! --%>
+                                    <img src="${item.image}" alt="Cover" style="width: 70px; height: 100px; object-fit: cover; border-radius: 4px;"
+                                         onerror="this.onerror=null; this.src='https://placehold.co/150x220/f8fafc/a4b0be?text=No+Cover';">
                                 </td>
                                 <td class="fw-bold">${item.title}</td>
                                 <td>${item.quantity}개</td>
                                 <td>${item.price * item.quantity}원</td>
                             </tr>
                             
+                            <%-- 📡 커맨드 객체 바인딩 파이프라인 (CookieOrderVO 내의 List<BasketVO> items 와 100% 결합) --%>
                             <input type="hidden" name="items[${status.index}].saleId" value="${item.saleId}">
                             <input type="hidden" name="items[${status.index}].quantity" class="calc-qty" value="${item.quantity}">
                             <input type="hidden" name="items[${status.index}].price" class="calc-price" value="${item.price}">
@@ -63,15 +68,16 @@
             </div>
         </div>
 
-        <div class="text-right">
+        <div class="text-right d-flex flex-column align-items-end mb-5">
             <h3>총 결제 금액: <span id="displayTotalPrice">0</span>원</h3>
             <input type="hidden" name="totalPrice" id="hiddenTotalPrice" value="0">
-            <button type="submit" class="btn btn-primary btn-lg" onclick="return calculateAndSubmit();">결제하기</button>
+            <button type="submit" class="btn btn-primary btn-lg mt-2 px-5" onclick="return calculateAndSubmit();">결제하기</button>
         </div>
     </form>
 </div>
 
 <script>
+    // 📊 실시간 금액 연산 및 검증 시퀀스
     function calculateAndSubmit() {
         let total = 0;
         const qtys = document.querySelectorAll('.calc-qty');
@@ -93,6 +99,7 @@
         return true;
     }
 
+    // 초기 화면 로드 시 연산 엔진 즉시 시동
     window.addEventListener('DOMContentLoaded', (event) => {
         calculateAndSubmit();
     });
