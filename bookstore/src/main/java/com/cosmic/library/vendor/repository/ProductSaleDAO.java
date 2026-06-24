@@ -33,6 +33,9 @@ public interface ProductSaleDAO {
     // 🛰️ [신규 관제 오더] 필수 필드(업체번호, 수량, 원가)를 대동한 입고 데이터 빌드
     int insertStockIn(int bookId, int vRegNum, int qty, int cost);
 
-    // 📊 실제 판매량 통계 조회
+    // 📊 협력업체 본인 판매량 통계 조회
     List<SalesVolumeVO> selectSalesVolume(int vRegNum, String period);
+
+    // 📊 관리자용 전체 도서 판매량 통계 조회
+    List<SalesVolumeVO> selectAdminSalesVolume(String period);
 }

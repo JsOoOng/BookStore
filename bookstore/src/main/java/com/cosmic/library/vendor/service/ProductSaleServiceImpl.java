@@ -61,4 +61,9 @@ public class ProductSaleServiceImpl implements ProductSaleService {
     public List<SalesVolumeVO> getSalesVolume(int vRegNum, String period) {
         return productSaleDAO.selectSalesVolume(vRegNum, period);
     }
+    
+    @Override
+    public List<SalesVolumeVO> getAdminSalesVolume(String period) {
+        return productSaleDAO.selectAdminSalesVolume(period);
+    }
 }

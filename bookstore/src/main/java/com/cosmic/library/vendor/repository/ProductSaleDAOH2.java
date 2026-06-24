@@ -208,4 +208,57 @@ public class ProductSaleDAOH2 implements ProductSaleDAO {
             return vo;
         }, vRegNum);
     }
+    
+ // 📊 관리자용 전체 판매량 통계 조회 - 모든 업체 기준
+    @Override
+    public List<SalesVolumeVO> selectAdminSalesVolume(String period) {
+
+        String dateColumn = "p.purchase_date";
+        String keyExpr;
+        String labelExpr;
+
+        switch (period) {
+            case "day":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+                break;
+
+            case "week":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-ww')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy') || '-' || FORMATDATETIME(" + dateColumn + ", 'ww') || '주'";
+                break;
+
+            case "month":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+                break;
+
+            case "year":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+                break;
+
+            case "hour":
+            default:
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'HH')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'HH') || '시'";
+                break;
+        }
+
+        String sql =
+            "SELECT " + keyExpr + " AS sort_key, " +
+            labelExpr + " AS label, " +
+            "COALESCE(SUM(pd.quantity), 0) AS total_qty " +
+            "FROM PURCHASE_DETAIL pd " +
+            "JOIN purchase p ON pd.purchase_id = p.purchase_id " +
+            "GROUP BY " + keyExpr + ", " + labelExpr + " " +
+            "ORDER BY sort_key";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            SalesVolumeVO vo = new SalesVolumeVO();
+            vo.setLabel(rs.getString("label"));
+            vo.setTotalQty(rs.getInt("total_qty"));
+            return vo;
+        });
+    }
 }
