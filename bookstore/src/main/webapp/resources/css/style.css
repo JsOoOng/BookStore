@@ -1238,6 +1238,13 @@ body {
 .link-member-color { color: #5d5fef !important; }
 .link-vendor-color { color: #17a2b8 !important; }
 
+.login-form-panel .form-actions-login button {
+    width: 100% !important; 
+    padding: 16px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+}
+
 /* ==========================================================================
    🚀 애니메이션 시퀀스 정의
    ========================================================================== */
@@ -1250,6 +1257,49 @@ body {
 @keyframes panelFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   💛 카카오 OAUTH 로그인 버튼 전용 코스믹 정렬 파이프라인 (CSS 순수 렌더링)
+   ========================================================================== */
+.cosmic-kakao-wrap {
+    width: 100% !important;
+}
+
+/* 💥 파란 로그인 버튼 풀 와이드 확장 */
+.login-form-panel .form-actions-login button.btn-member-submit {
+    width: 100% !important; 
+    padding: 16px !important;
+    font-size: 16px !important;
+}
+
+/* 💥 CSS로 직접 깎아 만든 영롱한 카카오 버튼 */
+.btn-kakao-css {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    background-color: #FEE500 !important; /* 카카오 공식 옐로우 */
+    color: #000000 !important; /* 카카오 공식 텍스트 컬러 (블랙 85% 호환) */
+    padding: 16px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+/* 마우스 호버 시 옐로우 글로우 충전 및 공중 부양 */
+.btn-kakao-css:hover {
+    box-shadow: 0 8px 25px rgba(254, 229, 0, 0.4) !important; 
+    transform: translateY(-2px); 
+}
+
+/* 카카오 말풍선 벡터 아이콘 사이즈 제어 */
+.kakao-icon {
+    width: 22px !important;
+    height: 22px !important;
+    margin-right: 8px !important;
 }
 
 /* ==========================================================================
@@ -3957,3 +4007,1086 @@ body.modal-open .modal-backdrop {
     
 }
 
+/* ==========================================================================
+   ✏️ Review Buttons - 개별 리뷰 수정 및 삭제 버튼 세트
+   ========================================================================== */
+
+/* 리뷰 버튼 공통 분모 규격 정의 */
+.review-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important; /* 아이콘과 텍스트 사이의 우주 안전거리 */
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+}
+
+/* ✏️ 수정 버튼 전용 관제 파이프라인 (클린 미니멀 그레이) */
+.review-btn.edit {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+}
+
+/* 수정 버튼 호버 시 사령부 딥 네이비로 해치 개방 */
+.review-btn.edit:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-1px);
+}
+
+/* 🗑 삭제 버튼 전용 관제 파이프라인 (경고 레드 오렌지) */
+.review-btn.delete {
+    background: rgba(255, 71, 87, 0.05) !important; /* 은은한 붉은 반투명 베이스 */
+    color: #ff4757 !important;
+    border: 1px solid rgba(255, 71, 87, 0.2) !important;
+    margin-left: 6px !important; /* 수정 버튼과의 최소 이격 거리 락온 */
+}
+
+/* 삭제 버튼 호버 시 강렬한 파괴 에너지를 뿜어냄 */
+.review-btn.delete:hover {
+    background: #ff4757 !important; /* 풀 레드 백그라운드 전환 */
+    color: #ffffff !important;
+    border-color: #ff4757 !important;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25) !important; /* 레드 글로우 효과 */
+    transform: translateY(-1px);
+}
+
+/* 버튼 내부 아이콘 이모지 크기 보정 */
+.review-btn fill {
+    font-size: 14px !important;
+}
+
+/* ==========================================================================
+   ✍️ Review Write Area - 리뷰 작성 구역 및 메인 액션 버튼
+   ========================================================================== */
+
+/* 1. 리뷰 작성 구역 컨테이너 (우측 정렬 및 상단 여백) */
+.review-write-area {
+    display: flex !important;
+    justify-content: flex-end !important; /* 기본 우측 정렬 (원할 경우 center로 변경 가능) */
+    margin-bottom: 25px !important;
+    padding-top: 20px !important;
+    /* 상단에 은은한 점선을 그어 다른 콘텐츠와 시각적으로 분리 */
+    border-top: 1px dashed #edeff2 !important; 
+}
+
+/* 2. ✍ 리뷰 작성 메인 버튼 (코스믹 퍼플 베이스) */
+.btn-cosmic.btn-review-write {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #5d5fef !important; /* 사령부 코스믹 퍼플 */
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.2) !important; /* 기본 퍼플 그림자 */
+    letter-spacing: -0.5px !important;
+}
+
+/* 3. 버튼 호버(Hover) 시 공중 부양 및 퍼플 글로우 발광 효과 */
+.btn-cosmic.btn-review-write:hover {
+    background: #4b4cdb !important; /* 살짝 짙고 선명해지는 퍼플 */
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(93, 95, 239, 0.45) !important; /* 광량 증폭 */
+}
+
+/* ==========================================================================
+   🍪 Cookie Basket 전용 - 비회원 장바구니 통합 스타일
+   ========================================================================== */
+
+/* ⚙️ 상단 제어 바 (전체 선택 및 버튼 그룹) */
+.cosmic-basket-top-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-bottom: 15px !important;
+    border-bottom: 2px solid #0b132b !important;
+    margin-bottom: 25px !important;
+}
+
+.cosmic-check-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #2f3542;
+}
+
+.cosmic-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer;
+    accent-color: #5d5fef !important; /* 체크 시 코스믹 퍼플로 변환 */
+}
+
+/* 🎯 상단 제어 바 버튼 전용 */
+.cosmic-basket-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic,
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    white-space: nowrap !important; 
+}
+
+/* 서브 액션 (선택 삭제) */
+.cosmic-basket-btn-group .btn-cancel-cosmic {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* 메인 액션 (선택 구매) */
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    border: 1px solid #0b132b !important;
+}
+
+.cosmic-basket-btn-group .btn-confirm-cosmic:hover {
+    background: #5d5fef !important; 
+    border-color: #5d5fef !important;
+}
+
+/* 📚 장바구니 리스트 래퍼 */
+.cosmic-basket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 🃏 개별 도서 아이템 카드 */
+.cosmic-basket-card {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px !important;
+    background: #ffffff !important;
+    border: 1px solid #edeff2 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 15px rgba(11, 19, 43, 0.02) !important;
+    transition: all 0.2s ease !important;
+}
+
+.cosmic-basket-card:hover {
+    border-color: rgba(93, 95, 239, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(93, 95, 239, 0.08) !important;
+    transform: translateY(-2px);
+}
+
+.basket-checkbox-wrap {
+    margin-right: 20px;
+}
+
+/* 💥 기존 JSP에 있던 인라인 스타일을 CSS로 완전 통합! */
+.basket-item-img {
+    width: 100px !important;
+    height: 150px !important;
+    object-fit: cover !important;
+    background: #fcfcfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    margin-right: 25px;
+}
+
+/* 텍스트 정보 구역 */
+.basket-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.basket-item-title {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    margin: 0 0 6px 0 !important;
+}
+
+.basket-item-author {
+    font-size: 13px !important;
+    color: #7f8c8d !important;
+    margin: 0 0 15px 0 !important;
+}
+
+/* 수량 및 개별 총액 가로 배치 */
+.basket-price-qty-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #57606f;
+}
+
+.cosmic-qty-input {
+    width: 70px !important;
+    padding: 6px 10px !important;
+    border: 1px solid #dfe4ea !important;
+    border-radius: 6px !important;
+    text-align: center;
+    font-weight: 700 !important;
+    color: #2f3542 !important;
+}
+
+.cosmic-qty-input:focus {
+    border-color: #5d5fef !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(93, 95, 239, 0.1) !important;
+}
+
+.book-price.totalPrice {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #5d5fef !important;
+}
+
+/* 🕳️ 빈 장바구니 상태 */
+.cosmic-empty-basket {
+    padding: 80px 0 !important;
+    background: #fcfcfd !important;
+    border: 1px dashed #dfe4ea !important;
+    border-radius: 12px !important;
+}
+
+.cosmic-empty-basket .empty-icon {
+    font-size: 3rem !important;
+    display: block !important;
+    margin-bottom: 15px !important;
+}
+
+.cosmic-empty-basket p {
+    color: #a4b0be !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin-bottom: 0 !important;
+}
+
+/* 💳 하단 총 결제 금액 패널 */
+.cosmic-total-panel {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    padding: 25px 30px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 20px !important;
+    box-shadow: 0 10px 30px rgba(11, 19, 43, 0.15) !important;
+}
+
+.total-label {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #a4b0be !important;
+}
+
+.total-amount {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #2ed573 !important; 
+}
+
+/* 💥 장바구니 하단 결제 전용 마스터 버튼 */
+.btn-checkout-cosmic {
+    background: #5d5fef !important; 
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    margin-left: 15px !important; 
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.3) !important; 
+}
+
+.btn-checkout-cosmic:hover {
+    background: #4b4cdb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(93, 95, 239, 0.45) !important;
+}
+
+/* ==========================================================================
+   🚀 Cosmic Checkout Success - 결제 완료 전용 스타일
+   ========================================================================== */
+
+/* 🌌 화면 중앙 배치를 위한 래퍼 */
+.cosmic-success-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh; 
+    padding: 60px 20px;
+    background: transparent;
+}
+
+/* 🃏 중앙 성공 알림 카드 */
+.cosmic-success-card {
+    background: #ffffff;
+    border: 1px solid #edeff2;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(11, 19, 43, 0.08);
+    padding: 60px 50px;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    /* 💥 로드 시 살짝 떠오르는 애니메이션 장착 */
+    animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ✨ 에메랄드 그린 발광 아이콘 */
+.success-icon-circle {
+    width: 90px;
+    height: 90px;
+    background: rgba(46, 213, 115, 0.1); /* 에메랄드 반투명 배경 */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px auto;
+    font-size: 42px;
+    box-shadow: 0 0 25px rgba(46, 213, 115, 0.25);
+}
+
+/* 텍스트 타이포그래피 */
+.cosmic-success-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #0b132b; /* 사령부 딥 네이비 */
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
+.cosmic-success-desc {
+    font-size: 16px;
+    color: #57606f; /* 부드러운 그레이 */
+    line-height: 1.7;
+    margin-bottom: 45px;
+}
+
+/* 🔘 버튼 그룹 정렬 */
+.cosmic-success-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap; /* 모바일 호환성 대응 */
+}
+
+/* 🚀 메인 액션 버튼 (코스믹 퍼플) */
+.btn-cosmic-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #5d5fef;
+    color: #ffffff !important;
+    text-decoration: none;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 6px 20px rgba(93, 95, 239, 0.3);
+}
+
+.btn-cosmic-primary:hover {
+    background: #4b4cdb;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(93, 95, 239, 0.45);
+}
+
+/* 🛸 서브 액션 버튼 (라이트 모드) */
+.btn-cosmic-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: #0b132b !important;
+    text-decoration: none;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 700;
+    border: 1px solid #dfe4ea;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-cosmic-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0b132b;
+}
+
+/* 💫 부드러운 등장 애니메이션 키프레임 */
+@keyframes floatUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   🍪 Cookie Basket 전용 - 비회원 장바구니 통합 스타일
+   ========================================================================== */
+
+/* ⚙️ 상단 제어 바 */
+.cosmic-basket-top-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-bottom: 15px !important;
+    border-bottom: 2px solid #0b132b !important;
+    margin-bottom: 25px !important;
+}
+
+.cosmic-check-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #2f3542;
+}
+
+.cosmic-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer;
+    accent-color: #5d5fef !important; 
+}
+
+/* 🎯 버튼 그룹 */
+.cosmic-basket-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic,
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    white-space: nowrap !important; 
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+}
+
+.cosmic-basket-btn-group .btn-cancel-cosmic:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
+}
+
+.cosmic-basket-btn-group .btn-confirm-cosmic {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    border: 1px solid #0b132b !important;
+}
+
+.cosmic-basket-btn-group .btn-confirm-cosmic:hover {
+    background: #5d5fef !important; 
+    border-color: #5d5fef !important;
+}
+
+/* 📚 리스트 & 카드 */
+.cosmic-basket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cosmic-basket-card {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px !important;
+    background: #ffffff !important;
+    border: 1px solid #edeff2 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 15px rgba(11, 19, 43, 0.02) !important;
+    transition: all 0.2s ease !important;
+}
+
+.cosmic-basket-card:hover {
+    border-color: rgba(93, 95, 239, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(93, 95, 239, 0.08) !important;
+    transform: translateY(-2px);
+}
+
+.basket-checkbox-wrap {
+    margin-right: 20px;
+}
+
+/* 💥 도서 표지 이미지 스타일 통합 적용! */
+.basket-item-img {
+    width: 100px !important;
+    height: 150px !important;
+    object-fit: cover !important;
+    background: #fcfcfd;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    margin-right: 25px;
+}
+
+/* 텍스트 정보 */
+.basket-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.basket-item-title {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    margin: 0 0 6px 0 !important;
+}
+
+.basket-item-author {
+    font-size: 13px !important;
+    color: #7f8c8d !important;
+    margin: 0 0 15px 0 !important;
+}
+
+/* 수량 및 가격 */
+.basket-price-qty-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #57606f;
+}
+
+.cosmic-qty-input {
+    width: 70px !important;
+    padding: 6px 10px !important;
+    border: 1px solid #dfe4ea !important;
+    border-radius: 6px !important;
+    text-align: center;
+    font-weight: 700 !important;
+    color: #2f3542 !important;
+}
+
+.cosmic-qty-input:focus {
+    border-color: #5d5fef !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(93, 95, 239, 0.1) !important;
+}
+
+.book-price.totalPrice {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #5d5fef !important;
+}
+
+/* 🕳️ 빈 장바구니 */
+.cosmic-empty-basket {
+    padding: 80px 0 !important;
+    background: #fcfcfd !important;
+    border: 1px dashed #dfe4ea !important;
+    border-radius: 12px !important;
+}
+
+.cosmic-empty-basket .empty-icon {
+    font-size: 3rem !important;
+    display: block !important;
+    margin-bottom: 15px !important;
+}
+
+.cosmic-empty-basket p {
+    color: #a4b0be !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin-bottom: 0 !important;
+}
+
+/* 💳 총 결제 금액 패널 */
+.cosmic-total-panel {
+    background: #0b132b !important;
+    color: #ffffff !important;
+    padding: 25px 30px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 20px !important;
+    box-shadow: 0 10px 30px rgba(11, 19, 43, 0.15) !important;
+}
+
+.total-label {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #a4b0be !important;
+}
+
+.total-amount {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #2ed573 !important; 
+}
+
+.btn-checkout-cosmic {
+    background: #5d5fef !important; 
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    margin-left: 15px !important; 
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.3) !important; 
+}
+
+.btn-checkout-cosmic:hover {
+    background: #4b4cdb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(93, 95, 239, 0.45) !important;
+}
+
+/* ==========================================================================
+   💬 Phase 1 ~ 4 완공 - 전역 플로팅 버튼(FAB) & 750px 듀얼 사이드 패널
+   ========================================================================= */
+
+/* 🚀 1. 플로팅 버튼 전체 레이아웃 */
+.cosmic-fab-wrapper {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    align-items: center;
+    z-index: 1050; /* 최상위 뷰 보장 */
+}
+
+/* 🪐 마우스 호버 시 발생하는 노션 스타일 소형 툴팁 */
+.cosmic-fab-tooltip {
+    background: #0b132b;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-right: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(11,19,43,0.15);
+}
+
+.cosmic-fab-wrapper:hover .cosmic-fab-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* 🔘 동그란 메인 버튼 원체 */
+.cosmic-fab-btn {
+    width: 60px;
+    height: 60px;
+    background: #ffffff;
+    border: 1px solid #edeff2;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(11, 19, 43, 0.1);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.cosmic-fab-btn:hover {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 12px 30px rgba(93, 95, 239, 0.2);
+    border-color: rgba(93, 95, 239, 0.3);
+}
+
+.fab-icon {
+    font-size: 26px;
+}
+
+/* 🚨 미확인 신호 알림 배지 */
+.panel-alarm-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #ff4757;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+/* ==========================================================================
+   🃏 2. 슬라이딩 오버레이 사이드 패널 (가로 row 배정 코어 엔진)
+   ========================================================================== */
+.cosmic-side-panel {
+    position: fixed;
+    top: 0;
+    right: -420px; /* 대원 기본 모드 너비(400px) 기준 숨김 좌표 */
+    width: 400px;
+    height: 100vh;
+    background: #ffffff;
+    border-left: 1px solid #edeff2;
+    box-shadow: -10px 0 40px rgba(11,19,43,0.05);
+    z-index: 1060;
+    display: flex;
+    flex-direction: row; /* 💥 가로 듀얼 배치를 위한 프레임 스위칭 */
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 💥 오픈 지령 전달 시 기본 슬라이드 전개 */
+.cosmic-side-panel.open {
+    transform: translateX(-420px);
+}
+
+/* 💬 우측: 공통 통신(채팅) 메인 인프라 */
+.panel-chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+}
+
+/* 패널 헤더 */
+.panel-header {
+    padding: 20px;
+    border-bottom: 1px solid #f1f2f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+}
+
+.panel-title-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-status-dot {
+    width: 8px;
+    height: 8px;
+    background: #2ed573;
+    border-radius: 50%;
+}
+
+.panel-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0b132b;
+    margin: 0;
+}
+
+.btn-panel-close {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: #a4b0be;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-panel-close:hover {
+    color: #2f3542;
+}
+
+/* 💬 채팅 메인 대화창 바디 */
+.panel-chat-body {
+    flex: 1;
+    overflow-y: auto;
+    background: #fcfcfd;
+    padding: 20px;
+}
+
+/* ⌨️ 채팅 하단 입력창 구역 */
+.panel-chat-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #f1f2f6;
+    background: #ffffff;
+}
+
+.panel-input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.panel-input-group input {
+    flex: 1;
+    border: 1px solid #dfe4ea;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    outline: none;
+}
+
+.panel-input-group input:focus {
+    border-color: #5d5fef;
+}
+
+.panel-input-group button {
+    background: #0b132b;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.panel-input-group button:hover {
+    background: #5d5fef;
+}
+
+.panel-helper-link a {
+    font-size: 11px;
+    color: #ffa502;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   👑 3. 관리자(Admin) 카카오톡 스타일 와이드 듀얼 윈도우 스펙
+   ========================================================================== */
+.cosmic-side-panel.admin-mode {
+    width: 750px; /* 💥 대폭 확장 수립 */
+    right: -770px; /* 관리자 전용 대기 좌표 */
+}
+
+.cosmic-side-panel.admin-mode.open {
+    transform: translateX(-770px); /* 💥 관리자 모드로 전개 */
+}
+
+/* 좌측: 관리자 전용 대원 리스트 윙 사이드바 */
+.panel-admin-sidebar {
+    width: 250px;
+    background: #f8fafc;
+    border-right: 1px solid #edeff2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.admin-sidebar-header {
+    padding: 22px 20px;
+    border-bottom: 1px solid #edeff2;
+    background: #ffffff;
+}
+
+.admin-sidebar-header h6 {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0b132b;
+    margin: 0;
+}
+
+/* 수직 정렬 카카오톡 스타일 무한 대원 리스트 */
+.panel-user-list-vertical {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.panel-user-list-vertical .user-item {
+    padding: 14px 15px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #0b132b;
+    transition: all 0.2s;
+}
+
+/* 마우스 호버 및 액티브 타겟 제어 */
+.panel-user-list-vertical .user-item:hover,
+.panel-user-list-vertical .user-item.active {
+    background: #5d5fef;
+    color: #ffffff !important;
+    border-color: #5d5fef;
+    box-shadow: 0 4px 12px rgba(93, 95, 239, 0.2);
+}
+
+/* 통신 이탈 대원 전용 음영 마스킹 */
+.panel-user-list-vertical .user-item.disconnected {
+    background: #f1f2f6;
+    color: #a4b0be;
+    border-color: #dfe4ea;
+}
+
+/* ==========================================================================
+   📍 Location.jsp 전용 - 우주 도서관 위치 안내 스타일
+   ========================================================================== */
+
+/* 전체 외곽 프레임워크 슬림화 및 중앙 정렬 */
+.form-container {
+    max-width: 850px !important;
+    margin: 40px auto !important;
+    background: #ffffff !important;
+    padding: 50px 40px !important;
+    border: 1px solid #edeff2 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 50px rgba(11, 19, 43, 0.06) !important;
+}
+
+/* 🗺️ 구글 지도 컨테이너 볼륨업 및 입체감 패치 */
+.map-container {
+    position: relative;
+    border-radius: 20px !important;
+    overflow: hidden; /* 내부 iframe의 모서리가 삐져나오지 않도록 강제 차단 */
+    box-shadow: 0 8px 25px rgba(11, 19, 43, 0.08) !important;
+    margin-bottom: 35px !important;
+    border: 1px solid #edeff2;
+    transition: transform 0.3s ease;
+}
+
+.map-container:hover {
+    transform: translateY(-2px); /* 마우스 호버 시 살짝 떠오르는 효과 */
+}
+
+/* 🚀 본부 위치 정보 안내 블록 */
+.location-info {
+    padding: 25px 30px !important;
+    background: #f8fafc !important; /* 부드러운 화이트 그레이 베이스 */
+    border-left: 5px solid #5d5fef !important; /* 왼쪽 보더에 코스믹 퍼플 포인트 락온 */
+    border-radius: 8px !important;
+    margin-bottom: 40px !important;
+}
+
+.location-info h4 {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: #0b132b !important; /* 사령부 딥 네이비 */
+    margin-bottom: 12px !important;
+}
+
+.location-info p {
+    font-size: 14px !important;
+    color: #57606f !important; /* 가독성 높은 차분한 그레이 */
+    margin-bottom: 6px !important;
+    line-height: 1.6 !important;
+}
+
+.location-info p:last-child {
+    margin-bottom: 0 !important; /* 마지막 문장의 하단 여백 제거 */
+    color: #747d8c !important;
+}
+
+/* 🔘 하단 이동 제어 버튼 그룹 */
+.form-actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    margin-top: 20px !important;
+}
+
+/* 길찾기 (Google Maps) 메인 액션 버튼 */
+.form-actions .btn-confirm {
+    background: #5d5fef !important; /* 코스믹 퍼플 */
+    color: #ffffff !important;
+    border: none !important;
+    padding: 14px 35px !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 15px rgba(93, 95, 239, 0.2) !important;
+}
+
+.form-actions .btn-confirm:hover {
+    background: #4b4cdb !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(93, 95, 239, 0.35) !important;
+}
+
+/* 돌아가기 서브 액션 버튼 */
+.form-actions .btn-cancel {
+    background: #ffffff !important;
+    color: #57606f !important;
+    border: 1px solid #dfe4ea !important;
+    padding: 14px 35px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.form-actions .btn-cancel:hover {
+    background: #f8fafc !important;
+    color: #0b132b !important;
+    border-color: #cbd5e1 !important;
+}

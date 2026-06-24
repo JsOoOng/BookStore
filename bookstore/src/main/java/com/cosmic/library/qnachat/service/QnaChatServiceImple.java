@@ -1,30 +1,55 @@
 package com.cosmic.library.qnachat.service;
 
-import com.cosmic.library.qnachat.model.QnachatVO;
-import com.cosmic.library.qnachat.repository.QnaChatDAO;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
+
+import com.cosmic.library.qnachat.model.QnachatVO;
+import com.cosmic.library.qnachat.repository.QnaChatDAO;
 
 @Service
 public class QnaChatServiceImple implements QnaChatService {
-    
-    @Autowired 
+
+    @Autowired
     private QnaChatDAO qnaChatDAO;
-    
-    @Override 
-    public void saveMessage(QnachatVO vo) { 
-        // 🪐 [방어선 가동] 일반 대원이 'ADMIN' 뭉텅이를 타겟으로 무전을 치면, 
-        // 사령부의 실존하는 마스터 관리자 ID로 스위칭하여 DAO의 서브쿼리를 안전하게 통과시킵니다.
+
+    @Override
+    public void saveMessage(QnachatVO vo) {
+
+        //----------------------------------
+        // 💥 [수리 완료] ADMIN 별칭 처리
+        // 유령 계정(QNAadmin) 대신 DB에 존재하는 실제 사령부 ID('admin')로 락온!
+        //----------------------------------
         if ("ADMIN".equals(vo.getReceiverId())) {
-            vo.setReceiverId("QNAadmin"); // 💡 사령관의 BASE_ADMIN 테이블에 등록된 실제 관리자 ID로 매pping!
+            vo.setReceiverId("admin"); 
         }
-        
-        qnaChatDAO.insertMessage(vo); 
+
+        //----------------------------------
+        // PARTICIPANT 존재 확인
+        //----------------------------------
+        Integer senderPid = qnaChatDAO.findParticipantId(vo.getSenderId());
+        Integer receiverPid = qnaChatDAO.findParticipantId(vo.getReceiverId());
+
+        if (senderPid == null) {
+            throw new RuntimeException("발신 PARTICIPANT 데이터 소실 : " + vo.getSenderId());
+        }
+
+        if (receiverPid == null) {
+            throw new RuntimeException("수신 PARTICIPANT 데이터 소실 : " + vo.getReceiverId());
+        }
+
+        //----------------------------------
+        // PID 세팅 및 저장
+        //----------------------------------
+        vo.setSenderPid(senderPid);
+        vo.setReceiverPid(receiverPid);
+
+        qnaChatDAO.insertMessage(vo);
     }
-    
-    @Override 
-    public List<QnachatVO> getChatHistory(String userId, String role) { 
-        return qnaChatDAO.getChatHistory(userId, role); 
+
+    @Override
+    public List<QnachatVO> getChatHistory(String userId, String role) {
+        return qnaChatDAO.getChatHistory(userId, role);
     }
 }

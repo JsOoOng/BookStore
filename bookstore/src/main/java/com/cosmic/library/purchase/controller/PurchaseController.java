@@ -62,9 +62,8 @@ public class PurchaseController {
             BookVO book = bookService.findBookById(bookId); 
             if (book != null) {
                 BasketVO temp = new BasketVO();
-                
                 temp.setBookId(book.getId());
-                temp.setSaleId(saleId); // 💥 [핵심 추가] 재고 차감을 위한 마켓 식별자 장착!
+                temp.setSaleId(saleId); 
                 temp.setTitle(book.getTitle());
                 temp.setWriter(book.getWriter());
                 temp.setQuantity(1); 
@@ -73,7 +72,9 @@ public class PurchaseController {
                 temp.setPublisher(book.getPublisher());
                 temp.setIsbn(book.getIsbn());
                 
-                temp.setImage(getNaverBookCover(book.getTitle()));
+                // 💥 [수리 완료] ISBN을 최우선 좌표로 네이버 API 타격!
+                String query = (book.getIsbn() != null) ? book.getIsbn() : book.getTitle();
+                temp.setImage(getNaverBookCover(query));
                 
                 purchaseList.add(temp);
                 totalPrice = price; 
@@ -88,7 +89,9 @@ public class PurchaseController {
             purchaseList = basketService.getSelectedList(userRegNum, ids);
             
             for (BasketVO vo : purchaseList) {
-                vo.setImage(getNaverBookCover(vo.getTitle()));
+                // 💥 [수리 완료] ISBN을 최우선 좌표로 네이버 API 타격!
+                String query = (vo.getIsbn() != null) ? vo.getIsbn() : vo.getTitle();
+                vo.setImage(getNaverBookCover(query));
                 totalPrice += (vo.getPrice() * vo.getQuantity());
             }
             
@@ -102,7 +105,7 @@ public class PurchaseController {
         return "common/layout";
     }
 
-    // 2️⃣ 결제 승인 처리 (POST) - 💥 대통합 엔진 가동으로 전면 교체!
+    // 2️⃣ 결제 승인 처리 (POST) 
     @PostMapping("/buy")
     public String processPurchase(
             @RequestParam(required = false) Integer bookId,    
@@ -118,7 +121,6 @@ public class PurchaseController {
         List<BasketVO> itemsToBuy = new ArrayList<>();
         int[] basketIdsToRemove = null;
 
-        // 1) 단일 바로 구매 데이터 수집
         if (bookId != null && saleId != null && price != null) {
             BasketVO singleItem = new BasketVO();
             singleItem.setBookId(bookId);
@@ -127,18 +129,15 @@ public class PurchaseController {
             singleItem.setPrice(price);
             itemsToBuy.add(singleItem);
         }
-        // 2) 장바구니 선택 구매 데이터 수집
         else if (basketIds != null && !basketIds.isEmpty()) {
             String[] arr = basketIds.split(",");
             basketIdsToRemove = new int[arr.length];
             for (int i = 0; i < arr.length; i++) {
                 basketIdsToRemove[i] = Integer.parseInt(arr[i]);
             }
-            // 장바구니 원천 데이터를 통째로 긁어옴
             itemsToBuy = basketService.getSelectedList(userRegNum, basketIdsToRemove);
         }
 
-        // 3) 💥 마스터-디테일 대통합 결제 엔진 단일 호출!
         if (!itemsToBuy.isEmpty()) {
             purchaseService.executeCheckout(userRegNum, itemsToBuy, basketIdsToRemove);
         }
@@ -154,20 +153,20 @@ public class PurchaseController {
     }
     
     // ==============================================================
-    // 🛰️ [결제 관제탑 전용 레이더] 네이버 실시간 도서 표지 수집 통신 파이프라인
+    // 🛰️ [결제 관제탑 전용 레이더] 네이버 API (ISBN/인코딩 우선 탐색)
     // ==============================================================
     private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
     private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
 
-    private String getNaverBookCover(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
+    private String getNaverBookCover(String query) {
+        if (query == null || query.trim().isEmpty()) {
             return "https://via.placeholder.com/150x220?text=No+Img";
         }
         try {
-            String pureTitle = keyword.split(":")[0].trim();
-            String encodedKeyword = URLEncoder.encode(pureTitle, "UTF-8");
+            // 불안정한 split 조각내기 폐기, 전체 문자열을 안전하게 UTF-8 인코딩
+            String encodedQuery = URLEncoder.encode(query.trim(), "UTF-8");
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedQuery + "&display=1";
             
-            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
             URL url = new URL(apiURL);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             

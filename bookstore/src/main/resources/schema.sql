@@ -1,21 +1,26 @@
+-- =========================================================================
+-- [대지 정화] 외래키 참조 무결성 역순 완전 DROP 파이프라인 (안전핀 장착)
+-- =========================================================================
+
 -- 1단계: 가장 하위에서 다른 테이블을 참조하기만 하는 실시간 통신 및 배송 데이터 소거
 DROP TABLE IF EXISTS QNA_CHAT;
 DROP TABLE IF EXISTS QNA_MAIL;
 DROP TABLE IF EXISTS PURCHASE_DETAIL;
+DROP TABLE IF EXISTS REVIEW_USER;        -- 📡 하위 리뷰 유저 테이블 먼저 소독
 
 DROP TABLE IF EXISTS TB_EMAIL_AUTH;
 
 -- 2단계: 통신 허브 및 주문/장바구니 파트 소거
 DROP TABLE IF EXISTS PARTICIPANT;
-DROP TABLE IF EXISTS purchase;
-DROP TABLE IF EXISTS basket;
+DROP TABLE IF EXISTS PURCHASE;
+DROP TABLE IF EXISTS BASKET;
+DROP TABLE IF EXISTS REVIEW_BOOK;        -- 📡 리뷰 도서 연결 테이블 소독
+DROP TABLE IF EXISTS COOKIE_ORDER_DETAIL;-- 📡 비회원 주문 상세 소독
 
--- 3단계: 상품 판매 및 입고 궤도 소거
+-- 3단계: 상품 판매, 입고 및 비회원 마스터 궤도 소거
 DROP TABLE IF EXISTS PRODUCT_SALE;
 DROP TABLE IF EXISTS STOCK_IN;
-
-drop table REVIEW_USER;
-drop table REVIEW_BOOK;
+DROP TABLE IF EXISTS COOKIE_ORDER;       -- 📡 비회원 주문 마스터 소독
 
 -- 4단계: 활동 등록부 및 도서 원천 데이터 소거
 DROP TABLE IF EXISTS VENDOR_REGISTRATION;
@@ -26,6 +31,10 @@ DROP TABLE IF EXISTS BOOK;
 DROP TABLE IF EXISTS VENDOR;
 DROP TABLE IF EXISTS COSMIC_USER;
 DROP TABLE IF EXISTS BASE_ADMIN;
+
+-- =========================================================================
+-- 여기서부터 CREATE TABLE 문장을 전개하면 된다!
+-- =========================================================================
 
 -- 1. BASE_ADMIN: 사령부 관리자
 CREATE TABLE BASE_ADMIN (
@@ -44,7 +53,7 @@ CREATE TABLE COSMIC_USER (
     is_member INT DEFAULT 1,                   
     points INT DEFAULT 0,                      
     email VARCHAR(100),                        
-    address VARCHAR(500) DEFAULT '銀河系 未指定 區域' NOT NULL,
+    address VARCHAR(500) DEFAULT '배송지 미입력' NOT NULL,
     regDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 
@@ -223,6 +232,27 @@ CREATE TABLE review_user (
         ON DELETE CASCADE
 );
 
+--17. 쿠키 테이블
+CREATE TABLE COOKIE_ORDER (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    phone VARCHAR(20),
+    address VARCHAR(200),
+    totalPrice INT,
+    orderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 18. COOKIE_ORDER_DETAIL : 비회원 주문 상세 내역
+CREATE TABLE COOKIE_ORDER_DETAIL (
+    detail_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,                     -- COOKIE_ORDER의 고유 ID (FK)
+    sale_id INT NOT NULL,                      -- 오픈마켓 상품 일련번호 (FK)
+    quantity INT NOT NULL,                     -- 구매 수량
+    unit_price INT NOT NULL,                   -- 단가
+    FOREIGN KEY (order_id) REFERENCES COOKIE_ORDER(id) ON DELETE CASCADE,
+    FOREIGN KEY (sale_id) REFERENCES PRODUCT_SALE(sale_id)
+);
+
 ALTER TABLE review_user
 ADD CONSTRAINT uk_review_user UNIQUE (bookid, userid);
 
@@ -260,6 +290,72 @@ INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, imag
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('바깥은 여름 :김애란 소설', '김애란 지음', '문학동네', '2017-01-01', '소설/시', 'Korean', '9788954646079', 'https://covers.openlibrary.org/b/isbn/9788954646079-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('홍학의 자리 :정해연 장편소설', '정해연 지음', '엘릭시르 : 문학동네', '2021-01-01', '소설/시', 'Korean', '9788954681155', 'https://covers.openlibrary.org/b/isbn/9788954681155-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('단 한 번의 삶', '김영하 지음', '복복서가', '2025-01-01', '소설/시', 'Korean', '9791191114768', 'https://covers.openlibrary.org/b/isbn/9791191114768-M.jpg');
+
+-- =========================================================================
+-- [공급 파이프라인] 1단계: (주)은하서점 전체 도서 창고 입고 (STOCK_IN)
+-- 무결성을 위해 AUTO_INCREMENT 순서대로 1번부터 7번 도서까지 다이렉트 보급!
+-- =========================================================================
+
+-- stock_id = 1 생성 (1번 책: 작별하지 않는다)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 1, 50, 10000, NOW());
+
+-- stock_id = 2 생성 (2번 책: 달리기를 말할 때...)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 2, 30, 9000, NOW());
+
+-- stock_id = 3 생성 (3번 책: 모순 - 최초 입고분)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 3, 100, 8000, NOW());
+
+-- stock_id = 4 생성 (4번 책: 완전한 행복 - 최초 입고분)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 4, 20, 11000, NOW());
+
+-- stock_id = 5 생성 (3번 책: 모순 - 추가 입고분)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 3, 80, 8000, NOW());
+
+-- stock_id = 6 생성 (4번 책: 완전한 행복 - 추가 입고분) -> 💥 에러 유발 지점 완벽 영입!
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 4, 40, 11000, NOW());
+
+-- stock_id = 7 생성 (5번 책: 바깥은 여름)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 5, 60, 9500, NOW());
+
+-- stock_id = 8 생성 (6번 책: 홍학의 자리)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 6, 35, 10000, NOW());
+
+-- stock_id = 9 생성 (7번 책: 단 한 번의 삶)
+INSERT INTO STOCK_IN (v_reg_num, book_id, qty, cost, regDate) VALUES (1, 7, 120, 12000, NOW());
+
+
+-- =========================================================================
+-- [공급 파이프라인] 2단계: 실시간 판매 상점 매대 등록 (PRODUCT_SALE)
+-- 위에서 생성된 stock_id (1번 ~ 9번)의 번호와 1:1 완벽 락온 결합!
+-- =========================================================================
+
+-- sale_id = 1 (stock_id 1번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (1, 1, 13500, 50, 'ON', NOW());
+
+-- sale_id = 2 (stock_id 2번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (2, 1, 12000, 30, 'ON', NOW());
+
+-- sale_id = 3 (stock_id 3번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (3, 1, 11700, 100, 'ON', NOW());
+
+-- sale_id = 4 (stock_id 4번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (4, 1, 14200, 20, 'ON', NOW());
+
+-- sale_id = 5 (stock_id 5번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (5, 1, 11700, 80, 'ON', NOW());
+
+-- sale_id = 6 (stock_id 6번 서빙) -> 💥 이제 6번 창고가 존재하므로 프리패스 성공!
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (6, 1, 14200, 40, 'ON', NOW());
+
+-- sale_id = 7 (stock_id 7번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (7, 1, 13000, 60, 'ON', NOW());
+
+-- sale_id = 8 (stock_id 8번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (8, 1, 13800, 35, 'ON', NOW());
+
+-- sale_id = 9 (stock_id 9번 서빙)
+INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (9, 1, 16500, 120, 'ON', NOW());
+
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('참을 수 없는 존재의 가벼움', '밀란 쿤데라 지음', '민음사', '2018-01-01', '소설/시', 'Korean', '9788937437564', 'https://covers.openlibrary.org/b/isbn/9788937437564-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('나는 소망한다 내게 금지된 것을 :양귀자 장편소설', '양귀자 지음', '쓰다', '2019-01-01', '소설/시', 'Korean', '9788998441074', 'https://covers.openlibrary.org/b/isbn/9788998441074-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('혼모노 :성해나 소설집', '성해나 지음', '창비', '2025-01-01', '소설/시', 'Korean', '9788936439743', 'https://covers.openlibrary.org/b/isbn/9788936439743-M.jpg');

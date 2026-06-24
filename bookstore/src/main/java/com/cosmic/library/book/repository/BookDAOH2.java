@@ -126,11 +126,12 @@ public class BookDAOH2 implements BookDAO {
 
     @Override
     public BookVO selectBookBySaleId(int saleId) {
-        // 💡 PRODUCT_SALE 테이블의 SALE_ID를 조건으로, 
-        // BOOK 테이블의 ID와 PRODUCT_SALE의 STOCK_ID를 연결합니다.
+        // 💡 [수리 완료] PRODUCT_SALE -> STOCK_IN -> BOOK 순서로 
+        // 정확한 외래키(FK) 다리를 건너도록 JOIN 쿼리 정밀 수리!
         String sql = "SELECT b.*, p.PRICE " +
-                     "FROM BOOK b " +
-                     "JOIN PRODUCT_SALE p ON b.id = p.STOCK_ID " +
+                     "FROM PRODUCT_SALE p " +
+                     "JOIN STOCK_IN s ON p.STOCK_ID = s.stock_id " +
+                     "JOIN BOOK b ON s.book_id = b.id " +
                      "WHERE p.SALE_ID = ?"; 
         
         try {
@@ -140,7 +141,10 @@ public class BookDAOH2 implements BookDAO {
                 book.setTitle(rs.getString("title"));
                 book.setWriter(rs.getString("writer"));
                 book.setImage(rs.getString("image"));
-                book.setPrice(rs.getInt("PRICE")); // PRODUCT_SALE 테이블의 가격 컬럼 매핑
+                
+                book.setIsbn(rs.getString("isbn"));
+                
+                book.setPrice(rs.getInt("PRICE")); // PRODUCT_SALE 테이블의 가격
                 book.setSaleId(saleId);
                 return book;
             }, saleId);

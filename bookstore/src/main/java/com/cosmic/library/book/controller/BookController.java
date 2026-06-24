@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -57,14 +58,18 @@ public class BookController {
     }
 
     // ==============================================================
-    // 🛰️ [사령부 핵심 기믹] 네이버 실시간 도서 표지 수집 전용 통신 파이프라인
+    // 🛰️ [수리 완료] 네이버 실시간 도서 표지 수집 엔진 (URL 인코딩 장착)
     // ==============================================================
-    private String getNaverBookCover(String isbn) {
-        if (isbn == null || isbn.trim().isEmpty()) {
-            return "/resources/images/books/no_image.jpg";
+
+    private String getNaverBookCover(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://via.placeholder.com/100x150?text=No+Cover";
         }
         try {
-            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + isbn.trim() + "&display=1";
+            // 💥 [핵심 타격] 한글/특수문자가 포함된 책 제목을 API가 인식할 수 있도록 UTF-8 인코딩!
+            String encodedKeyword = URLEncoder.encode(keyword.trim(), "UTF-8");
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            
             URL url = new URL(apiURL);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             
@@ -87,13 +92,13 @@ public class BookController {
                 
                 if (items.length() > 0) {
                     JSONObject bookItem = items.getJSONObject(0);
-                    return bookItem.getString("image"); // 네이버 공식 표지 주소 확보 성공!
+                    return bookItem.getString("image"); // 🎯 네이버 표지 확보 성공!
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // 디버깅용 에러 출력
         }
-        return "/resources/images/books/no_image.jpg"; // 실패 시 엑스박스 방어용 디폴트 표지 반환
+        return "https://via.placeholder.com/100x150?text=No+Cover";
     }
 
     // 1. 도서 전체 목록 탐사 (List - 네이버 실시간 표지 동기화 완료)

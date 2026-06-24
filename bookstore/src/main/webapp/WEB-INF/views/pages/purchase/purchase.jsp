@@ -55,33 +55,22 @@
                 <div class="summary-inner">
                     <h3 class="purchase-summary-title">결제 요약</h3>
 
-                    <%-- 로그인 여부에 따라 action 경로를 다르게 설정 --%>
-                    <c:set var="actionUrl" value="${pageContext.request.contextPath}/purchase/buy" />
-                    <c:if test="${empty sessionScope.user}">
-                        <c:set var="actionUrl" value="${pageContext.request.contextPath}/cookie/purchase/buy" />
-                    </c:if>
-
-                    <form action="${actionUrl}" method="post">
+                    <%-- 💥 [수리 완료] 쓸데없는 비회원 탈선 로직 완전 소독, 정규 회원 궤도 고정! --%>
+                    <form action="${pageContext.request.contextPath}/purchase/buy" method="post">
+                        
                         <c:choose>
                             <c:when test="${not empty basketIds}">
                                 <input type="hidden" name="basketIds" value="${basketIds}">
                             </c:when>
                             <c:otherwise>
-                                <input type="hidden" name="bookId" value="${purchaseList[0].saleId}">
+                                <%-- 💥 [버그 수정] 단일 구매 시 bookId, saleId, price가 정확히 날아가도록 파이프라인 수리! --%>
+                                <input type="hidden" name="bookId" value="${purchaseList[0].bookId}">
+                                <input type="hidden" name="saleId" value="${purchaseList[0].saleId}">
+                                <input type="hidden" name="price" value="${purchaseList[0].price}">
                             </c:otherwise>
                         </c:choose>
 
                         <div class="purchase-summary-details">
-                            <%-- 비회원일 경우 배송 정보 입력 폼 추가 --%>
-                            <c:if test="${empty sessionScope.user}">
-                                <div class="guest-info-section" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                                    <h4 style="margin-bottom: 10px;">배송 정보</h4>
-                                    <input type="text" name="name" placeholder="받으시는 분 성함" required style="width: 100%; margin-bottom: 5px; padding: 8px;">
-                                    <input type="text" name="phone" placeholder="전화번호" required style="width: 100%; margin-bottom: 5px; padding: 8px;">
-                                    <input type="text" name="address" placeholder="배송지 주소" required style="width: 100%; padding: 8px;">
-                                </div>
-                            </c:if>
-
                             <div class="summary-row">
                                 <span>선택된 지식 수</span>
                                 <span>

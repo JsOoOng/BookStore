@@ -1,137 +1,254 @@
 package com.cosmic.library.qnachat.handler;
 
-import com.cosmic.library.qnachat.model.QnachatVO;
-import com.cosmic.library.qnachat.service.QnaChatService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.cosmic.library.qnachat.model.QnachatVO;
+import com.cosmic.library.qnachat.service.QnaChatService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class QnaChatHandler extends TextWebSocketHandler {
 
     @Autowired
     private QnaChatService qnaChatService;
-    
-    private List<WebSocketSession> sessions = new ArrayList<>();
-    private Map<String, String> sessionUserMap = new ConcurrentHashMap<>();
-    private Map<String, String> sessionRoleMap = new ConcurrentHashMap<>();
-    
-    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private final List<WebSocketSession> sessions =
+            new CopyOnWriteArrayList<>();
+
+    private final Map<String,String> sessionUserMap =
+            new ConcurrentHashMap<>();
+
+    private final Map<String,String> sessionRoleMap =
+            new ConcurrentHashMap<>();
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(
+            WebSocketSession session) throws Exception {
+
         sessions.add(session);
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String payload = message.getPayload();
-        QnachatVO chatVO = objectMapper.readValue(payload, QnachatVO.class);
-        
-        // 1. 최초 접속 시 (글로벌과 채팅방 분리)
-        if ("ENTER_CHATROOM".equals(chatVO.getMessage()) || "ENTER_GLOBAL".equals(chatVO.getMessage())) {
-            sessionUserMap.put(session.getId(), chatVO.getSenderId());
-            sessionRoleMap.put(session.getId(), chatVO.getSenderRole());
-            
-            // 사용자가 진짜로 '채팅방 화면'을 열었을 때만 과거 내역을 긁어다 줌
+    protected void handleTextMessage(
+            WebSocketSession session,
+            TextMessage message) throws Exception {
+
+        QnachatVO chatVO =
+                mapper.readValue(
+                        message.getPayload(),
+                        QnachatVO.class);
+
+        //----------------------------------
+        // 최초 입장
+        //----------------------------------
+
+        if ("ENTER_CHATROOM".equals(chatVO.getMessage())
+                || "ENTER_GLOBAL".equals(chatVO.getMessage())) {
+
+            sessionUserMap.put(
+                    session.getId(),
+                    chatVO.getSenderId());
+
+            sessionRoleMap.put(
+                    session.getId(),
+                    chatVO.getSenderRole());
+
             if ("ENTER_CHATROOM".equals(chatVO.getMessage())) {
-                List<QnachatVO> historyList = qnaChatService.getChatHistory(chatVO.getSenderId(), chatVO.getSenderRole());
-                for (QnachatVO historyMsg : historyList) {
-                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(historyMsg)));
+
+                List<QnachatVO> history =
+                        qnaChatService.getChatHistory(
+                                chatVO.getSenderId(),
+                                chatVO.getSenderRole());
+
+                for (QnachatVO msg : history) {
+
+                    session.sendMessage(
+                            new TextMessage(
+                                    mapper.writeValueAsString(msg)));
                 }
-                
-                // [추가] 과거 내역 전송이 끝났음을 프론트엔드에 알리는 시스템 메시지
-                QnachatVO doneMsg = new QnachatVO();
-                doneMsg.setSenderId("SERVER");
-                doneMsg.setMessage("HISTORY_DONE");
-                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(doneMsg)));
+
+                QnachatVO done = new QnachatVO();
+
+                done.setSenderId("SERVER");
+                done.setMessage("HISTORY_DONE");
+
+                session.sendMessage(
+                        new TextMessage(
+                                mapper.writeValueAsString(done)));
             }
-            
-            // 관리자에게 일반 유저 접속 알림 뿌리기
-            if (!"SUPER".equals(chatVO.getSenderRole()) && !"QNAadmin".equals(chatVO.getSenderRole())) {
-                QnachatVO enterNotice = new QnachatVO();
-                enterNotice.setSenderId("SERVER");
-                enterNotice.setMessage("ENTER_USER:" + chatVO.getSenderId());
-                broadcastToAdmins(enterNotice);
-            }
-            return; 
+
+            notifyUserEnter(chatVO);
+
+            return;
         }
 
-        // DB 저장 및 타겟팅 전송 로직 (기존 유지)
-try { qnaChatService.saveMessage(chatVO); } catch (Exception e) {}
-        
-        String senderId = chatVO.getSenderId();
+        //----------------------------------
+        // 채팅 저장
+        //----------------------------------
+
+        try {
+
+            qnaChatService.saveMessage(chatVO);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        //----------------------------------
+        // 관리자 접속 여부 확인
+        //----------------------------------
+
+        boolean adminOnline =
+                sessionRoleMap.values()
+                        .stream()
+                        .anyMatch(role ->
+                                "SUPER".equals(role)
+                                        || "MEMBER_ADMIN".equals(role));
+
+        if (!adminOnline
+                && !"SUPER".equals(chatVO.getSenderRole())
+                && !"MEMBER_ADMIN".equals(chatVO.getSenderRole())) {
+
+            QnachatVO offline = new QnachatVO();
+
+            offline.setSenderId("SERVER");
+            offline.setMessage("ADMIN_OFFLINE");
+
+            session.sendMessage(
+                    new TextMessage(
+                            mapper.writeValueAsString(offline)));
+        }
+
+        //----------------------------------
+        // 대상 전송
+        //----------------------------------
+
+        sendTargetMessage(chatVO);
+    }
+
+    private void sendTargetMessage(QnachatVO chatVO)
+            throws Exception {
+
         String senderRole = chatVO.getSenderRole();
-        String targetId = chatVO.getReceiverId(); 
 
-        // [추가] 현재 접속 중인 관리자가 있는지 확인
-        boolean isAdminOnline = false;
-        for (String role : sessionRoleMap.values()) {
-            if ("SUPER".equals(role) || "QNAadmin".equals(role)) {
-                isAdminOnline = true;
-                break;
-            }
-        }
+        for (WebSocketSession ws : sessions) {
 
-        // 일반 유저가 보냈는데 접속 중인 관리자가 0명일 경우, 오프라인 시스템 알림을 유저에게 반환
-        if (!isAdminOnline && !"SUPER".equals(senderRole) && !"QNAadmin".equals(senderRole)) {
-            QnachatVO offlineNotice = new QnachatVO();
-            offlineNotice.setSenderId("SERVER");
-            offlineNotice.setMessage("ADMIN_OFFLINE");
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(offlineNotice)));
-        }
+            String connectedId =
+                    sessionUserMap.get(ws.getId());
 
-        // 기존 타겟팅 전송 로직
-        for (WebSocketSession s : sessions) {
-            String sId = s.getId();
-            String connectedUserId = sessionUserMap.get(sId);
-            String connectedUserRole = sessionRoleMap.get(sId);
+            String connectedRole =
+                    sessionRoleMap.get(ws.getId());
 
-            if (connectedUserId == null) continue;
+            if (connectedId == null)
+                continue;
 
-            if ("SUPER".equals(senderRole) || "QNAadmin".equals(senderRole)) {
-                if (connectedUserId.equals(targetId) || "SUPER".equals(connectedUserRole) || "QNAadmin".equals(connectedUserRole)) {
-                    s.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatVO)));
-                }
-            } else {
-                if (connectedUserId.equals(senderId) || "SUPER".equals(connectedUserRole) || "QNAadmin".equals(connectedUserRole)) {
-                    s.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatVO)));
+            //------------------------------------------------
+            // 관리자 발송
+            //------------------------------------------------
+
+            if ("SUPER".equals(senderRole)
+                    || "MEMBER_ADMIN".equals(senderRole)) {
+
+                if (connectedId.equals(chatVO.getReceiverId())
+                        || "SUPER".equals(connectedRole)
+                        || "MEMBER_ADMIN".equals(connectedRole)) {
+
+                    ws.sendMessage(
+                            new TextMessage(
+                                    mapper.writeValueAsString(chatVO)));
                 }
             }
+
+            //------------------------------------------------
+            // 일반 유저 발송
+            //------------------------------------------------
+
+            else {
+
+                if (connectedId.equals(chatVO.getSenderId())
+                        || "SUPER".equals(connectedRole)
+                        || "MEMBER_ADMIN".equals(connectedRole)) {
+
+                    ws.sendMessage(
+                            new TextMessage(
+                                    mapper.writeValueAsString(chatVO)));
+                }
+            }
         }
+    }
+
+    private void notifyUserEnter(QnachatVO chatVO)
+            throws Exception {
+
+        if ("SUPER".equals(chatVO.getSenderRole())
+                || "MEMBER_ADMIN".equals(chatVO.getSenderRole())) {
+            return;
+        }
+
+        QnachatVO notice = new QnachatVO();
+
+        notice.setSenderId("SERVER");
+        notice.setMessage(
+                "ENTER_USER:" + chatVO.getSenderId());
+
+        broadcastToAdmins(notice);
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String disconnectedUserId = sessionUserMap.get(session.getId());
-        String disconnectedUserRole = sessionRoleMap.get(session.getId());
-        
+    public void afterConnectionClosed(
+            WebSocketSession session,
+            CloseStatus status) throws Exception {
+
+        String userId =
+                sessionUserMap.get(session.getId());
+
+        String role =
+                sessionRoleMap.get(session.getId());
+
         sessions.remove(session);
+
         sessionUserMap.remove(session.getId());
         sessionRoleMap.remove(session.getId());
 
-        // 유저가 나갔을 때 관리자에게 알림 전송
-        if (disconnectedUserId != null && !"SUPER".equals(disconnectedUserRole) && !"QNAadmin".equals(disconnectedUserRole)) {
-            QnachatVO leaveNotice = new QnachatVO();
-            leaveNotice.setSenderId("SERVER");
-            leaveNotice.setMessage("LEAVE_USER:" + disconnectedUserId);
-            broadcastToAdmins(leaveNotice);
+        if (userId != null
+                && !"SUPER".equals(role)
+                && !"MEMBER_ADMIN".equals(role)) {
+
+            QnachatVO notice = new QnachatVO();
+
+            notice.setSenderId("SERVER");
+            notice.setMessage(
+                    "LEAVE_USER:" + userId);
+
+            broadcastToAdmins(notice);
         }
     }
 
-    // 관리자들에게만 시스템 메시지를 뿌리는 편의 메서드
-    private void broadcastToAdmins(QnachatVO vo) throws Exception {
-        for (WebSocketSession s : sessions) {
-            String role = sessionRoleMap.get(s.getId());
-            if ("SUPER".equals(role) || "QNAadmin".equals(role)) {
-                s.sendMessage(new TextMessage(objectMapper.writeValueAsString(vo)));
+    private void broadcastToAdmins(QnachatVO vo)
+            throws Exception {
+
+        for (WebSocketSession ws : sessions) {
+
+            String role =
+                    sessionRoleMap.get(ws.getId());
+
+            if ("SUPER".equals(role)
+                    || "MEMBER_ADMIN".equals(role)) {
+
+                ws.sendMessage(
+                        new TextMessage(
+                                mapper.writeValueAsString(vo)));
             }
         }
     }

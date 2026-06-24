@@ -61,7 +61,8 @@ public class BasketController {
         // 공통: 상품 이미지 수집 (네이버 API)
         if (basketList != null) {
             for (BasketVO vo : basketList) {
-                vo.setImage(getNaverBookCover(vo.getTitle()));
+            	String query = (vo.getIsbn() != null) ? vo.getIsbn() : vo.getTitle();
+                vo.setImage(getNaverBookCover(query));
             }
         }
 
@@ -157,8 +158,43 @@ public class BasketController {
     private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
     private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
 
-    private String getNaverBookCover(String keyword) {
-        // ... (기존 코드 유지)
-        return "https://via.placeholder.com/100x150?text=No+Img";
+    private String getNaverBookCover(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return "https://via.placeholder.com/150x220?text=No+Img";
+        }
+        try {
+            // 불안정한 split 조각내기 폐기, 전체 문자열을 안전하게 UTF-8 인코딩
+            String encodedQuery = URLEncoder.encode(query.trim(), "UTF-8");
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedQuery + "&display=1";
+            
+            URL url = new URL(apiURL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", NAVER_CLIENT_ID);
+            con.setRequestProperty("X-Naver-Client-Secret", NAVER_CLIENT_SECRET);
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200) { 
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONArray items = jsonObject.getJSONArray("items");
+                
+                if (items.length() > 0) {
+                    JSONObject bookItem = items.getJSONObject(0);
+                    return bookItem.getString("image");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("🚨 장바구니 네이버 표지 통신 장애: " + e.getMessage());
+        }
+        return "https://via.placeholder.com/150x220?text=No+Img";
     }
 }
