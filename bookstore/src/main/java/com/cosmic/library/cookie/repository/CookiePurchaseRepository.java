@@ -2,6 +2,7 @@ package com.cosmic.library.cookie.repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.cosmic.library.cookie.model.CookieOrderVO;
+import com.cosmic.library.cookie.model.GuestOrderVO;
 
 @Repository
 public class CookiePurchaseRepository {
@@ -51,5 +53,21 @@ public class CookiePurchaseRepository {
     public int decreaseStock(int saleId, int quantity) {
         String sql = "UPDATE PRODUCT_SALE SET stock_qty = stock_qty - ? WHERE sale_id = ?";
         return jdbcTemplate.update(sql, quantity, saleId);
+    }
+    
+    public List<GuestOrderVO> getVendorGuestOrders(int vendorRegNum) {
+        // O: GUEST_ORDER, D: GUEST_ORDER_DETAIL, S: PRODUCT_SALE
+        String sql = "SELECT o.ORDER_ID AS id, o.CUSTOMER_NAME AS name, o.CUSTOMER_PHONE AS phone, " +
+                     "o.ADDRESS, o.TOTAL_PRICE AS totalPrice, o.DELIVERY_STATUS AS status, " +
+                     "o.REGDATE AS purchaseDate, d.QTY AS quantity, s.TITLE " +
+                     "FROM GUEST_ORDER o " +
+                     "JOIN GUEST_ORDER_DETAIL d ON o.ORDER_ID = d.ORDER_ID " +
+                     "JOIN PRODUCT_SALE s ON d.SALE_ID = s.SALE_ID " +
+                     "WHERE s.VENDOR_REG_NUM = ? " +
+                     "ORDER BY o.REGDATE DESC";
+
+        return jdbcTemplate.query(sql, 
+            new org.springframework.jdbc.core.BeanPropertyRowMapper<>(GuestOrderVO.class), 
+            vendorRegNum);
     }
 }

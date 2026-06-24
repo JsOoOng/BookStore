@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.cookie.model.CookieOrderVO;
+import com.cosmic.library.cookie.model.GuestOrderVO;
 import com.cosmic.library.cookie.service.CookieService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -131,4 +132,5 @@ public class CookiePurchaseController {
         
         return "pages/purchase/cookie_purchase_success";
     }
+
 }

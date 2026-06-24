@@ -10,6 +10,7 @@ import lombok.ToString;
 @ToString
 public class VendorVO {
 
+	private int VendorRegNum;
     private String vendorId;    // 업체 고유 ID (PK)
     private String vendorPw;    // 업체 비밀번호
     private String bizName;     // 업체명/상호명 (DB: biz_name)

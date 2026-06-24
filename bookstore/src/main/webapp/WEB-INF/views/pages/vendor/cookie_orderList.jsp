@@ -70,7 +70,7 @@
                         <table class="cosmic-table vendor-order-table">
                             <thead>
                                 <tr>
-                                    <th class="th-order-num">회원 주문 번호</th>
+                                    <th class="th-order-num">비회원 주문 번호</th>
                                     <th class="th-book-info text-start">도서 정보</th>
                                     <th class="th-order-qty">수량</th>
                                     <th class="th-total-price text-end">결제 총액</th>

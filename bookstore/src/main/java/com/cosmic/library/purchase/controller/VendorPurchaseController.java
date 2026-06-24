@@ -14,10 +14,18 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.cosmic.library.cookie.model.GuestOrderVO;
 import com.cosmic.library.purchase.model.Purchase;
 import com.cosmic.library.purchase.service.PurchaseService;
+import com.cosmic.library.vendor.model.VendorVO;
+import com.cosmic.library.cookie.service.CookieService;
+
 
 @Controller
 @RequestMapping("/vendor/purchase")
@@ -25,6 +33,7 @@ public class VendorPurchaseController {
 
     @Autowired
     private PurchaseService purchaseService;
+    private CookieService cookieService;
 
     // 🪐 [네이버 발급 토큰 장착]
     private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
@@ -46,6 +55,34 @@ public class VendorPurchaseController {
         
         model.addAttribute("orderList", orderList);
         model.addAttribute("pageName", "pages/vendor/orderList");
+        return "common/layout"; 
+    }
+    
+ // 📦 비회원 주문 관제탑
+    @GetMapping("/cookielist")
+    public String vendorGuestOrderList(HttpSession session, Model model) {
+        // 1. 세션에서 로그인한 업체 정보 확인 (안전한 접근)
+        VendorVO loginVendor = (VendorVO) session.getAttribute("loginVendor");
+        if (loginVendor == null) {
+            return "redirect:/vendor/login"; // 로그인 안 되어 있으면 로그인 페이지로
+        }
+
+        // 2. 로그인된 업체(벤더)의 고유 번호를 사용
+        int vendorRegNum = loginVendor.getVendorRegNum(); 
+
+        // 3. 서비스 호출
+        List<GuestOrderVO> guestOrderList = cookieService.getVendorGuestOrders(vendorRegNum);
+        
+        // 4. 도서 이미지 API 연동 (데이터가 있을 때만)
+        if (guestOrderList != null) {
+            for (GuestOrderVO order : guestOrderList) {
+                order.setImage(getNaverBookCover(order.getTitle()));
+            }
+        }
+        
+        model.addAttribute("orderList", guestOrderList);
+        // JSP 파일명이 'guest_orderList.jsp'라면 아래 경로가 맞는지 확인하세요
+        model.addAttribute("pageName", "pages/vendor/cookie_orderList"); 
         return "common/layout"; 
     }
 

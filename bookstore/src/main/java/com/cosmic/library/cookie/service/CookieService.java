@@ -17,6 +17,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.cookie.model.CookieOrderVO;
+import com.cosmic.library.cookie.model.GuestOrderVO;
 import com.cosmic.library.cookie.repository.CookiePurchaseRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -121,5 +122,10 @@ public class CookieService {
             System.err.println("DEBUG: 상세 저장 중 에러 발생: " + e.getMessage());
             throw e;
         }
+    }
+      
+ // 비회원 정보
+    public List<GuestOrderVO> getVendorGuestOrders(int vendorRegNum) {
+        return cookiePurchaseRepository.getVendorGuestOrders(vendorRegNum);
     }
 }
