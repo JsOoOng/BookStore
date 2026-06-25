@@ -4,8 +4,12 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +17,19 @@ import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
+import com.cosmic.library.member.model.MemberVO;
+import com.cosmic.library.review.model.ReviewBookVo;
+import com.cosmic.library.review.model.ReviewUserVo;
+import com.cosmic.library.review.service.ReviewService;
 import com.cosmic.library.vendor.model.ProductSaleVO;
 import com.cosmic.library.vendor.repository.ProductSaleDAO;
 
@@ -28,6 +42,9 @@ public class BookController {
     
     @Autowired
     private ProductSaleDAO productSaleDAO;
+    
+    @Autowired
+    private ReviewService reviewService;
 
     // 🪐 [네이버 발급 토큰 장착] 발급받은 실제 Client ID와 Secret 값을 여기에 입력해 줘!
     private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
@@ -41,14 +58,18 @@ public class BookController {
     }
 
     // ==============================================================
-    // 🛰️ [사령부 핵심 기믹] 네이버 실시간 도서 표지 수집 전용 통신 파이프라인
+    // 🛰️ [수리 완료] 네이버 실시간 도서 표지 수집 엔진 (URL 인코딩 장착)
     // ==============================================================
-    private String getNaverBookCover(String isbn) {
-        if (isbn == null || isbn.trim().isEmpty()) {
-            return "/resources/images/books/no_image.jpg";
+
+    private String getNaverBookCover(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://via.placeholder.com/100x150?text=No+Cover";
         }
         try {
-            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + isbn.trim() + "&display=1";
+            // 💥 [핵심 타격] 한글/특수문자가 포함된 책 제목을 API가 인식할 수 있도록 UTF-8 인코딩!
+            String encodedKeyword = URLEncoder.encode(keyword.trim(), "UTF-8");
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            
             URL url = new URL(apiURL);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             
@@ -71,13 +92,13 @@ public class BookController {
                 
                 if (items.length() > 0) {
                     JSONObject bookItem = items.getJSONObject(0);
-                    return bookItem.getString("image"); // 네이버 공식 표지 주소 확보 성공!
+                    return bookItem.getString("image"); // 🎯 네이버 표지 확보 성공!
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // 디버깅용 에러 출력
         }
-        return "/resources/images/books/no_image.jpg"; // 실패 시 엑스박스 방어용 디폴트 표지 반환
+        return "https://via.placeholder.com/100x150?text=No+Cover";
     }
 
     // 1. 도서 전체 목록 탐사 (List - 네이버 실시간 표지 동기화 완료)
@@ -117,35 +138,63 @@ public class BookController {
         @RequestParam(value = "price", required = false, defaultValue = "0") int price,
         @RequestParam(value = "stockQty", required = false, defaultValue = "0") int stockQty,
         @RequestParam(value = "bizName", required = false, defaultValue = "") String bizName,
+        HttpSession session,
         Model model) {
-        
+
         BookVO book = bookService.findBookById(id);
-        
-        // 📡 [레이더 포격] 상세 페이지에 진입한 이 책의 진짜 네이버 표지를 강제 주입한다!
+
         if (book != null) {
             book.setImage(getNaverBookCover(book.getIsbn()));
         }
-        
+
         List<BookVO> recommendList = bookService.findRandomBooks(5, id);
-        // 추천 도서 5권의 표지도 엑스박스 방지를 위해 레이더망 연동!
+
         for (BookVO recBook : recommendList) {
             recBook.setImage(getNaverBookCover(recBook.getIsbn()));
         }
+
+        // ==========================
+        // ⭐ 리뷰 데이터 추가 (핵심)
+        // ==========================
+
+        List<ReviewUserVo> reviewList = reviewService.getReviewList((long) id);
+        ReviewBookVo reviewSummary = reviewService.getReviewSummary((long) id);
+
+        model.addAttribute("reviewList", reviewList);
+        model.addAttribute("avgRating", reviewSummary.getRating());
+        model.addAttribute("reviewCount", reviewSummary.getReviewCount());
+
+        // ==========================
         
+        MemberVO loginUser = (MemberVO) session.getAttribute("loginMember");
+
+        boolean userAlreadyReviewed = false;
+
+        if (loginUser != null) {
+            userAlreadyReviewed =
+                reviewService.isUserReviewed((long) id, loginUser.getId());
+        }
+        
+        //===========================
+
+        model.addAttribute("userAlreadyReviewed", userAlreadyReviewed);
+        
+
         model.addAttribute("book", book);
         model.addAttribute("recommendList", recommendList);
-        
+
         if (saleId > 0 && price > 0) {
             ProductSaleVO mockMarket = new ProductSaleVO();
             mockMarket.setSaleId(saleId);
             mockMarket.setPrice(price);
             mockMarket.setStockQty(stockQty);
             mockMarket.setBizName(bizName);
-            
+
             model.addAttribute("market", mockMarket);
         } else {
             List<ProductSaleVO> allSales = productSaleDAO.findAllWithDetails();
             ProductSaleVO bestMarket = null;
+
             for (ProductSaleVO sale : allSales) {
                 if (sale.getBookId() == id) {
                     if (bestMarket == null || sale.getPrice() < bestMarket.getPrice()) {
@@ -153,11 +202,12 @@ public class BookController {
                     }
                 }
             }
+
             if (bestMarket != null) {
                 model.addAttribute("market", bestMarket);
             }
         }
-        
+
         model.addAttribute("pageName", "pages/book/view");
         return "common/layout";
     }

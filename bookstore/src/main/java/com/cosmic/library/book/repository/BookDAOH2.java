@@ -123,4 +123,48 @@ public class BookDAOH2 implements BookDAO {
         String sql = "SELECT * FROM BOOK WHERE id != ? ORDER BY RAND() LIMIT ?";
         return jdbcTemplate.query(sql, rowMapper, excludeId, count);
     }
+
+    @Override
+    public BookVO selectBookBySaleId(int saleId) {
+        // 💡 [수리 완료] PRODUCT_SALE -> STOCK_IN -> BOOK 순서로 
+        // 정확한 외래키(FK) 다리를 건너도록 JOIN 쿼리 정밀 수리!
+        String sql = "SELECT b.*, p.PRICE " +
+                     "FROM PRODUCT_SALE p " +
+                     "JOIN STOCK_IN s ON p.STOCK_ID = s.stock_id " +
+                     "JOIN BOOK b ON s.book_id = b.id " +
+                     "WHERE p.SALE_ID = ?"; 
+        
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+                BookVO book = new BookVO();
+                book.setId(rs.getInt("id"));
+                book.setTitle(rs.getString("title"));
+                book.setWriter(rs.getString("writer"));
+                book.setImage(rs.getString("image"));
+                
+                book.setIsbn(rs.getString("isbn"));
+                
+                book.setPrice(rs.getInt("PRICE")); // PRODUCT_SALE 테이블의 가격
+                book.setSaleId(saleId);
+                return book;
+            }, saleId);
+        } catch (Exception e) {
+            System.out.println("❌ 데이터 조회 실패: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    // 🪐 [테마 1] 특정 저자(한강) 도서 실시간 추출 엔진
+    @Override
+    public List<BookVO> selectByWriterOnly(String writer, int limit) {
+        String sql = "SELECT * FROM BOOK WHERE writer LIKE ? ORDER BY id DESC LIMIT ?";
+        return jdbcTemplate.query(sql, rowMapper, "%" + writer + "%", limit);
+    }
+
+    // 🪐 [테마 2] 특정 장르 및 키워드(우주/천체) 도서 추출 엔진
+    @Override
+    public List<BookVO> selectByGenreOnly(String genre, int limit) {
+        String sql = "SELECT * FROM BOOK WHERE genre LIKE ? OR title LIKE ? ORDER BY id DESC LIMIT ?";
+        return jdbcTemplate.query(sql, rowMapper, "%" + genre + "%", "%" + genre + "%", limit);
+    }
 }

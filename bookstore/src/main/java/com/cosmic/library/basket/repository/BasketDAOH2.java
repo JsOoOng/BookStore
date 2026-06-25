@@ -14,26 +14,25 @@ public class BasketDAOH2 implements BasketDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // 🪐 1. 장바구니 전체 조회 (4중 조인 기반 완벽 통합 엔진)
+    // 🪐 1. 장바구니 전체 조회 (4중 조인 + ISBN 확보)
     @Override
     public List<BasketVO> findAll(int userRegNum) {
         String sql = 
-            // [A 구역] 순수 도서관 대여 목록 조회 (sale_id가 NULL인 경우)
+            // 💥 SELECT 절에 bk.isbn 추가 완료!
             "SELECT b.basket_id, b.user_reg_num, b.book_id, b.sale_id, b.qty AS quantity, b.reg_date, "
-          + "       bk.title, bk.writer, 0 AS price, bk.image, 'LIBRARY' AS biz_name "
+          + "       bk.title, bk.writer, bk.isbn, 0 AS price, bk.image, 'LIBRARY' AS biz_name "
           + "FROM basket b "
           + "JOIN book bk ON b.book_id = bk.id "
           + "WHERE b.user_reg_num = ? AND b.sale_id IS NULL "
           + "UNION ALL "
-          // [B 구역] 🪐 오픈마켓 입점 상품 목록 조회 (vr을 거쳐 v.vendor_id까지 완벽 체인 조인!)
           + "SELECT b.basket_id, b.user_reg_num, si.book_id, b.sale_id, b.qty AS quantity, b.reg_date, "
-          + "       bk.title, bk.writer, ps.price, bk.image, v.biz_name " // 🌟 v.biz_name 에서 안전하게 업체명 획득!
+          + "       bk.title, bk.writer, bk.isbn, ps.price, bk.image, v.biz_name " 
           + "FROM basket b "
           + "JOIN product_sale ps         ON b.sale_id = ps.sale_id "
           + "JOIN stock_in si             ON ps.stock_id = si.stock_id "
           + "JOIN book bk                 ON si.book_id = bk.id "
-          + "JOIN vendor_registration vr  ON ps.v_reg_num = vr.vendor_reg_num " // 1단계: 승인번호로 vr 워프
-          + "JOIN vendor v                ON vr.vendor_id = v.vendor_id "       // 2단계: vr의 vendor_id로 v 워프!
+          + "JOIN vendor_registration vr  ON ps.v_reg_num = vr.vendor_reg_num " 
+          + "JOIN vendor v                ON vr.vendor_id = v.vendor_id "       
           + "WHERE b.user_reg_num = ? AND b.sale_id IS NOT NULL "
           + "ORDER BY reg_date DESC";
 
@@ -48,13 +47,14 @@ public class BasketDAOH2 implements BasketDAO {
             vo.setRegDate(rs.getString("reg_date"));
             vo.setTitle(rs.getString("title"));
             vo.setWriter(rs.getString("writer"));
+            vo.setIsbn(rs.getString("isbn")); // 💥 [핵심] ISBN 매핑 추가!
             vo.setPrice(rs.getInt("price"));
             vo.setImage(rs.getString("image"));
             return vo;
         }, userRegNum, userRegNum);
     }
     
-    // 🪐 2. 선택된 장바구니 항목 상세 조회 (4중 조인 기반 완벽 통합 엔진)
+    // 🪐 2. 선택된 장바구니 항목 상세 조회 (4중 조인 + ISBN 확보)
     @Override
     public List<BasketVO> findByIds(int[] basketIds, int userRegNum) {
         if (basketIds == null || basketIds.length == 0) return new java.util.ArrayList<>();
@@ -66,20 +66,21 @@ public class BasketDAOH2 implements BasketDAO {
         }
 
         String sql = 
+            // 💥 SELECT 절에 bk.isbn 추가 완료!
             "SELECT b.basket_id, b.user_reg_num, b.book_id, b.sale_id, b.qty AS quantity, b.reg_date, "
-          + "       bk.title, bk.writer, 0 AS price, bk.image, 'LIBRARY' AS biz_name "
+          + "       bk.title, bk.writer, bk.isbn, 0 AS price, bk.image, 'LIBRARY' AS biz_name "
           + "FROM basket b "
           + "JOIN book bk ON b.book_id = bk.id "
           + "WHERE b.user_reg_num = ? AND b.sale_id IS NULL AND b.basket_id IN (" + inClause + ") "
           + "UNION ALL "
           + "SELECT b.basket_id, b.user_reg_num, si.book_id, b.sale_id, b.qty AS quantity, b.reg_date, "
-          + "       bk.title, bk.writer, ps.price, bk.image, v.biz_name " // 🌟 v.biz_name 매핑
+          + "       bk.title, bk.writer, bk.isbn, ps.price, bk.image, v.biz_name " 
           + "FROM basket b "
           + "JOIN product_sale ps         ON b.sale_id = ps.sale_id "
           + "JOIN stock_in si             ON ps.stock_id = si.stock_id "
           + "JOIN book bk                 ON si.book_id = bk.id "
           + "JOIN vendor_registration vr  ON ps.v_reg_num = vr.vendor_reg_num "
-          + "JOIN vendor v                ON vr.vendor_id = v.vendor_id "       // 🌟 4중 완벽 체인 조인!
+          + "JOIN vendor v                ON vr.vendor_id = v.vendor_id "       
           + "WHERE b.user_reg_num = ? AND b.sale_id IS NOT NULL AND b.basket_id IN (" + inClause + ")";
 
         Object[] params = new Object[(basketIds.length + 1) * 2];
@@ -101,6 +102,7 @@ public class BasketDAOH2 implements BasketDAO {
             vo.setQuantity(rs.getInt("quantity"));
             vo.setTitle(rs.getString("title"));
             vo.setWriter(rs.getString("writer"));
+            vo.setIsbn(rs.getString("isbn")); // 💥 [핵심] ISBN 매핑 추가!
             vo.setPrice(rs.getInt("price"));
             vo.setImage(rs.getString("image"));
             return vo;

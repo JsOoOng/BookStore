@@ -23,4 +23,8 @@ public interface MemberDAO {
 
     // 전체 회원 리스트 조회 (SELECT ALL)
     List<MemberVO> selectAllMembers();
+    
+    
+    //추가분
+    public int countByEmail(String email);
 }

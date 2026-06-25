@@ -108,24 +108,29 @@ function addBasket(saleId, title) {
     
     fetch("${pageContext.request.contextPath}/basket/addMarketProduct", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData
     })
     .then(function(response) { 
         return response.text(); 
     })
     .then(function(data) {
-        if (data.trim() === "ok") {
+        var result = data.trim();
+        
+        // 💥 [수리 완료] 회원과 비회원의 궤도를 완벽하게 분리 타격!
+        if (result === "ok") {
             if (confirm("🪐 [" + title + "] 상품이 장바구니 궤도에 안착했습니다!\n지금 장바구니 화면으로 워프하시겠습니까?")) {
                 location.href = "${pageContext.request.contextPath}/basket"; 
             }
-        } else if (data.trim() === "NOT_LOGIN") {
-            alert("🔒 이 임무는 일반 대원 로그인 후 수행 가능합니다.\n로그인 행성으로 이동해 주세요.");
+        } else if (result === "ok_cookie") {
+            if (confirm("🍪 비회원 보관소에 상품이 담겼습니다.\n임시 보관소를 확인하시겠습니까?")) {
+                location.href = "${pageContext.request.contextPath}/cookie/basket/list"; 
+            }
+        } else if (result === "NOT_LOGIN") {
+            alert("🔒 로그인 후 수행 가능합니다.");
             location.href = "${pageContext.request.contextPath}/member/login";
         } else {
-            alert("🚨 장바구니 담기 실패 또는 시스템 장애가 발생했습니다.");
+            alert("🚨 장바구니 담기 실패: " + result);
         }
     })
     .catch(function(error) {
@@ -135,14 +140,12 @@ function addBasket(saleId, title) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 🔥 [하얀 박스 가두리 격파 치트키] 상점 페이지 로드 시 상위 부모 레이아웃의 max-width 강제 해제
     var wideContainer = document.querySelector('.admin-wide-container');
     if (wideContainer) {
         var parent = wideContainer.parentElement;
         while (parent && parent.tagName !== 'BODY') {
             parent.style.maxWidth = '100%';
             parent.style.width = '100%';
-            // 부모 컨테이너(form-container 등)가 존재하면 도서 도감과 동일한 1500px 급으로 확장
             if(parent.classList.contains('form-container') || parent.className.includes('container')) {
                 parent.style.maxWidth = '1500px'; 
                 parent.style.margin = '0 auto';

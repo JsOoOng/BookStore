@@ -1,6 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<c:if test="${not empty joinSuccess}">
+    <script>
+        alert("회원가입이 완료되었습니다.");
+    </script>
+</c:if>
+
 <div class="admin-wide-container mt-5 mb-5">
     <div class="cosmic-login-wrapper mx-auto">
         
@@ -14,13 +20,13 @@
         <%-- 🪐 3단 통합 인터페이스 탭 버튼 --%>
         <ul class="login-tabs">
             <li class="login-tab-item active" onclick="switchLoginTab('member')">
-                <span class="login-tab-link tab-member">👨‍🚀 일반 대원</span>
+                <span class="login-tab-link tab-member">👨‍🚀 일반 회원</span>
             </li>
             <li class="login-tab-item" onclick="switchLoginTab('vendor')">
                 <span class="login-tab-link tab-vendor">🏢 파트너사</span>
             </li>
             <li class="login-tab-item" onclick="switchLoginTab('admin')">
-                <span class="login-tab-link tab-admin">👑 사령부</span>
+                <span class="login-tab-link tab-admin">👑 관리자</span>
             </li>
         </ul>
 
@@ -38,18 +44,18 @@
             </div>
         </c:if>
 
-        <%-- 🎉 신규 대원 가입 성공 배너 (인라인 스타일 완전 소독) --%>
+        <%-- 🎉 신규 회원 가입 성공 배너 (인라인 스타일 완전 소독) --%>
         <c:if test="${param.joinSuccess == 'true'}">
             <div class="cosmic-alert-banner alert-success-cosmic mb-4 text-center">
-                🎉 신규 대원 등록 완료! 임무 조율을 위해 로그인을 진행해 주세요.
+                🎉 신규 회원 등록 완료! 로그인을 진행해 주세요.
             </div>
         </c:if>
 
-        <%-- 👨‍🚀 일반 대원 폼 패널 --%>
+        <%-- 👨‍🚀 일반 회원 폼 패널 --%>
         <div id="form-panel-member" class="login-form-panel active">
             <form action="${pageContext.request.contextPath}/member/login" method="POST" autocomplete="off">
                 <div class="input-group-cosmic">
-                    <label for="id">대원 식별 ID</label>
+                    <label for="id">회원 식별 ID</label>
                     <input type="text" id="id" name="id" placeholder="ID를 입력하세요" required autofocus>
                 </div>
                 <div class="input-group-cosmic">
@@ -57,12 +63,22 @@
                     <input type="password" id="pw" name="pw" placeholder="Password를 입력하세요" required>
                 </div>
                 <div class="form-actions-login">
-                    <button type="submit" class="btn-confirm-cosmic btn-member-submit">login (대원 입성)</button>
+                    <button type="submit" class="btn-confirm-cosmic btn-member-submit">login (회원 입성)</button>
+                </div>
+                <div class="cosmic-kakao-wrap mt-3">
+                    <a href="https://kauth.kakao.com/oauth/authorize?client_id=5704fcbe13d27f9fb045d4e38a2feab2&redirect_uri=http://localhost:8888/login/kakao&response_type=code&prompt=login" class="btn-kakao-css">
+                        <svg class="kakao-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+                            <path fill="#000000" d="M16 4.64c-6.96 0-12.64 4.48-12.64 10.08 0 3.52 2.32 6.64 5.76 8.48l-1.44 5.44c-.16.48.4.88.8.56l6.8-4.48c.24 0 .48.08.72.08 6.96 0 12.64-4.48 12.64-10.08S22.96 4.64 16 4.64z"/>
+                        </svg>
+                        카카오 로그인
+                    </a>
                 </div>
                 <div class="login-footer-links text-center">
-                    <p class="login-footer-text">아직 탐사대원이 아니신가요?</p>
-                    <a href="${pageContext.request.contextPath}/member/join" class="login-redirect-link link-member-color">신규 대원 등록 (Sign Up) &rarr;</a>
+                    <p class="login-footer-text">아직 탐사회원이 아니신가요?</p>
+                    <a href="${pageContext.request.contextPath}/member/join" class="login-redirect-link link-member-color">신규 회원 등록 (Sign Up) &rarr;</a>
                 </div>
+                
+                
             </form>
         </div>
 
@@ -87,19 +103,19 @@
             </form>
         </div>
 
-        <%-- 👑 사령부 폼 패널 --%>
+        <%-- 👑 관리자 폼 패널 --%>
         <div id="form-panel-admin" class="login-form-panel">
             <form action="${pageContext.request.contextPath}/admin/login" method="POST" autocomplete="off">
                 <div class="input-group-cosmic">
-                    <label for="adminId">🛰️ 사령부 관리자 ID</label>
+                    <label for="adminId">🛰️ 관리자 ID</label>
                     <input type="text" id="adminId" name="adminId" placeholder="Admin ID를 입력하세요" required>
                 </div>
                 <div class="input-group-cosmic">
-                    <label for="adminPw">🔒 사령부 보안 코드 (PW)</label>
+                    <label for="adminPw">🔒 관리자 보안 코드 (PW)</label>
                     <input type="password" id="adminPw" name="adminPw" placeholder="Security Code를 입력하세요" required>
                 </div>
                 <div class="form-actions-login">
-                    <button type="submit" class="btn-confirm-cosmic btn-admin-submit">Command (사령부 승인)</button>
+                    <button type="submit" class="btn-confirm-cosmic btn-admin-submit">Command (관리자 승인)</button>
                 </div>
                 <div class="login-footer-links text-center">
                     <p class="login-footer-text">총괄 제어 권한을 소지한 관리자만 접속을 제한 승인합니다.</p>

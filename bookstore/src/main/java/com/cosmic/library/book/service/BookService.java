@@ -42,4 +42,6 @@ public interface BookService {
 	BookVO getById(int id);
 
 	List<BookVO> findRandomBooks(int count, int excludeId);
+	List<BookVO> findBooksByWriter(String writer, int limit);
+	List<BookVO> findBooksByGenre(String genre, int limit);
 }

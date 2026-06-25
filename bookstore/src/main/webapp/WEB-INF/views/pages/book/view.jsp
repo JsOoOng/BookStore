@@ -22,7 +22,12 @@
             
             <%-- 미니멀 전용 헤드 라인 --%>
             <h1 class="view-title">${book.title}</h1>
-            <div class="view-rating">★★★★★ <span class="rating-num">4.8</span></div>
+            <div class="view-rating">
+   				 ⭐ ${avgRating}
+  				  <span class="rating-num">
+     			   (${reviewCount}건)
+   				 </span>
+			</div>
             
             <%-- 도서 기본 스펙 카탈로그 구역 --%>
             <div class="view-content-specs">
@@ -113,6 +118,82 @@
             </a>
         </c:forEach>
     </div>
+    
+    
+    
+    
+    <!-- 구매 리뷰 -->
+<h3 class="view-section-title">⭐ 구매 리뷰</h3>
+
+<div class="review-section">
+
+    <c:choose>
+
+        <c:when test="${not empty reviewList}">
+
+            <c:forEach var="review" items="${reviewList}">
+    <div class="review-card">
+    	<div class="review-writer">
+                ${fn:substring(review.userid,0,2)}****
+        </div>
+    
+        <div class="review-header">
+			
+            <div class="review-star"
+                 data-rating="${review.star}">
+            </div>
+            
+        </div>
+
+        <div class="review-content">
+            ${review.review}
+        </div>
+        
+        <c:if test="${loginMember.id eq review.userid}">
+    <div class="review-actions">
+
+    <button class="review-btn edit"
+            onclick="openEditModal(${review.id}, `${fn:escapeXml(review.review)}`, ${review.star})">
+        ✏ 수정
+    </button>
+
+    <button class="review-btn delete"
+            onclick="openDeleteModal(${review.id})">
+        🗑 삭제
+    </button>
+
+</div>
+</c:if>
+
+
+    </div>
+</c:forEach>
+
+        </c:when>
+
+        <c:otherwise>
+
+            <div class="review-empty">
+                아직 등록된 구매 리뷰가 없습니다.
+            </div>
+
+        </c:otherwise>
+
+    </c:choose>
+
+</div>
+
+
+<div class="review-write-area">
+<c:if test="${not userAlreadyReviewed}">
+    <button type="button"
+            class="btn-cosmic btn-review-write"
+            onclick="openReviewModal()">
+        ✍ 리뷰 작성하기
+    </button>
+</c:if>
+</div>
+    
 </div>
 
 <%-- 🏠 물류 보급지 배송 주소 설정 모달창 (다크 클래스 완전 소독 및 미니멀 스퀘어화 클래스 적용) --%>
@@ -138,6 +219,76 @@
     </div>
 </div>
 
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">리뷰 작성</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="ratingSelector"></div>
+        <textarea id="reviewContent" placeholder="리뷰를 입력하세요..." class="form-control mt-2"></textarea>
+        <input type="hidden" id="reviewRating" value="5">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="submitReview()">작성 완료</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">리뷰 삭제</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        정말 이 리뷰를 삭제하시겠습니까?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">삭제</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">리뷰 수정</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div id="editRatingSelector"></div>
+
+        <textarea id="editContent" class="form-control mt-2"></textarea>
+
+        <input type="hidden" id="editRating">
+        <input type="hidden" id="editId">
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button class="btn btn-primary" onclick="submitEdit()">수정</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <%-- 스크립트 트랜잭션 파이프라인 (무결성 유지) --%>
 <script>
     function delConfirm(id) {
@@ -158,18 +309,56 @@
         })
         .then(res => res.text())
         .then(data => {
-            if (data.trim() === "ok") {
+            let response = data.trim();
+            
+            // 1. 회원 장바구니 성공 시
+            if (response === "ok") {
                 if (confirm("🪐 [" + title + "] 상품이 장바구니 궤도에 안착했습니다!\n지금 장바구니 화면으로 워프하시겠습니까?")) {
                     location.href = "${pageContext.request.contextPath}/basket"; 
                 }
-            } else if (data.trim() === "NOT_LOGIN") {
-                alert("🔒 이 임무는 일반 대원 로그인 후 수행 가능합니다.");
-                location.href = "${pageContext.request.contextPath}/member/login";
-            } else {
-                alert("🚨 장바구니 담기에 실패했습니다.");
+            } 
+            // 2. 비회원(쿠키) 장바구니 성공 시 (서버가 보내준 'ok_cookie' 처리)
+            else if (response === "ok_cookie") {
+                if (confirm("🍪 비회원 보관소에 상품이 담겼습니다.\n임시 보관소를 확인하시겠습니까?")) {
+                    location.href = "${pageContext.request.contextPath}/cookie/basket/list"; 
+                }
+            }
+            // 3. 로그인이 필요한 경우
+            else if (response === "NOT_LOGIN") {
+                addBasketToCookie(saleId, title);
+            } 
+            else {
+                alert("🚨 장바구니 담기 실패 (서버 응답: " + response + ")");
             }
         })
-        .catch(err => alert("🛰️ 사령부 통신 두절"));
+        .catch(err => {
+            alert("🛰️ 사령부 통신 두절");
+            console.error(err);
+        });
+    }
+
+    // 🪐 비회원 전용 쿠키 장바구니 추가 함수
+    function addBasketToCookie(saleId, title) {
+        var formData = new URLSearchParams();
+        formData.append("saleId", saleId);
+        formData.append("qty", 1);
+
+        fetch("${pageContext.request.contextPath}/cookie/basket/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data.trim() === "ok") {
+                if (confirm("🍪 비회원 보관소에 상품이 담겼습니다.\n임시 보관소를 확인하시겠습니까?")) {
+                    location.href = "${pageContext.request.contextPath}/cookie/basket/list"; 
+                }
+            } else {
+                alert("🚨 비회원 보관함 동기화 실패");
+            }
+        })
+        .catch(err => alert("🛰️ 시스템 통신 오류"));
     }
     
     let currentOrderParam = { bookId: '', saleId: '', price: '' };
@@ -194,7 +383,6 @@
 
         if (inputAddress === "" || inputAddress === "은하계 미지정 구역") {
             alert("보급품을 정상 전달받을 유효한 주소를 입력해 주세요!");
-            document.getElementById('modalAddressInput').focus();
             return;
         }
 
@@ -209,16 +397,13 @@
         .then(res => res.text())
         .then(data => {
             if (data.trim() === "OK") {
-                alert("🏠 배송지 주소가 은하 네트워크에 성공적으로 등록되었습니다!\n주문서 페이지로 도약합니다.");
+                alert("🏠 배송지 주소 등록 완료! 주문서 페이지로 도약합니다.");
                 proceedToPurchasePage();
-            } else if (data.trim() === "NOT_LOGIN") {
-                alert("🔒 인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
-                location.href = "${pageContext.request.contextPath}/member/login";
             } else {
-                alert("🚨 시스템 통신 장애로 주소 등록에 실패했습니다.");
+                alert("🚨 주소 등록 실패");
             }
         })
-        .catch(err => alert("🛰️ 사령부 메인 서버 인프라 통신 두절"));
+        .catch(err => alert("🛰️ 통신 두절"));
     }
 
     function proceedToPurchasePage() {
@@ -227,4 +412,280 @@
             + "&saleId=" + currentOrderParam.saleId 
             + "&price=" + currentOrderParam.price;
     }
+    
+    
+    document.addEventListener("DOMContentLoaded", function(){
+
+        document.querySelectorAll(".review-star").forEach(starBox => {
+
+            const rating = parseFloat(starBox.dataset.rating);
+
+            let html = "";
+
+            for(let i=1;i<=5;i++){
+
+                if(rating >= i){
+
+                    html += '<span style="color:#ffc107;">★</span>';
+
+                }
+                else if(rating >= i-0.5){
+
+                    html += `<span style="
+                        background:linear-gradient(
+                        to right,
+                        #ffc107 50%,
+                        #ccc 50%);
+                        -webkit-background-clip:text;
+                        -webkit-text-fill-color:transparent;
+                    ">★</span>`;
+                }
+                else{
+
+                    html += '<span style="color:#ccc;">★</span>';
+
+                }
+            }
+
+            starBox.innerHTML = html;
+
+        });
+
+    });
+    
+    function openReviewModal() {
+
+        const isLogin = ${not empty loginMember};
+
+        if(!isLogin) {
+
+            if(confirm("리뷰 작성은 로그인 후 이용 가능합니다.\n로그인 페이지로 이동하시겠습니까?")) {
+                location.href = "${pageContext.request.contextPath}/member/login";
+            }
+
+            return;
+        }
+
+        new bootstrap.Modal(
+            document.getElementById("reviewModal")
+        ).show();
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const selector =
+            document.getElementById("ratingSelector");
+
+        if(!selector) return;
+
+        let currentRating = 5.0;
+
+        renderRating(currentRating);
+
+        function renderRating(rating){
+            selector.innerHTML = "";
+            for(let i=1;i<=5;i++){
+                const star = document.createElement("span");
+                star.dataset.value = i;  // 클릭 시 기준 점수
+                star.style.cursor = "pointer";
+                star.style.fontSize = "28px";
+                star.style.marginRight = "2px";
+
+                if(rating >= i){
+                    star.innerHTML = "★";   // 전체 별
+                    star.style.color = "#ffc107";
+                } else if(rating >= i - 0.5){
+                    // 반별
+                    star.innerHTML = "★";
+                    star.style.background = "linear-gradient(to right,#ffc107 50%,#ccc 50%)";
+                    star.style.webkitBackgroundClip = "text";
+                    star.style.webkitTextFillColor = "transparent";
+                } else{
+                    star.innerHTML = "★";
+                    star.style.color = "#ccc";
+                }
+
+                // 클릭 시 0.5 단위 계산
+                star.onclick = function(e){
+                    const rect = this.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const half = clickX < rect.width / 2 ? 0.5 : 1;
+                    const newRating = i - 1 + half;
+                    currentRating = newRating;
+                    document.getElementById("reviewRating").value = currentRating;
+                    renderRating(currentRating);
+                };
+
+                selector.appendChild(star);
+            }
+        }
+    });
+    
+    
+    function submitReview(){
+
+        const rating =
+            document.getElementById("reviewRating").value;
+
+        const content =
+            document.getElementById("reviewContent").value.trim();
+
+        if(content === ""){
+
+            alert("리뷰 내용을 입력해주세요.");
+            return;
+        }
+
+        const formData = new URLSearchParams();
+
+        formData.append("bookId", "${book.id}");
+        formData.append("rating", rating);
+        formData.append("content", content);
+
+        fetch(
+            "${pageContext.request.contextPath}/review/write",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                    "application/x-www-form-urlencoded"
+                },
+                body:formData
+            }
+        )
+        .then(res => res.text())
+        .then(data => {
+
+            if(data === "OK"){
+
+                alert("리뷰가 등록되었습니다.");
+
+                location.reload();
+
+            }else if(data === "NOT_LOGIN"){
+
+                alert("로그인이 필요합니다.");
+
+                location.href =
+                    "${pageContext.request.contextPath}/member/login";
+
+            }else{
+
+                alert("리뷰 등록 실패");
+            }
+
+        });
+    }
+    
+    let deleteTargetId = null;
+
+    function openDeleteModal(id){
+        deleteTargetId = id;
+        new bootstrap.Modal(document.getElementById("deleteModal")).show();
+    }
+
+    function confirmDelete(){
+
+        fetch("${pageContext.request.contextPath}/review/delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "reviewId=" + deleteTargetId
+        })
+        .then(res => res.text())
+        .then(data => {
+            if(data === "OK"){
+                location.reload();
+            } else {
+                alert("삭제 실패");
+            }
+        });
+    }
+    
+    function openEditModal(id, content, star){
+
+        document.getElementById("editId").value = id;
+        document.getElementById("editContent").value = content;
+
+        document.getElementById("editRating").value = star;
+
+        renderEditRating(star); // ⭐ 이거 반드시 호출
+
+        new bootstrap.Modal(
+            document.getElementById("editModal")
+        ).show();
+    }
+    
+    function submitEdit(){
+
+        const id = document.getElementById("editId").value;
+        const content = document.getElementById("editContent").value;
+        const rating = document.getElementById("editRating").value;
+
+        fetch("${pageContext.request.contextPath}/review/update", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body:
+                "reviewId=" + id +
+                "&content=" + encodeURIComponent(content) +
+                "&rating=" + rating
+        })
+        .then(res => res.text())
+        .then(data => {
+            if(data === "OK"){
+                location.reload();
+            } else {
+                alert("수정 실패");
+            }
+        });
+    }
+    
+    function renderEditRating(rating){
+
+        const selector = document.getElementById("editRatingSelector");
+        selector.innerHTML = "";
+
+        for(let i=1;i<=5;i++){
+
+            const star = document.createElement("span");
+            star.style.cursor = "pointer";
+            star.style.fontSize = "28px";
+            star.style.marginRight = "2px";
+
+            if(rating >= i){
+                star.innerHTML = "★";
+                star.style.color = "#ffc107";
+
+            } else if(rating >= i - 0.5){
+                star.innerHTML = "★";
+                star.style.background =
+                    "linear-gradient(to right,#ffc107 50%,#ccc 50%)";
+                star.style.webkitBackgroundClip = "text";
+                star.style.webkitTextFillColor = "transparent";
+
+            } else {
+                star.innerHTML = "★";
+                star.style.color = "#ccc";
+            }
+
+            // ⭐ 클릭 이벤트 (핵심)
+            star.onclick = function(e){
+                const rect = this.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const half = clickX < rect.width / 2 ? 0.5 : 1;
+
+                const newRating = i - 1 + half;
+
+                document.getElementById("editRating").value = newRating;
+
+                renderEditRating(newRating);
+            };
+
+            selector.appendChild(star);
+        }
+    }	
+    
 </script>

@@ -38,6 +38,16 @@
 	        <mvc:exclude-mapping path="/vendor/shop"/>
 	        
 	        <mvc:exclude-mapping path="/admin/login"/>
+	        <mvc:exclude-mapping path="/login/kakao"/>
+	        
+        
+	        <mvc:exclude-mapping path="/member/login"/>
+	        
+	        <mvc:exclude-mapping path="/basket"/>              
+	        <mvc:exclude-mapping path="/basket/add"/>          
+	        <mvc:exclude-mapping path="/basket/addMarketProduct"/> 
+	        <mvc:exclude-mapping path="/cookie/**"/>           
+	        <mvc:exclude-mapping path="/emailauth/**"/>           
 	        
 	        <bean class="com.cosmic.library.common.filter.LoginInterceptor" />
 	    </mvc:interceptor>
@@ -70,6 +80,42 @@
             <bean class="org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor" />
         </websocket:handshake-interceptors>
     </websocket:handlers>
+    
+<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+
+    <property name="host" value="smtp-relay.brevo.com"/>
+    <property name="port" value="587"/>
+
+    <!-- ⚠️ 이게 핵심 -->
+    <property name="username" value="afaa26001@smtp-brevo.com"/>
+    <property name="password" value="xsmtpsib-9299cfb8ae2054e648b1689f479abc221d07868d46ffe6f8695b9e4a081361f1-Q8sMNcuclrLrSqA6"/>
+
+    <property name="javaMailProperties">
+    <props>
+        <!-- SMTP 서버 -->
+        <prop key="mail.smtp.host">smtp-relay.brevo.com</prop>
+        <prop key="mail.smtp.port">587</prop>
+
+        <!-- 인증 -->
+        <prop key="mail.smtp.auth">true</prop>
+
+        <!-- TLS (587이면 STARTTLS 사용) -->
+        <prop key="mail.smtp.starttls.enable">true</prop>
+        <prop key="mail.smtp.starttls.required">true</prop>
+
+        <!-- 타임아웃 -->
+        <prop key="mail.smtp.connectiontimeout">10000</prop>
+        <prop key="mail.smtp.timeout">10000</prop>
+
+        <!-- SSL trust (Brevo 서버 신뢰) -->
+        <prop key="mail.smtp.ssl.trust">smtp-relay.brevo.com</prop>
+
+        <!-- 디버그 -->
+        <prop key="mail.debug">true</prop>
+    </props>
+</property>
+
+</bean>
 
 
 </beans>
