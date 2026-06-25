@@ -18,16 +18,18 @@ public class CookiePurchaseRepository {
 
     // 💥 1. GUEST_USER (비회원 원천 정보) 인서트 엔진
     public int insertGuestUser(CookieOrderVO cookieOrder) {
-        // 중복 가입 방지를 위해 guest_id가 이미 존재하면 정보만 업데이트(UPSERT) 처리
-        String sql = "MERGE INTO GUEST_USER (guest_id, guest_name, guest_phone, address, reg_date) " +
+        // 1. 컬럼 목록에 guest_nickname 추가
+        // 2. VALUES에 ? 추가 (총 5개)
+        String sql = "MERGE INTO GUEST_USER (guest_id, guest_name, guest_phone, guest_nickname, address, reg_date) " +
                      "KEY (guest_id) " +
-                     "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+                     "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
         
         return jdbcTemplate.update(sql, 
             cookieOrder.getGuestId(), 
             cookieOrder.getName(), 
-            cookieOrder.getPhone(), 
-            cookieOrder.getAddress()
+            cookieOrder.getPhone(),
+            cookieOrder.getNickname(), // 4번째 값: 별명 추가
+            cookieOrder.getAddress()  // 5번째 값: 주소
         );
     }
 
@@ -127,16 +129,15 @@ public class CookiePurchaseRepository {
             purchaseId, name);
     }
     
- // 💥 수정된 메서드: queryForObject -> queryForList
-    public List<String> findIdByGuestInfo(String name, String phone) {
+    public List<String> findIdsByGuestInfo(String name, String phone, String nickname) {
         String sql = "SELECT p.purchase_id " +
                      "FROM GUEST_PURCHASE p " +
                      "JOIN GUEST_USER u ON p.guest_id = u.guest_id " +
                      "WHERE u.guest_name = ? " +
                      "  AND REPLACE(u.guest_phone, '-', '') = ? " +
+                     "  AND u.guest_nickname = ? " +
                      "ORDER BY p.purchase_date DESC";
 
-        // queryForList를 사용하여 여러 건을 리스트로 받습니다.
-        return jdbcTemplate.queryForList(sql, String.class, name, phone);
+        return jdbcTemplate.queryForList(sql, String.class, name, phone, nickname);
     }
 }

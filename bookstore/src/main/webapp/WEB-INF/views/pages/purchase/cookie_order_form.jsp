@@ -5,8 +5,10 @@
     <h2>주문서 작성</h2>
     <div class="alert alert-info" role="alert">
 	    <strong>💡 주문 확인 방법 안내</strong><br>
-	    주문 완료 후 제공되는 <strong>주문번호</strong>와 <strong>이름</strong>을 입력하여 배송 현황을 조회할 수 있습니다. 
-	    주문번호는 결제 완료 시 안내되오니 참고 부탁드립니다.
+	    <strong>주문번호</strong>, <strong>이름</strong>을 입력하여 배송 현황을 조회할 수 있습니다.<br>
+	    주문번호는 결제 완료 시 안내되오니 참고 부탁드립니다.<br>
+	    주문번호 분실 시에는 <strong>이름</strong>, <strong>전화번호</strong>, <strong>별명</strong>을 입력하여 주문번호를 확인하실 수 있습니다.
+	    
 	</div>
     
     <hr>
@@ -33,6 +35,10 @@
 					       pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}" 
 					       title="010-0000-0000"
 					       placeholder="예: 010-0000-0000" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>별명</label>
+                        <input type="text" name="nickname" class="form-control" placeholder="예: 별명" required>
                     </div>
                     <div class="mb-3">
                         <label>배송지 주소</label>

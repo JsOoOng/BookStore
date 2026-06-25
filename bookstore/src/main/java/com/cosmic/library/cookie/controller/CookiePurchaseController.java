@@ -206,19 +206,20 @@ public class CookiePurchaseController {
     @PostMapping("/find_check")
     public String findCheckProcess(@RequestParam("name") String name,
                                    @RequestParam("phone") String phone,
+                                   @RequestParam("nickname") String nickname, // 별명 추가
                                    Model model,
-                                   RedirectAttributes rttr) { // RedirectAttributes 추가
-
-        String cleanPhone = phone.replaceAll("-", "");
-        List<String> foundPurchaseIds = cookieService.findIdByGuestInfo(name, cleanPhone);
+                                   RedirectAttributes rttr) {
         
-        // 1. 결과가 없을 경우: 리다이렉트를 통해 /find 페이지로 복귀
+        String cleanPhone = phone.replaceAll("-", "");
+        
+        // 서비스에서 별명까지 검증하도록 호출 (아래 3번 참고)
+        List<String> foundPurchaseIds = cookieService.findIdsByGuestInfo(name, cleanPhone, nickname);
+        
         if (foundPurchaseIds == null || foundPurchaseIds.isEmpty()) {
-            rttr.addFlashAttribute("errorMsg", "일치하는 주문 정보가 없습니다.");
-            return "redirect:/cookie/purchase/find"; // URL이 다시 /find로 변경됨
+            rttr.addFlashAttribute("errorMsg", "일치하는 주문 정보가 없습니다. 이름, 전화번호, 별명을 다시 확인해 주세요.");
+            return "redirect:/cookie/purchase/find";
         }
         
-        // 2. 성공 시: 기존처럼 데이터 전달
         model.addAttribute("foundPurchaseIds", foundPurchaseIds);
         model.addAttribute("pageName", "pages/purchase/guest_find_check");
         return "common/layout";

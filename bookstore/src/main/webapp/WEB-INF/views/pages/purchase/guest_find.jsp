@@ -20,6 +20,10 @@
 						       title="010-0000-0000"
 						       placeholder="예: 010-0000-0000" required>
                     	</div>
+	                    	 <div class="mb-3">
+	                        <label>별명</label>
+	                        <input type="text" name="nickname" class="form-control" placeholder="예: 별명" required>
+                    	</div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-secondary btn-lg">주문번호 확인하기</button>
                         </div>

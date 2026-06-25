@@ -242,6 +242,7 @@ CREATE TABLE GUEST_USER (
     guest_id VARCHAR(100) PRIMARY KEY,         -- 세션 ID 또는 비회원 임시 발급 식별자
     guest_name VARCHAR(50) NOT NULL,           -- 수령인 이름
     guest_phone VARCHAR(20) NOT NULL,          -- 연락처
+    guest_nickname VARCHAR(50) NOT NULL,		-- 별명
     address VARCHAR(500) NOT NULL,             -- 배송지
     reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

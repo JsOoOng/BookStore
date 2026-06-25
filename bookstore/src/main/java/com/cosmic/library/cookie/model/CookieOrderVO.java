@@ -12,6 +12,7 @@ public class CookieOrderVO {
     // 1. GUEST_USER (비회원 원천 정보) 매핑 필드
     private String guestId;      // 비회원 고유 식별자 (세션 ID 혹은 쿠키 토큰 좌표)
     private String name;         // 수령인 성명
+    private String nickname;	//별명
     private String phone;        // 연락처 주파수
     private String address;      // 배송지 주소
 

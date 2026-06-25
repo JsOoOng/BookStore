@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <div class="container mt-5">
     <h2>비회원 주문 상세 확인</h2>
@@ -17,31 +18,35 @@
         </div>
     </c:if>
 
-    <%-- 2. 상품 상세 내역 테이블 (저자 항목 추가) --%>
     <table class="table table-hover align-middle">
-        <thead class="table-light">
+    <thead class="table-light">
+        <tr>
+            <th>주문 일시</th>
+            <th>책 사진</th>
+            <th>책 이름</th>
+            <th>저자</th>
+            <th>수량</th>
+            <th>가격</th>
+            <th>상태</th>
+        </tr>
+    </thead>
+    <tbody>
+        <c:forEach items="${trackList}" var="order">
             <tr>
-                <th>책 사진</th>
-                <th>책 이름</th>
-                <th>저자</th>
-                <th>수량</th>
-                <th>가격</th>
-                <th>상태</th>
+                <td>
+				    <fmt:formatDate value="${order.purchaseDate}" pattern="yyyy-MM-dd HH:mm" />
+				</td>
+                
+                <td><img src="${order.image}" alt="책 표지" style="width: 80px; height: 110px;"></td>
+                <td>${order.title}</td>
+                <td>${order.writer}</td>
+                <td>${order.quantity}</td>
+                <td>${order.unitPrice}원</td>
+                <td><span class="badge bg-primary">${order.status}</span></td>
             </tr>
-        </thead>
-        <tbody>
-            <c:forEach items="${trackList}" var="order">
-                <tr>
-                    <td><img src="${order.image}" alt="책 표지" style="width: 80px; height: 110px;"></td>
-                    <td>${order.title}</td>
-                    <td>${order.writer}</td> <%-- 💥 저자 정보 출력 --%>
-                    <td>${order.quantity}</td>
-                    <td>${order.unitPrice}원</td>
-                    <td><span class="badge bg-primary">${order.status}</span></td>
-                </tr>
-            </c:forEach>
-        </tbody>
-    </table>
+        </c:forEach>
+    </tbody>
+</table>
 
     <%-- 3. 상담 정보 --%>
     <div class="mt-5 p-3 border-top text-muted">

@@ -137,8 +137,9 @@ public class CookieService {
         return cookiePurchaseRepository.trackGuestOrder(purchaseId, name);
     }
     
-    public List<String> findIdByGuestInfo(String name, String phone) {
-        return cookiePurchaseRepository.findIdByGuestInfo(name, phone);
+ // 🪐 6. [신규 레이더] 비회원 주문번호 찾기 (이름, 전화번호, 별명으로 조회)
+    public List<String> findIdsByGuestInfo(String name, String phone, String nickname) {
+        return cookiePurchaseRepository.findIdsByGuestInfo(name, phone, nickname);
     }
 
 
