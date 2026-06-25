@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.cosmic.library.admin.model.AdminVO;
 import com.cosmic.library.admin.service.AdminService;
 import com.cosmic.library.member.model.MemberVO;
+import com.cosmic.library.vendor.model.SalesVolumeVO;
+import com.cosmic.library.vendor.service.ProductSaleService;
 
 @Controller
 @RequestMapping("/admin")
@@ -23,6 +26,9 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService; // 🌟 인터페이스 타입 주입으로 구조적 무결성 확보!
+
+    @Autowired
+    private ProductSaleService productSaleService;
 
     /**
      * 🔒 1. 관리자 전용 로그인 페이지 요청 ➔ 3단 통합 로그인 창으로 리다이렉트 워프
@@ -51,6 +57,15 @@ public class AdminController {
             // 최고 관리자(SUPER) 권한 파악 시 총괄 대원 통제실로 즉시 워프
             if ("SUPER".equals(loginAdmin.getRole())) {
                 return "redirect:/admin/userControl";
+            }
+
+            boolean canViewSalesVolume =
+                    "SUPER".equals(loginAdmin.getRole())
+                    || "BOOK_ADMIN".equals(loginAdmin.getAdminId());
+
+            if (!canViewSalesVolume) {
+                System.out.println("🚨 경고: 권한 없는 관리자가 도서 판매량 통계에 접근 시도!");
+                return "redirect:/";
             }
             
             // 향후 등급별(BOOK_ADMIN, VENDOR_ADMIN 등) 대시보드로 분기할 우회로 확보
@@ -193,5 +208,60 @@ public class AdminController {
         adminService.registerAdmin(admin);
         
         return "redirect:/admin/adminControl?regSuccess=true";
+    }
+
+
+    /**
+     * 📊 10. [SUPER / BOOK_ADMIN 전용] 전체 도서 판매량 통계 페이지
+     */
+    @GetMapping("/purchase/salesvolume")
+    public String adminSalesVolumePage(HttpSession session, Model model) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (loginAdmin == null) {
+            return "redirect:/member/login";
+        }
+
+        boolean canViewSalesVolume =
+                "SUPER".equals(loginAdmin.getRole())
+                || "BOOK_ADMIN".equals(loginAdmin.getRole());
+
+        if (!canViewSalesVolume) {
+            System.out.println("🚨 경고: 권한 없는 관리자가 도서 판매량 통계에 접근 시도!");
+            return "redirect:/";
+        }
+
+        model.addAttribute("loginAdmin", loginAdmin);
+        model.addAttribute("pageName", "pages/admin/salesvolume");
+
+        return "common/layout";
+    }
+
+
+    /**
+     * 📊 11. [SUPER / BOOK_ADMIN 전용] 전체 도서 판매량 통계 데이터 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/data")
+    public List<SalesVolumeVO> adminSalesVolumeData(
+            @RequestParam(value = "period", defaultValue = "hour") String period,
+            HttpSession session) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (loginAdmin == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        boolean canViewSalesVolume =
+                "SUPER".equals(loginAdmin.getRole())
+                || "BOOK_ADMIN".equals(loginAdmin.getRole());
+
+        if (!canViewSalesVolume) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getAdminSalesVolume(period);
     }
 }

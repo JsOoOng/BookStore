@@ -257,7 +257,7 @@ ALTER TABLE review_user
 ADD CONSTRAINT uk_review_user UNIQUE (bookid, userid);
 
 
---17. test email_auth : 이메일 인증 DB
+--19. test email_auth : 이메일 인증 DB
 CREATE TABLE TB_EMAIL_AUTH
 (
     AUTH_NO BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -282,7 +282,6 @@ INSERT INTO VENDOR_REGISTRATION (vendor_id, admin_id, is_active, regDate) VALUES
 INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('ADMIN', NULL, NULL, 'admin');
 INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('USER', 1, NULL, NULL);
 INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('VENDOR', NULL, 1, NULL);
-
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('작별하지 않는다 :한강 장편소설', '한강 지음', '문학동네', '2021-01-01', '소설/시', 'Korean', '9788954682152', 'https://covers.openlibrary.org/b/isbn/9788954682152-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('달리기를 말할 때 내가 하고 싶은 이야기 :세계적 작가 하루키의 달리기를 축으로 한 문학과 인생의 회고록 =What I talk about when I talk about running', '무라카미 하루키 지음', '문학사상', '2009-01-01', '소설/시', 'Korean', '9788970128337', 'https://covers.openlibrary.org/b/isbn/9788970128337-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('모순 :양귀자 장편소설', '양귀자 지음', '쓰다', '2013-01-01', '소설/시', 'Korean', '9788998441012', 'https://covers.openlibrary.org/b/isbn/9788998441012-M.jpg');

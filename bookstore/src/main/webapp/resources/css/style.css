@@ -3957,9 +3957,7 @@ body.modal-open .modal-backdrop {
         border-radius: 8px;
     }
 
-    .showcase-text { font-weight: 700; color: #333; font-size: 1.1rem; }
-    
-    
+    .showcase-text { font-weight: 700; color: #333; font-size: 1.1rem; }     
     .review-section{
     margin-top:30px;
 }
@@ -5090,3 +5088,53 @@ body.modal-open .modal-backdrop {
     color: #0b132b !important;
     border-color: #cbd5e1 !important;
 }
+
+	/* ==========================================================================
+   📊 도서 판매량 버튼 - 파트너 대시보드 상단 버튼
+   ========================================================================== */
+
+	.main-card-actions {
+	    display: flex !important;
+	    align-items: center !important;
+	    justify-content: flex-end !important;
+	    gap: 10px !important;
+	}
+	
+	.main-card-actions .btn-vendor-salesvolume {
+	    display: inline-flex !important;
+	    align-items: center !important;
+	    justify-content: center !important;
+	
+	    height: 34px !important;
+	    padding: 0 16px !important;
+	
+	    border-radius: 30px !important;
+	    border: 1px solid #4aa3ff !important;
+	    background: transparent !important;
+	
+	    color: #4aa3ff !important;
+	    font-size: 13px !important;
+	    font-weight: 800 !important;
+	    line-height: 1 !important;
+	
+	    text-decoration: none !important;
+	    white-space: nowrap !important;
+	    cursor: pointer !important;
+	
+	    transition: all 0.2s ease !important;
+	}
+	
+	.main-card-actions .btn-vendor-salesvolume:hover {
+	    background: rgba(74, 163, 255, 0.14) !important;
+	    color: #7cc0ff !important;
+	    text-decoration: none !important;
+	    transform: translateY(-1px);
+	}
+	
+	.main-card-actions .btn-vendor-salesvolume:visited,
+	.main-card-actions .btn-vendor-salesvolume:active,
+	.main-card-actions .btn-vendor-salesvolume:focus {
+	    color: #4aa3ff !important;
+	    text-decoration: none !important;
+	}
+

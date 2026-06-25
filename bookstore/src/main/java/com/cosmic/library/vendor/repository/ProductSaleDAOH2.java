@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import com.cosmic.library.vendor.model.ProductSaleVO;
+import com.cosmic.library.vendor.model.SalesVolumeVO;
 
 @Repository
 public class ProductSaleDAOH2 implements ProductSaleDAO {
@@ -152,5 +153,112 @@ public class ProductSaleDAOH2 implements ProductSaleDAO {
         
         // 🎯 이제 키가 무조건 1개만 반환되므로 기존 코드가 완벽하게 작동한다!
         return (keyHolder.getKey() != null) ? keyHolder.getKey().intValue() : 0;
+    }
+    
+ // 📊 실제 판매량 통계 조회 - PURCHASE_DETAIL.quantity 기준
+    @Override
+    public List<SalesVolumeVO> selectSalesVolume(int vRegNum, String period) {
+
+        String dateColumn = "p.purchase_date";
+        String keyExpr;
+        String labelExpr;
+
+        switch (period) {
+            case "day":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+                break;
+
+            case "week":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-ww')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy') || '-' || FORMATDATETIME(" + dateColumn + ", 'ww') || '주'";
+                break;
+
+            case "month":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+                break;
+
+            case "year":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+                break;
+
+            case "hour":
+            default:
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'HH')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'HH') || '시'";
+                break;
+        }
+
+        String sql =
+            "SELECT " + keyExpr + " AS sort_key, " +
+            labelExpr + " AS label, " +
+            "COALESCE(SUM(pd.quantity), 0) AS total_qty " +
+            "FROM PURCHASE_DETAIL pd " +
+            "JOIN purchase p ON pd.purchase_id = p.purchase_id " +
+            "WHERE pd.v_reg_num = ? " +
+            "GROUP BY " + keyExpr + ", " + labelExpr + " " +
+            "ORDER BY sort_key";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            SalesVolumeVO vo = new SalesVolumeVO();
+            vo.setLabel(rs.getString("label"));
+            vo.setTotalQty(rs.getInt("total_qty"));
+            return vo;
+        }, vRegNum);
+    }
+    
+ // 📊 관리자용 전체 판매량 통계 조회 - 모든 업체 기준
+    @Override
+    public List<SalesVolumeVO> selectAdminSalesVolume(String period) {
+
+        String dateColumn = "p.purchase_date";
+        String keyExpr;
+        String labelExpr;
+
+        switch (period) {
+            case "day":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+                break;
+
+            case "week":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-ww')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy') || '-' || FORMATDATETIME(" + dateColumn + ", 'ww') || '주'";
+                break;
+
+            case "month":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+                break;
+
+            case "year":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+                break;
+
+            case "hour":
+            default:
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'HH')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'HH') || '시'";
+                break;
+        }
+
+        String sql =
+            "SELECT " + keyExpr + " AS sort_key, " +
+            labelExpr + " AS label, " +
+            "COALESCE(SUM(pd.quantity), 0) AS total_qty " +
+            "FROM PURCHASE_DETAIL pd " +
+            "JOIN purchase p ON pd.purchase_id = p.purchase_id " +
+            "GROUP BY " + keyExpr + ", " + labelExpr + " " +
+            "ORDER BY sort_key";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            SalesVolumeVO vo = new SalesVolumeVO();
+            vo.setLabel(rs.getString("label"));
+            vo.setTotalQty(rs.getInt("total_qty"));
+            return vo;
+        });
     }
 }
