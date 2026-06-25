@@ -57,12 +57,18 @@
                     <input type="password" id="pw" name="pw" placeholder="Password를 입력하세요" required>
                 </div>
                 <div class="form-actions-login">
-                    <button type="submit" class="btn-confirm-cosmic btn-member-submit">login (대원 입성)</button>
+
+                    <button type="submit" class="btn-confirm-cosmic btn-member-submit">login (회원 입성)</button>
                 </div>
-                <!-- 주소 맨 뒤에 &prompt=login 을 꼭 붙여주세요! -->
-				<a href="https://kauth.kakao.com/oauth/authorize?client_id=5704fcbe13d27f9fb045d4e38a2feab2&redirect_uri=http://localhost:8888/login/kakao&response_type=code&prompt=login">
-				    <img src="kakao_login_btn.png" alt="카카오 로그인">
-				</a>
+                <div class="cosmic-kakao-wrap mt-3">
+				    <%-- 💥 [수리 완료] 로컬 주소를 ngrok 도메인으로 긴급 교체! --%>
+				    <a href="https://kauth.kakao.com/oauth/authorize?client_id=5704fcbe13d27f9fb045d4e38a2feab2&redirect_uri=https://trace-discount-appraisal.ngrok-free.dev/login/kakao&response_type=code&prompt=login" class="btn-kakao-css">
+				        <svg class="kakao-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+				            <path fill="#000000" d="M16 4.64c-6.96 0-12.64 4.48-12.64 10.08 0 3.52 2.32 6.64 5.76 8.48l-1.44 5.44c-.16.48.4.88.8.56l6.8-4.48c.24 0 .48.08.72.08 6.96 0 12.64-4.48 12.64-10.08S22.96 4.64 16 4.64z"/>
+				        </svg>
+				        카카오 로그인
+				    </a>
+				</div>
                 <div class="login-footer-links text-center">
                     <p class="login-footer-text">아직 탐사대원이 아니신가요?</p>
                     <a href="${pageContext.request.contextPath}/member/join" class="login-redirect-link link-member-color">신규 대원 등록 (Sign Up) &rarr;</a>
