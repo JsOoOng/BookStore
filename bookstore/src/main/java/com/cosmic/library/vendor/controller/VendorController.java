@@ -35,7 +35,7 @@ public class VendorController {
 
     /**
      * 🔒 1. 업체 로그인 페이지 이동 ➔ 3단 통합 로그인 창으로 워프
-     * (정화 포인트: vendor/login.jsp 폐기에 따른 리다이렉트 궤도 수정)
+     * 
      */
     @GetMapping("/login")
     public String loginForm() {
