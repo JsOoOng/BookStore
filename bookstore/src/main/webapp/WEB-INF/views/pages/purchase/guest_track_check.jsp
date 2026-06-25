@@ -41,7 +41,7 @@
                 <td>${order.title}</td>
                 <td>${order.writer}</td>
                 <td>${order.quantity}</td>
-                <td>${order.unitPrice}원</td>
+                <td>${order.unitPrice * order.quantity}원</td>
                 <td><span class="badge bg-primary">${order.status}</span></td>
             </tr>
         </c:forEach>
