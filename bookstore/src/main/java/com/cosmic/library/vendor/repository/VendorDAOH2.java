@@ -14,7 +14,7 @@ public class VendorDAOH2 implements VendorDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // 🌟 데이터베이스 조인 및 매핑을 위한 공용 RowMapper 정의
+    // 🌟 [수리 완료] 데이터베이스 조인 결과를 모두 담을 수 있도록 RowMapper 확장!
     private final RowMapper<VendorVO> rowMapper = (rs, rowNum) -> {
         VendorVO vo = new VendorVO();
         vo.setVendorId(rs.getString("vendor_id"));
@@ -23,6 +23,14 @@ public class VendorDAOH2 implements VendorDAO {
         vo.setBizNo(rs.getString("biz_no"));
         vo.setContact(rs.getString("contact"));
         vo.setRegDate(rs.getTimestamp("regDate"));
+        
+        // 💥 [핵심 방어막] VENDOR_REGISTRATION과 JOIN 할 때만 데이터가 있으므로, 
+        // 에러를 방지하기 위해 try-catch로 감싸서 값을 담아준다!
+        try {
+            vo.setVendorRegNum(rs.getInt("vendor_reg_num"));
+        } catch (Exception e) {
+            // 조인이 없는 단순 VENDOR 조회 쿼리에서는 이 컬럼이 없으므로 무시한다.
+        }
         return vo;
     };
 
@@ -50,10 +58,14 @@ public class VendorDAOH2 implements VendorDAO {
         }
     }
 
-    // 3. 업체 로그인 검증 신호
+    // 3. 💥 [핵심 수리 완료] 업체 로그인 검증 신호 (JOIN 쿼리로 개조!)
     @Override
     public VendorVO login(String vendorId, String vendorPw) {
-        String sql = "SELECT * FROM VENDOR WHERE vendor_id = ? AND vendor_pw = ?";
+        // VENDOR와 VENDOR_REGISTRATION을 조인하여 활동 승인 번호(vendor_reg_num)까지 싹 다 긁어온다!
+        String sql = "SELECT v.*, vr.vendor_reg_num "
+                   + "FROM VENDOR v "
+                   + "JOIN VENDOR_REGISTRATION vr ON v.vendor_id = vr.vendor_id "
+                   + "WHERE v.vendor_id = ? AND v.vendor_pw = ?";
         try {
             return jdbcTemplate.queryForObject(sql, rowMapper, vendorId, vendorPw);
         } catch (EmptyResultDataAccessException e) {

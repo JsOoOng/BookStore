@@ -82,16 +82,18 @@ public class PurchaseRepository {
     }
 
     // =========================================================================
-    // 🏢 [4단계] 파트너(상점) 대시보드용 주문 긁어오기 (조인 쿼리 전면 개편)
+    // 🏢 [4단계] 파트너(상점) 대시보드용 주문 긁어오기 (유저명 조인 추가)
     // =========================================================================
     public List<Purchase> findByVendorRegNum(int vendorRegNum) {
-        // [격파 포인트] 특정 상점(v_reg_num)에 들어온 주문만 디테일 테이블에서 필터링!
         String sql = 
               "SELECT p.purchase_id, p.user_reg_num, p.purchase_date, "
-            + "       pd.sale_id, pd.quantity, pd.unit_price, pd.delivery_status, "
-            + "       b.id AS book_id, b.title, b.image "
+            + "       pd.detail_id, pd.sale_id, pd.quantity, pd.unit_price, pd.delivery_status, " 
+            + "       b.id AS book_id, b.title, b.image, "
+            + "       cu.user_name " // 💥 유저명 가로채기
             + "FROM PURCHASE_DETAIL pd "
             + "JOIN purchase p         ON pd.purchase_id = p.purchase_id "
+            + "JOIN USER_REGISTRATION ur ON p.user_reg_num = ur.user_reg_num " // 💥 조인 추가 1
+            + "JOIN COSMIC_USER cu       ON ur.user_id = cu.user_id "          // 💥 조인 추가 2
             + "JOIN PRODUCT_SALE ps    ON pd.sale_id = ps.sale_id "
             + "JOIN STOCK_IN si        ON ps.stock_id = si.stock_id "
             + "JOIN BOOK b             ON si.book_id = b.id "
@@ -100,7 +102,9 @@ public class PurchaseRepository {
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Purchase p = new Purchase();
-            p.setId(rs.getInt("purchase_id"));
+            p.setId(rs.getInt("detail_id")); 
+            p.setPurchaseId(rs.getInt("purchase_id")); // 💥 마스터 번호 세팅
+            p.setUserName(rs.getString("user_name"));  // 💥 주문자 이름 세팅
             p.setUserRegNum(rs.getInt("user_reg_num"));
             p.setBookId(rs.getInt("book_id"));
             p.setSaleId(rs.getInt("sale_id"));
@@ -114,13 +118,12 @@ public class PurchaseRepository {
             return p;
         }, vendorRegNum);
     }
-
     // =========================================================================
-    // 🚚 [5단계] [배송하기] 클릭 시 상태 워프 엔진 (개별 품목의 배송 상태 변경)
+    // 🚚 [5단계] [배송하기] 클릭 시 상태 워프 엔진 (개별 품목 정밀 타격)
     // =========================================================================
-    public int updateStatus(int purchaseId, String status) {
-        // 마스터의 상태가 아닌, 파트너사가 책임지는 세부 품목(DETAIL)의 배송 상태를 변경!
-        String sql = "UPDATE PURCHASE_DETAIL SET delivery_status = ? WHERE purchase_id = ?";
-        return jdbcTemplate.update(sql, status, purchaseId);
+    public int updateStatus(int detailId, String status) { // 매개변수 이름을 detailId로 논리적 변경
+        // 💥 [핵심 수술] purchase_id가 아니라 detail_id로 개별 품목만 상태를 바꾼다!
+        String sql = "UPDATE PURCHASE_DETAIL SET delivery_status = ? WHERE detail_id = ?";
+        return jdbcTemplate.update(sql, status, detailId);
     }
 }

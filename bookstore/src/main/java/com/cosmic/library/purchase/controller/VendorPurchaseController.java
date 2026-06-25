@@ -44,17 +44,29 @@ public class VendorPurchaseController {
         VendorVO loginVendor = (VendorVO) session.getAttribute("loginVendor");
         if (loginVendor == null) return "redirect:/vendor/login";
         
-        List<Purchase> orderList = purchaseService.getVendorOrders(loginVendor.getVendorRegNum());
-        for (Purchase order : orderList) {
-            order.setImage(getNaverBookCover(order.getTitle()));
+        List<Purchase> rawOrderList = purchaseService.getVendorOrders(loginVendor.getVendorRegNum());
+        
+        // 💥 [데이터 융합 엔진] 마스터 주문 번호(purchaseId)를 기준으로 디테일 품목들을 묶는다!
+        java.util.Map<Integer, java.util.List<Purchase>> groupedOrders = new java.util.LinkedHashMap<>();
+        
+        if (rawOrderList != null) {
+            for (Purchase order : rawOrderList) {
+                // 네이버 표지 획득
+                String query = order.getTitle() != null ? order.getTitle().replaceAll("\\[.*?\\]", "").split(":")[0].trim() : "";
+                order.setImage(getNaverBookCover(query));
+                
+                // 그룹 맵에 적재
+                groupedOrders.computeIfAbsent(order.getPurchaseId(), k -> new java.util.ArrayList<>()).add(order);
+            }
         }
         
-        model.addAttribute("orderList", orderList);
+        // 묶인 데이터를 JSP로 전송!
+        model.addAttribute("groupedOrders", groupedOrders);
         model.addAttribute("pageName", "pages/vendor/orderList");
         return "common/layout"; 
     }
     
-    // 📦 비회원 주문 관제탑
+    // 📦 [비회원] 쿠키 주문 관제탑
     @GetMapping("/cookielist")
     public String vendorGuestOrderList(HttpSession session, Model model) {
         VendorVO loginVendor = (VendorVO) session.getAttribute("loginVendor");
@@ -64,7 +76,6 @@ public class VendorPurchaseController {
         
         if (guestOrderList != null) {
             for (GuestOrderVO order : guestOrderList) {
-                // 부제나 괄호 잘라내기 스마트 쿼리 연동
                 String query = order.getTitle() != null ? order.getTitle().replaceAll("\\[.*?\\]", "").split(":")[0].trim() : "";
                 order.setImage(getNaverBookCover(query));
             }
@@ -75,19 +86,22 @@ public class VendorPurchaseController {
         return "common/layout"; 
     }
 
+    // 🚚 배송 출발 상태 변경 통신
     @PostMapping("/ship")
     @ResponseBody
     public String shipProduct(@RequestParam("purchaseId") int purchaseId) {
+        // 💥 Service 레이어에서 PurchaseRepository.updateStatus(purchaseId, "SHIPPING")을 호출하는지 확인할 것!
         boolean isSuccess = purchaseService.startShipping(purchaseId);
         return isSuccess ? "ok" : "fail";
     }
 
+    // 📡 네이버 표지 실시간 통신 엔진
     private String getNaverBookCover(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return "https://placehold.co/150x220/f8fafc/a4b0be?text=No+Img";
         }
         try {
-            Thread.sleep(150); // 💥 네이버 API 방어막 우회
+            Thread.sleep(150); // API 방어막 우회 쿨타임
             String encodedKeyword = URLEncoder.encode(keyword, "UTF-8");
             String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
             
