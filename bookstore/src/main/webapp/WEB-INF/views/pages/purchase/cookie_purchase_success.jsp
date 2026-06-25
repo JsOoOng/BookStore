@@ -12,8 +12,12 @@
         
         <div class="alert alert-success p-4" style="border-radius: 8px;">
             <h5 class="text-secondary mb-2">비회원 주문번호</h5>
-            <%-- 📡 컨트롤러에서 넘겨받은 GPUR-... 규격의 주문 번호가 영롱하게 렌더링됨 --%>
-            <h2 class="display-6 fw-bold text-dark">${orderId}</h2>
+            <%-- 📡 id="orderNumber"가 정확히 지정되어 있습니다 --%>
+            <h2 id="orderNumber" class="display-6 fw-bold text-dark">${orderId}</h2>
+            
+            <button type="button" onclick="copyOrderNumber()" class="btn btn-sm btn-outline-secondary">
+                주문번호 복사하기
+            </button>
         </div>
         
         <p class="text-muted mt-3" style="font-size: 0.95rem; line-height: 1.6;">
@@ -23,10 +27,29 @@
         
         <div class="mt-4 d-flex justify-content-center gap-3">
             <a href="${pageContext.request.contextPath}/" class="btn btn-secondary px-4 py-2">메인 화면으로</a>
-            <%-- 💥 [링크 동기화] 비회원 주문조회 폼이 연동된 전역 로그인/인증 페이지로 안전하게 리다이렉팅 --%>
-            <a href="${pageContext.request.contextPath}/member/login" class="btn btn-outline-primary px-4 py-2">주문 내역 조회하기</a>
+            <a href="${pageContext.request.contextPath}/cookie/purchase/track" class="btn btn-outline-primary px-4 py-2">주문 내역 조회하기</a>
         </div>
     </div>
 </div>
+
+<script>
+    // 페이지 로드 확인 후 함수 실행
+    function copyOrderNumber() {
+        const orderNumElement = document.getElementById("orderNumber");
+        if (!orderNumElement) {
+            console.error("주문번호 요소를 찾을 수 없습니다.");
+            return;
+        }
+        
+        const textToCopy = orderNumElement.innerText;
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert("주문번호가 복사되었습니다!!");
+        }).catch(err => {
+            alert("복사에 실패했습니다. 직접 드래그해서 복사해주세요.");
+            console.error("복사 실패:", err);
+        });
+    }
+</script>
 </body>
 </html>

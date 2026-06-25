@@ -25,4 +25,5 @@ public class GuestOrderVO {
     // 3. BOOK (도서 원천 정보 매핑 - 네이버 API 가동기)
     private String title;        // 도서 제목
     private String image;        // 표지 이미지 경로
+    private String writer;		// 도서 저자
 }

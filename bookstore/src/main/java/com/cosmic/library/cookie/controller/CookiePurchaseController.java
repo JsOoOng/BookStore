@@ -131,34 +131,39 @@ public class CookiePurchaseController {
         return "common/layout";
     }
 
-    // 2. 실제 조회 로직 가동 (POST)
+    
+    @GetMapping("/guest/track/check")
+    public String directAccessCheck() {
+        return "redirect:/cookie/purchase/track";
+    }
+    
     @PostMapping("/trackDetail")
     public String trackProcess(@RequestParam("purchaseId") String purchaseId,
-                               @RequestParam("phone") String phone,
+                               @RequestParam("name") String name,
                                Model model) {
         
-        // 서비스(레이더)에 주문번호와 연락처를 던져서 일치하는 품목들을 긁어온다!
-        List<GuestOrderVO> trackList = cookieService.trackGuestOrder(purchaseId, phone);
+        // 1. 서비스 호출
+        List<GuestOrderVO> trackList = cookieService.trackGuestOrder(purchaseId, name);
         
-        // 관제 실패: 일치하는 데이터가 없을 경우 에러 메시지와 함께 폼으로 반환
+        // 2. 결과 검증 (데이터가 없으면 폼으로 다시 보냄)
         if (trackList == null || trackList.isEmpty()) {
-            model.addAttribute("errorMsg", "일치하는 주문 정보가 관제 레이더에 잡히지 않습니다. 다시 확인해 주십시오.");
+            model.addAttribute("errorMsg", "일치하는 주문 정보가 없습니다. 다시 확인해 주세요.");
             model.addAttribute("pageName", "pages/purchase/guest_track");
             return "common/layout";
         }
         
-        // 관제 성공: 조회된 도서들의 네이버 표지 실시간 복구
+        // 3. 성공 시 데이터 담고 check 페이지로 이동
         for (GuestOrderVO order : trackList) {
             String query = order.getTitle() != null ? order.getTitle().replaceAll("\\[.*?\\]", "").split(":")[0].trim() : "";
             order.setImage(getNaverBookCover(query));
         }
         
-        // 결과를 뷰어 화면으로 포워딩
         model.addAttribute("trackList", trackList);
-        // 💥 다음으로 우리가 만들어야 할 '조회 결과 출력 화면' 파일명이다!
-        model.addAttribute("pageName", "pages/purchase/guest_track_result");
+        model.addAttribute("pageName", "pages/purchase/guest_track_check"); // 💥 성공 시 여기로!
         return "common/layout";
     }
+    
+    
 
     // 📡 조회 결과 표지 전용 네이버 수집 엔진
     private String getNaverBookCover(String keyword) {

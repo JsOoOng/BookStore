@@ -3,6 +3,12 @@
 
 <div class="container mt-5">
     <h2>주문서 작성</h2>
+    <div class="alert alert-info" role="alert">
+	    <strong>💡 주문 확인 방법 안내</strong><br>
+	    주문 완료 후 제공되는 <strong>주문번호</strong>와 <strong>이름</strong>을 입력하여 배송 현황을 조회할 수 있습니다. 
+	    주문번호는 결제 완료 시 안내되오니 참고 부탁드립니다.
+	</div>
+    
     <hr>
     
     <form action="${pageContext.request.contextPath}/cookie/purchase/buy" method="post">
@@ -18,7 +24,7 @@
                 <div class="card-header">배송 정보 입력</div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label>받으시는 분</label>
+                        <label>이름</label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
                     <div class="mb-3">

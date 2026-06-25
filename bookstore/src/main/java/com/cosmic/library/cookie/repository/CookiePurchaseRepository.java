@@ -97,8 +97,7 @@ public class CookiePurchaseRepository {
             vendorRegNum);
     }
     
-    // 💥 6. [신규 엔진] 비회원 전용 본인 주문 추적 쿼리
-    public List<GuestOrderVO> trackGuestOrder(String purchaseId, String phone) {
+    public List<GuestOrderVO> trackGuestOrder(String purchaseId, String name) {
         String sql = "SELECT " +
                      "    p.purchase_id AS purchaseId, " +
                      "    d.detail_id AS detailId, " +
@@ -112,6 +111,7 @@ public class CookiePurchaseRepository {
                      "    u.guest_phone AS phone, " +
                      "    u.address AS address, " +
                      "    b.title AS title, " +
+                     "    b.writer AS writer, " + // 💥 [추가됨] 저자 정보 추가!
                      "    b.image AS image " +
                      "FROM GUEST_PURCHASE p " +
                      "JOIN GUEST_USER u ON p.guest_id = u.guest_id " +
@@ -119,11 +119,11 @@ public class CookiePurchaseRepository {
                      "JOIN PRODUCT_SALE s ON d.sale_id = s.sale_id " +
                      "JOIN STOCK_IN si ON s.stock_id = si.stock_id " +
                      "JOIN BOOK b ON si.book_id = b.id " +
-                     "WHERE p.purchase_id = ? AND u.guest_phone = ? " +
+                     "WHERE p.purchase_id = ? AND u.guest_name = ? " +
                      "ORDER BY d.detail_id ASC";
 
         return jdbcTemplate.query(sql, 
             new org.springframework.jdbc.core.BeanPropertyRowMapper<>(GuestOrderVO.class), 
-            purchaseId, phone);
+            purchaseId, name);
     }
 }

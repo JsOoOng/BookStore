@@ -133,7 +133,7 @@ public class CookieService {
     }
     
     // 🪐 5. [신규 레이더] 비회원 본인 주문 조회 엔진
-    public List<GuestOrderVO> trackGuestOrder(String purchaseId, String phone) {
-        return cookiePurchaseRepository.trackGuestOrder(purchaseId, phone);
+    public List<GuestOrderVO> trackGuestOrder(String purchaseId, String name) {
+        return cookiePurchaseRepository.trackGuestOrder(purchaseId, name);
     }
 }
