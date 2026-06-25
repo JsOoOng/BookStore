@@ -73,6 +73,7 @@
         <property name="dataSource" ref="dataSource" />
     </bean>
     
+    
     <bean id="qnaChatHandler" class="com.cosmic.library.qnachat.handler.QnaChatHandler" />
     <websocket:handlers>
         <websocket:mapping handler="qnaChatHandler" path="/chat-ws"/>

@@ -24,4 +24,8 @@ public class Purchase {
     // 🖼️ --- 화면 출력을 위한 JOIN 확장 필드 ---
     private String title;           // 도서 제목
     private String image;           // 도서 이미지 (네이버 실시간 표지용)
+    
+    private String email;
+    private String userName;
+    private String phone;
 }

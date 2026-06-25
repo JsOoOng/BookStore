@@ -1,6 +1,9 @@
 package com.cosmic.library.purchase.repository;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import javax.sql.DataSource;
 
 import com.cosmic.library.purchase.model.Purchase;
 
@@ -16,6 +20,9 @@ public class PurchaseRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    private DataSource dataSource;
 
     // =========================================================================
     // 🚀 [1단계] 마스터 영수증(PURCHASE) 생성 및 ID 가로채기
@@ -122,5 +129,65 @@ public class PurchaseRepository {
         // 마스터의 상태가 아닌, 파트너사가 책임지는 세부 품목(DETAIL)의 배송 상태를 변경!
         String sql = "UPDATE PURCHASE_DETAIL SET delivery_status = ? WHERE purchase_id = ?";
         return jdbcTemplate.update(sql, status, purchaseId);
+    }
+    
+    public Purchase findById(int purchaseId) {
+
+        String sql =
+            "SELECT p.PURCHASE_ID, p.USER_REG_NUM, p.PURCHASE_DATE, " +
+            "u.EMAIL, u.USER_NAME, u.PHONE " +
+            "FROM PURCHASE p " +
+            "JOIN cosmic_user u ON p.USER_REG_NUM = u.USER_ID " +
+            "WHERE p.PURCHASE_ID = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, purchaseId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                Purchase purchase = new Purchase();
+
+                purchase.setId(rs.getInt("PURCHASE_ID"));
+                purchase.setUserRegNum(rs.getInt("USER_REG_NUM"));
+                purchase.setPurchaseDate(rs.getTimestamp("PURCHASE_DATE"));
+
+                // 👇 JOIN 결과 주입
+                purchase.setEmail(rs.getString("EMAIL"));
+                purchase.setUserName(rs.getString("USER_NAME"));
+                purchase.setPhone(rs.getString("PHONE"));
+
+                return purchase;
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("purchase 조회 실패", e);
+        }
+
+        throw new RuntimeException("purchase 없음: " + purchaseId);
+    }
+
+    public String findMemberId(int userRegNum) {
+        String sql = "SELECT user_id FROM USER_REGISTRATION WHERE user_reg_num = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userRegNum);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("user_id");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

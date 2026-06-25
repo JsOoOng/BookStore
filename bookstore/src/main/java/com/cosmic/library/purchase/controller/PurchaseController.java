@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.servlet.http.HttpSession;
 
@@ -26,6 +27,7 @@ import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
 import com.cosmic.library.member.model.MemberVO;
 import com.cosmic.library.purchase.service.PurchaseService;
+import com.cosmic.library.toss.service.TossService;
 
 @Controller
 @RequestMapping("/purchase")
@@ -39,6 +41,9 @@ public class PurchaseController {
 
     @Autowired
     private BasketService basketService;
+    
+    @Autowired
+    private TossService tossService;
 
     // 1️⃣ 결제 대기 페이지 (주문서 작성 화면)
     @GetMapping("/view")
@@ -138,14 +143,33 @@ public class PurchaseController {
             itemsToBuy = basketService.getSelectedList(userRegNum, basketIdsToRemove);
         }
 
+        int purchaseId = 0;
+
         if (!itemsToBuy.isEmpty()) {
-            purchaseService.executeCheckout(userRegNum, itemsToBuy, basketIdsToRemove);
+            purchaseId =
+                purchaseService.executeCheckout(
+                    userRegNum,
+                    itemsToBuy,
+                    basketIdsToRemove
+                );
         }
 
-        return "redirect:/purchase/success";
+        int amount = itemsToBuy.stream()
+                .mapToInt(i -> i.getPrice() * i.getQuantity())
+                .sum();
+
+        String member_id = purchaseService.getMemberIdByNum(userRegNum);
+        String orderId = tossService.createOrder(purchaseId, member_id, amount);
+
+        return "redirect:/order/checkout?orderId="
+                + orderId
+                + "&amount="
+                + amount;
     }
     
-    // 3️⃣ 결제 완료 성공 화면 워프
+   
+    
+    // 3️⃣ 결제 완료 성공 화면 워프 필요 없어짐
     @GetMapping("/success")
     public String showSuccessPage(Model model) {
         model.addAttribute("pageName", "pages/purchase/success");
