@@ -355,6 +355,35 @@ INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, re
 -- sale_id = 9 (stock_id 9번 서빙)
 INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (9, 1, 16500, 120, 'ON', NOW());
 
+-- =========================================================================
+-- [결제 파이프라인] 일반 대원(박대원, user_reg_num=1)의 도서 구매 시뮬레이션
+-- =========================================================================
+
+-- 📦 [주문 1] 과거에 주문하여 '배송 완료(DELIVERED)'된 영수증 (총 39,500원)
+-- 구매 내역: '작별하지 않는다' 1권(13,500원) + '바깥은 여름' 2권(13,000*2=26,000원)
+INSERT INTO PURCHASE (user_reg_num, total_price, status, purchase_date) 
+VALUES (1, 39500, 'DELIVERED', '2026-06-20 14:30:00');
+
+-- [주문 1의 상세 품목] AUTO_INCREMENT로 purchase_id = 1 부여됨
+-- 1-1. 작별하지 않는다 (sale_id=1)
+INSERT INTO PURCHASE_DETAIL (purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status) 
+VALUES (1, 1, 1, 1, 13500, 'COS-TRK-998877', 'DELIVERED');
+
+-- 1-2. 바깥은 여름 (sale_id=7)
+INSERT INTO PURCHASE_DETAIL (purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status) 
+VALUES (1, 7, 1, 2, 13000, 'COS-TRK-998877', 'DELIVERED');
+
+
+-- 🚀 [주문 2] 방금 막 결제되어 파트너사 관제탑에 '배송 대기(READY)'로 뜨는 영수증 (총 16,500원)
+-- 구매 내역: '단 한 번의 삶' 1권(16,500원)
+INSERT INTO PURCHASE (user_reg_num, total_price, status, purchase_date) 
+VALUES (1, 16500, 'ORDERED', NOW());
+
+-- [주문 2의 상세 품목] AUTO_INCREMENT로 purchase_id = 2 부여됨
+-- 2-1. 단 한 번의 삶 (sale_id=9)
+INSERT INTO PURCHASE_DETAIL (purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status) 
+VALUES (2, 9, 1, 1, 16500, NULL, 'READY');
+
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('참을 수 없는 존재의 가벼움', '밀란 쿤데라 지음', '민음사', '2018-01-01', '소설/시', 'Korean', '9788937437564', 'https://covers.openlibrary.org/b/isbn/9788937437564-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('나는 소망한다 내게 금지된 것을 :양귀자 장편소설', '양귀자 지음', '쓰다', '2019-01-01', '소설/시', 'Korean', '9788998441074', 'https://covers.openlibrary.org/b/isbn/9788998441074-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('혼모노 :성해나 소설집', '성해나 지음', '창비', '2025-01-01', '소설/시', 'Korean', '9788936439743', 'https://covers.openlibrary.org/b/isbn/9788936439743-M.jpg');
