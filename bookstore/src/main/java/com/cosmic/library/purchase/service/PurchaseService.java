@@ -1,5 +1,8 @@
 package com.cosmic.library.purchase.service;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +14,6 @@ import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.basket.service.BasketService;
 import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.repository.BookDAO;
-import com.cosmic.library.cookie.model.CookieOrderVO;
 import com.cosmic.library.cookie.repository.CookiePurchaseRepository;
 import com.cosmic.library.purchase.model.Purchase;
 import com.cosmic.library.purchase.repository.PurchaseRepository;
@@ -40,7 +42,7 @@ public class PurchaseService {
     // 🚀 [대통합 결제 엔진] 마스터-디테일 생성 + 재고 차감 + 장바구니 비우기
     // =========================================================================
     @Transactional
-    public void executeCheckout(int userRegNum, List<BasketVO> itemsToBuy, int[] basketIdsToRemove) {
+    public int executeCheckout(int userRegNum, List<BasketVO> itemsToBuy, int[] basketIdsToRemove) {
         
         int grandTotal = 0;
         for (BasketVO item : itemsToBuy) {
@@ -68,6 +70,8 @@ public class PurchaseService {
         if (basketIdsToRemove != null && basketIdsToRemove.length > 0) {
             basketService.delete(userRegNum, basketIdsToRemove);
         }
+
+        return purchaseId;
     }
 
     // =========================================================================
@@ -113,4 +117,14 @@ public class PurchaseService {
         }
         return purchaseList;
     }
+    
+    public Purchase findById(int purchaseId) {
+        return purchaseRepository.findById(purchaseId);
+    }
+
+	public String getMemberIdByNum(int userRegNum) {
+		return purchaseRepository.findMemberId(userRegNum);
+	}
+    
+    
 }

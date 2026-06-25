@@ -5,10 +5,18 @@ import java.sql.Timestamp;
 
 @Data
 public class QnachatVO {
+
     private int chatId;
+
+    private Integer senderPid;
+    private Integer receiverPid;
+
     private String senderId;
-    private String receiverId; // 문의자 또는 관리자 ID
+    private String receiverId;
+
+    private String senderRole;
+
     private String message;
+
     private Timestamp sendTime;
-    private String senderRole; // USER, superadmin, QNAadmin 등
 }

@@ -155,4 +155,18 @@ public class BookDAOH2 implements BookDAO {
             return null;
         }
     }
+    
+    // 🪐 [테마 1] 특정 저자(한강) 도서 실시간 추출 엔진
+    @Override
+    public List<BookVO> selectByWriterOnly(String writer, int limit) {
+        String sql = "SELECT * FROM BOOK WHERE writer LIKE ? ORDER BY id DESC LIMIT ?";
+        return jdbcTemplate.query(sql, rowMapper, "%" + writer + "%", limit);
+    }
+
+    // 🪐 [테마 2] 특정 장르 및 키워드(우주/천체) 도서 추출 엔진
+    @Override
+    public List<BookVO> selectByGenreOnly(String genre, int limit) {
+        String sql = "SELECT * FROM BOOK WHERE genre LIKE ? OR title LIKE ? ORDER BY id DESC LIMIT ?";
+        return jdbcTemplate.query(sql, rowMapper, "%" + genre + "%", "%" + genre + "%", limit);
+    }
 }

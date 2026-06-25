@@ -1,17 +1,19 @@
 package com.cosmic.library;
 
-// 💥 [수리 완료] 네이버 통신 및 JSON 분석을 위한 핵심 장비(Import) 일제 격납!
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import com.cosmic.library.book.model.BookVO;
+import com.cosmic.library.book.service.BookService;
 
 // 💥 [주의] 사령부의 BookVO 실제 패키지 경로에 맞게 이 Import 구문은 수정해서 써라!
 import com.cosmic.library.book.model.BookVO; 
@@ -19,13 +21,38 @@ import com.cosmic.library.book.model.BookVO;
 @Controller
 public class MainController {
 
-    // 🪐 [관제탑 복구] 엔진 가동에 필수적인 네이버 API 인증 키 칩셋 장착!
+    @Autowired
+    private BookService bookService;
+
+    // 🛰️ 네이버 API 관제실 코드 동기화
     private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
     private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
 
     @RequestMapping("/")
     public String mainPage(Model model) {
-        // layout.jsp에서 "pages/main.jsp 본문 띄우기
+        
+        // 1. [트랙 1] 신규 입고 도서 (최근 등록 10권)
+        List<BookVO> recentBooks = bookService.findRecentBooks(10);
+        for (BookVO book : recentBooks) {
+            book.setImage(getNaverBookCover(extractSmartQuery(book)));
+        }
+        
+        // 2. [트랙 2] 노벨 문학상: 한강 스페셜 (최대 10권)
+        List<BookVO> hankangBooks = bookService.findBooksByWriter("한강", 10);
+        for (BookVO book : hankangBooks) {
+            book.setImage(getNaverBookCover(extractSmartQuery(book)));
+        }
+        
+        // 3. [트랙 3] 미지의 세계: 우주 & 천체 과학 (최대 10권)
+        List<BookVO> spaceBooks = bookService.findBooksByGenre("우주", 10);
+        for (BookVO book : spaceBooks) {
+            book.setImage(getNaverBookCover(extractSmartQuery(book)));
+        }
+
+        model.addAttribute("recentBooks", recentBooks);
+        model.addAttribute("hankangBooks", hankangBooks);
+        model.addAttribute("spaceBooks", spaceBooks);
+        
         model.addAttribute("pageName", "pages/main"); 
         return "common/layout"; 
     }

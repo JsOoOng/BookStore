@@ -25,6 +25,8 @@ public class Purchase {
     private String title;           // 도서 제목
     private String image;           // 도서 이미지 (네이버 실시간 표지용)
     
+    private String email;
+    private String userName;
+    private String phone;
     private int purchaseId;  // 💥 마스터 영수증 고유 번호
-    private String userName; // 💥 주문자(대원) 이름
 }
