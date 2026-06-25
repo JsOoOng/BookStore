@@ -16,7 +16,7 @@ import com.cosmic.library.kakaologin.model.KakaoUserInfo;
 public class KakaoService {
 
     private final String clientId = "5704fcbe13d27f9fb045d4e38a2feab2";
-    private final String redirectUri = "http://localhost:8888/login/kakao";
+    private final String redirectUri = "https://trace-discount-appraisal.ngrok-free.dev/login/kakao";
 
     public String getAccessToken(String code) {
         String tokenURL = "https://kauth.kakao.com/oauth/token";
