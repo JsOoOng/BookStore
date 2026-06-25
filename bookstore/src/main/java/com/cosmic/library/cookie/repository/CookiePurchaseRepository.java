@@ -126,4 +126,17 @@ public class CookiePurchaseRepository {
             new org.springframework.jdbc.core.BeanPropertyRowMapper<>(GuestOrderVO.class), 
             purchaseId, name);
     }
+    
+ // 💥 수정된 메서드: queryForObject -> queryForList
+    public List<String> findIdByGuestInfo(String name, String phone) {
+        String sql = "SELECT p.purchase_id " +
+                     "FROM GUEST_PURCHASE p " +
+                     "JOIN GUEST_USER u ON p.guest_id = u.guest_id " +
+                     "WHERE u.guest_name = ? " +
+                     "  AND REPLACE(u.guest_phone, '-', '') = ? " +
+                     "ORDER BY p.purchase_date DESC";
+
+        // queryForList를 사용하여 여러 건을 리스트로 받습니다.
+        return jdbcTemplate.queryForList(sql, String.class, name, phone);
+    }
 }

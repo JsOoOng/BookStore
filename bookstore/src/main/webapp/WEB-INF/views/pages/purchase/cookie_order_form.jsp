@@ -25,15 +25,18 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label>이름</label>
-                        <input type="text" name="name" class="form-control" required>
+                        <input type="text" name="name" class="form-control" placeholder="예: 홍길동" required>
                     </div>
                     <div class="mb-3">
-                        <label>연락처</label>
-                        <input type="text" name="phone" class="form-control" required>
+                        <label>전화번호</label>
+						<input type="text" name="phone" class="form-control" 
+					       pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}" 
+					       title="010-0000-0000"
+					       placeholder="예: 010-0000-0000" required>
                     </div>
                     <div class="mb-3">
                         <label>배송지 주소</label>
-                        <input type="text" name="address" class="form-control" required>
+                        <input type="text" name="address" class="form-control" placeholder="예: 서울특별시 중랑구 용마산로90길 28 (면목동)" required>
                     </div>
                 </div>
             </div>

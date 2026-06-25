@@ -136,4 +136,10 @@ public class CookieService {
     public List<GuestOrderVO> trackGuestOrder(String purchaseId, String name) {
         return cookiePurchaseRepository.trackGuestOrder(purchaseId, name);
     }
+    
+    public List<String> findIdByGuestInfo(String name, String phone) {
+        return cookiePurchaseRepository.findIdByGuestInfo(name, phone);
+    }
+
+
 }

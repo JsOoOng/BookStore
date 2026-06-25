@@ -45,7 +45,7 @@
 
     <%-- 3. 상담 정보 --%>
     <div class="mt-5 p-3 border-top text-muted">
-        <p><strong>비회원 상담:</strong> 황선오 | <strong>연락처:</strong> 010-0000-0000 | <strong>E-mail:</strong> cosmic@cosmic.com</p>
+        <p><strong>비회원 상담원:</strong> 황선오 | <strong>연락처:</strong> 010-0000-0000 | <strong>E-mail:</strong> cosmic@cosmic.com</p>
     </div>
 
     <div class="mt-3">

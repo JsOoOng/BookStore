@@ -147,23 +147,22 @@ public class CookiePurchaseController {
         
         // 2. 결과 검증 (데이터가 없으면 폼으로 다시 보냄)
         if (trackList == null || trackList.isEmpty()) {
+            // JSP에서 알림을 띄우기 위해 errorMsg를 전달
             model.addAttribute("errorMsg", "일치하는 주문 정보가 없습니다. 다시 확인해 주세요.");
             model.addAttribute("pageName", "pages/purchase/guest_track");
             return "common/layout";
         }
         
-        // 3. 성공 시 데이터 담고 check 페이지로 이동
+        // 3. 성공 시 데이터 처리 및 이동
         for (GuestOrderVO order : trackList) {
             String query = order.getTitle() != null ? order.getTitle().replaceAll("\\[.*?\\]", "").split(":")[0].trim() : "";
             order.setImage(getNaverBookCover(query));
         }
         
         model.addAttribute("trackList", trackList);
-        model.addAttribute("pageName", "pages/purchase/guest_track_check"); // 💥 성공 시 여기로!
+        model.addAttribute("pageName", "pages/purchase/guest_track_check"); 
         return "common/layout";
     }
-    
-    
 
     // 📡 조회 결과 표지 전용 네이버 수집 엔진
     private String getNaverBookCover(String keyword) {
@@ -196,5 +195,30 @@ public class CookiePurchaseController {
             System.out.println("🚨 비회원 조회 네이버 통신 장애: " + e.getMessage());
         }
         return "https://placehold.co/150x220/f8fafc/a4b0be?text=No+Img";
+    }
+    
+    @GetMapping("/find")
+    public String findForm() {
+        return "pages/purchase/guest_find"; // /WEB-INF/views/pages/purchase/guest_find.jsp
+    }
+    
+    @PostMapping("/find_check")
+    public String findCheckProcess(@RequestParam("name") String name,
+                                   @RequestParam("phone") String phone,
+                                   Model model) {
+        
+        String cleanPhone = phone.replaceAll("-", "");
+        List<String> foundPurchaseIds = cookieService.findIdByGuestInfo(name, cleanPhone); // 리스트로 받음
+        
+        if (foundPurchaseIds == null || foundPurchaseIds.isEmpty()) {
+            model.addAttribute("errorMsg", "일치하는 주문 정보가 없습니다.");
+            model.addAttribute("pageName", "pages/purchase/guest_find");
+            return "common/layout";
+        }
+        
+        // 리스트 이름을 foundPurchaseIds로 통일
+        model.addAttribute("foundPurchaseIds", foundPurchaseIds);
+        model.addAttribute("pageName", "pages/purchase/guest_find_check");
+        return "common/layout";
     }
 }

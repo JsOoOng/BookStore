@@ -114,9 +114,25 @@
 						<li class="nav-item">
 						    <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/basket/list">장바구니</a>
 						</li>
-						<li class="nav-item">
-                            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/purchase/track">비회원 주문조회</a>
-    					</li>
+						<li class="nav-item dropdown">
+						    <a class="nav-link dropdown-toggle fw-bold text-dark px-3" href="#" id="guestTrackDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						        비회원 주문조회
+						    </a>
+						    
+						    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="guestTrackDropdown">
+						        <li>
+						            <a class="dropdown-item" href="${pageContext.request.contextPath}/cookie/purchase/track">
+						                비회원 주문조회
+						            </a>
+						        </li>
+						        <li><hr class="dropdown-divider"></li>
+						        <li>
+						            <a class="dropdown-item" href="${pageContext.request.contextPath}/cookie/purchase/find">
+						                비회원 주문조회 찾기
+						            </a>
+						        </li>
+						    </ul>
+						</li>
                         <li class="nav-item">
                             <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/member/login">로그인</a>
                         </li>
