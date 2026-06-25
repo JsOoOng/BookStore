@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.cookie.model.CookieOrderVO;
@@ -205,18 +206,19 @@ public class CookiePurchaseController {
     @PostMapping("/find_check")
     public String findCheckProcess(@RequestParam("name") String name,
                                    @RequestParam("phone") String phone,
-                                   Model model) {
-        
+                                   Model model,
+                                   RedirectAttributes rttr) { // RedirectAttributes 추가
+
         String cleanPhone = phone.replaceAll("-", "");
-        List<String> foundPurchaseIds = cookieService.findIdByGuestInfo(name, cleanPhone); // 리스트로 받음
+        List<String> foundPurchaseIds = cookieService.findIdByGuestInfo(name, cleanPhone);
         
+        // 1. 결과가 없을 경우: 리다이렉트를 통해 /find 페이지로 복귀
         if (foundPurchaseIds == null || foundPurchaseIds.isEmpty()) {
-            model.addAttribute("errorMsg", "일치하는 주문 정보가 없습니다.");
-            model.addAttribute("pageName", "pages/purchase/guest_find");
-            return "common/layout";
+            rttr.addFlashAttribute("errorMsg", "일치하는 주문 정보가 없습니다.");
+            return "redirect:/cookie/purchase/find"; // URL이 다시 /find로 변경됨
         }
         
-        // 리스트 이름을 foundPurchaseIds로 통일
+        // 2. 성공 시: 기존처럼 데이터 전달
         model.addAttribute("foundPurchaseIds", foundPurchaseIds);
         model.addAttribute("pageName", "pages/purchase/guest_find_check");
         return "common/layout";
