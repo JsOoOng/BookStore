@@ -2,10 +2,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<%-- 🪐 대시보드와 완벽하게 동일한 와이드 컨테이너 장착 --%>
 <div class="admin-wide-container vendor-dashboard-container mt-4 mb-5">
     
-    <%-- 🚀 상단 타이틀 라인 --%>
     <div class="vendor-dashboard-header">
         <div class="header-title-group">
             <h2 class="vendor-main-title">🛰️ Partner Dashboard</h2>
@@ -18,144 +16,88 @@
         </div>
     </div>
 
-    <%-- 📊 메인 레이아웃 --%>
     <div class="row g-4 vendor-grid-row">
-        
-        <%-- 🏢 좌측 기지 카드 --%>
         <div class="col-xl-3 col-lg-4">
             <div class="card cosmic-vendor-info-card h-100">
-                <div class="card-header info-card-header">
-                    🏢 파트너십 가입 정보
-                </div>
+                <div class="card-header info-card-header">🏢 파트너십 가입 정보</div>
                 <div class="card-body info-card-body">
-                    <div class="info-row">
-                        <small class="info-label">파트너 계정 ID</small>
-                        <span class="info-value text-white">${sessionScope.loginVendor.vendorId}</span>
-                    </div>
-                    <div class="info-row">
-                        <small class="info-label">공식 상호명</small>
-                        <span class="info-value text-warning">${sessionScope.loginVendor.bizName}</span>
-                    </div>
-                    <div class="info-row">
-                        <small class="info-label">사업자 등록 번호</small>
-                        <span class="info-value text-light">${sessionScope.loginVendor.bizNo}</span>
-                    </div>
-                    <div class="info-row">
-                        <small class="info-label">대표자 연락처</small>
-                        <span class="info-value text-light">${sessionScope.loginVendor.contact}</span>
-                    </div>
-                    <div class="info-row-last border-0 pb-0 mb-0">
-                        <small class="info-label">활동 승인 번호</small>
-                        <span class="badge-approval">No. ${sessionScope.vRegNum}</span>
-                    </div>
+                    <div class="info-row"><small class="info-label">파트너 계정 ID</small><span class="info-value text-white">${sessionScope.loginVendor.vendorId}</span></div>
+                    <div class="info-row"><small class="info-label">공식 상호명</small><span class="info-value text-warning">${sessionScope.loginVendor.bizName}</span></div>
+                    <div class="info-row"><small class="info-label">사업자 등록 번호</small><span class="info-value text-light">${sessionScope.loginVendor.bizNo}</span></div>
+                    <div class="info-row"><small class="info-label">대표자 연락처</small><span class="info-value text-light">${sessionScope.loginVendor.contact}</span></div>
+                    <div class="info-row-last border-0 pb-0 mb-0"><small class="info-label">활동 승인 번호</small><span class="badge-approval">No. ${sessionScope.loginVendor.vendorRegNum}</span></div>
                 </div>
             </div>
         </div>
 
-        <%-- 📦 우측 메인 보드 --%>
         <div class="col-xl-9 col-lg-8">
             <div class="card cosmic-vendor-main-card h-100">
-                
                 <div class="card-header main-card-header">
-                    <span class="main-card-title">🚚 입점 파트너 주문 배송 관제탑</span>
-                    <div class="main-card-actions">
-                        <a href="${pageContext.request.contextPath}/vendor/dashboard" class="btn-vendor-sub">
-                            🔙 상품 관리 대시보드
-                        </a>
-                    </div>
+                    <span class="main-card-title">🚚 입점 파트너 정규 회원 주문 관제탑</span>
                 </div>
                 
                 <div class="card-body p-0 main-card-body">
                     <div class="table-responsive vendor-table-wrap">
-                        <table class="cosmic-table vendor-order-table">
+                        <%-- 💥 [1단계] 메인 테이블 구역: 오직 <tr>과 <td>만 존재해야 한다! --%>
+                        <table class="cosmic-table vendor-order-table text-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="th-order-num">주문 번호</th>
-                                    <th class="th-book-info text-start">도서 정보</th>
-                                    <th class="th-order-qty">수량</th>
-                                    <th class="th-total-price text-end">결제 총액</th>
-                                    <th class="th-order-date">주문 일시</th>
-                                    <th class="th-order-status">현재 상태</th>
-                                    <th class="th-order-control">관제 제어</th>
+                                    <th>주문 번호</th>
+                                    <th>주문자명</th>
+                                    <th>총 결제액</th>
+                                    <th>주문 일시</th>
+                                    <th>현재 상태</th>
+                                    <th>관제 제어</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:choose>
-                                    <c:when test="${not empty orderList}">
-                                        <c:forEach var="order" items="${orderList}">
+                                    <c:when test="${not empty groupedOrders}">
+                                        <c:forEach var="entry" items="${groupedOrders}">
+                                            <c:set var="purchaseId" value="${entry.key}" />
+                                            <c:set var="details" value="${entry.value}" />
+                                            <c:set var="firstDetail" value="${details[0]}" />
+                                            
+                                            <%-- 상태 연산 --%>
+                                            <c:set var="masterTotal" value="0"/>
+                                            <c:set var="hasReady" value="false"/>
+                                            <c:set var="hasShipping" value="false"/>
+                                            
+                                            <c:forEach var="d" items="${details}">
+                                                <c:set var="masterTotal" value="${masterTotal + d.totalPrice}"/>
+                                                <c:if test="${d.status eq 'READY'}"><c:set var="hasReady" value="true"/></c:if>
+                                                <c:if test="${d.status eq 'SHIPPING'}"><c:set var="hasShipping" value="true"/></c:if>
+                                            </c:forEach>
+
                                             <tr class="vendor-order-row">
-                                                <td class="td-order-num"># ${order.id}</td>
-                                                <td class="td-book-info">
-                                                    <div class="vendor-order-book-item">
-                                                        <c:choose>
-                                                            <c:when test="${not empty order.image}">
-                                                                <%-- 📡 [하이브리드 스마트 바인더] 네이버 절대경로와 로컬경로 교차 판별 검문소 --%>
-                                                                <img src="${order.image.startsWith('http') ? order.image : pageContext.request.contextPath.concat(order.image)}" 
-                                                                     alt="${order.title}" 
-                                                                     class="vendor-book-thumb-img" 
-                                                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/50x75?text=No+Cover';">
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <div class="vendor-book-no-img">No Cover</div>
-                                                            </c:otherwise>
-                                                        </c:choose> 
-                                                        <span class="vendor-order-book-title" title="${order.title}">
-                                                            ${order.title}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td class="td-order-qty">${order.quantity} 권</td>
-                                                <td class="td-total-price text-end">
-                                                    <fmt:formatNumber value="${order.totalPrice}" pattern="#,###"/> 원
-                                                </td>
-                                                <td class="td-order-date">
-												    <div style="line-height: 1.4;">
-												        <div style="font-weight: 600; color: #2f3542;">
-												            <fmt:formatDate value="${order.purchaseDate}" pattern="yyyy-MM-dd"/>
-												        </div>
-												        <div style="font-size: 11px; color: #7f8c8d;">
-												            <fmt:formatDate value="${order.purchaseDate}" pattern="HH:mm"/>
-												        </div>
-												    </div>
-												</td>
-                                                <td class="td-order-status">
+                                                <td class="fw-bold text-primary"># ${purchaseId}</td>
+                                                <td><span class="badge bg-secondary">${firstDetail.userName}</span> 대원</td>
+                                                <td class="fw-bold text-dark"><fmt:formatNumber value="${masterTotal}" pattern="#,###"/> 원</td>
+                                                <td><fmt:formatDate value="${firstDetail.purchaseDate}" pattern="yyyy-MM-dd HH:mm"/></td>
+                                                <td>
                                                     <c:choose>
-                                                        <c:when test="${order.status eq 'READY'}">
-                                                            <span class="badge-status-vendor status-ready">🚀 배송대기</span>
+                                                        <c:when test="${hasReady}">
+                                                            <span class="badge-status-vendor status-ready">🚀 배송 대기중</span>
                                                         </c:when>
-                                                        <c:when test="${order.status eq 'SHIPPING'}">
-                                                            <span class="badge-status-vendor status-shipping">🌌 배송중</span>
+                                                        <c:when test="${hasShipping}">
+                                                            <span class="badge-status-vendor status-shipping">🌌 배송 진행중</span>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="badge-status-vendor status-etc">${order.status}</span>
+                                                            <span class="badge-status-vendor" style="background:#2ed573; color:white;">✅ 배송 완료</span>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </td>
-                                                <td class="td-order-control">
-                                                    <c:choose>
-                                                        <c:when test="${order.status eq 'READY'}">
-                                                            <button type="button" class="btn-vendor-action-ship" onclick="shipOrder('${order.id}')">
-                                                                🚚 배송하기
-                                                            </button>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <button type="button" class="btn-vendor-action-complete" disabled>
-                                                                완료됨
-                                                            </button>
-                                                        </c:otherwise>
-                                                    </c:choose>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#receiptModal-${purchaseId}">
+                                                        🧾 영수증 확인
+                                                    </button>
                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </c:when>
                                     <c:otherwise>
                                         <tr>
-                                            <td colspan="7" class="td-empty-state">
-                                                <div class="cosmic-empty-state py-5">
-                                                    <div class="empty-icon-large" style="color: #a4b0be;">📡</div>
-                                                    <h4 class="empty-title">인입된 도서 주문 내역이 존재하지 않습니다.</h4>
-                                                </div>
-                                            </td>
+                                            <td colspan="6" class="py-5 text-muted">인입된 회원 도서 주문 내역이 존재하지 않습니다.</td>
                                         </tr>
                                     </c:otherwise>
                                 </c:choose>
@@ -163,43 +105,110 @@
                         </table>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
+<%-- 💥 [2단계] 모달 창 구역: 테이블 바깥(안전 지대)으로 완전 격리! --%>
+<c:if test="${not empty groupedOrders}">
+    <c:forEach var="entry" items="${groupedOrders}">
+        <c:set var="purchaseId" value="${entry.key}" />
+        <c:set var="details" value="${entry.value}" />
+        <c:set var="firstDetail" value="${details[0]}" />
+        
+        <c:set var="masterTotal" value="0"/>
+        <c:forEach var="d" items="${details}">
+            <c:set var="masterTotal" value="${masterTotal + d.totalPrice}"/>
+        </c:forEach>
+
+        <div class="modal fade" id="receiptModal-${purchaseId}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 70%;">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title">🧾 상세 영수증 (주문번호: # ${purchaseId})</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <strong>주문자:</strong> ${firstDetail.userName} | 
+                            <strong>주문일시:</strong> <fmt:formatDate value="${firstDetail.purchaseDate}" pattern="yyyy-MM-dd HH:mm:ss"/>
+                        </div>
+                        <table class="table table-bordered text-center align-middle">
+                            <thead class="table-light" style="white-space: nowrap; word-break: keep-all;">
+                                <tr>
+                                    <th style="width: 10%; min-width: 80px;">상세번호</th>
+							        <th style="width: auto; min-width: 300px;">도서 정보</th>
+							        <th style="width: 8%; min-width: 60px;">수량</th>
+							        <th style="width: 12%; min-width: 100px;">결제액</th>
+							        <th style="width: 10%; min-width: 80px;">상태</th>
+							        <th style="width: 10%; min-width: 90px;">제어</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="order" items="${details}">
+                                    <tr>
+                                        <td># ${order.id}</td>
+                                        <td class="text-start">
+                                            <img src="${order.image}" alt="cover" style="width:40px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;" onerror="this.onerror=null; this.src='https://placehold.co/150x220/f8fafc/a4b0be?text=No+Cover';">
+                                            ${order.title}
+                                        </td>
+                                        <td>${order.quantity}</td>
+                                        <td><fmt:formatNumber value="${order.totalPrice}" pattern="#,###"/>원</td>
+                                        <td>
+                                            <c:if test="${order.status eq 'READY'}"><span class="badge bg-warning text-dark">배송대기</span></c:if>
+                                            <c:if test="${order.status eq 'SHIPPING'}"><span class="badge bg-info text-dark">배송중</span></c:if>
+                                            <c:if test="${order.status eq 'DELIVERED'}"><span class="badge bg-success">배송완료</span></c:if>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${order.status eq 'READY'}">
+                                                    <button class="btn btn-sm btn-primary" onclick="shipOrder('${order.id}')">🚚 배송하기</button>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <button class="btn btn-sm btn-secondary" disabled>완료됨</button>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                        <div class="text-end mt-2 fs-5">
+                            <strong>총 청구 금액 : <span class="text-primary"><fmt:formatNumber value="${masterTotal}" pattern="#,###"/> 원</span></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </c:forEach>
+</c:if>
+
 <script>
-function shipOrder(purchaseId) {
+function shipOrder(detailId) { 
     if (!confirm("해당 도서의 전송(배송)을 시작하시겠습니까?")) return;
     
     var formData = new URLSearchParams();
-    formData.append("purchaseId", purchaseId);
+    formData.append("purchaseId", detailId);
 
     fetch("${pageContext.request.contextPath}/vendor/purchase/ship", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData
     })
     .then(response => response.text())
     .then(data => {
         if (data.trim() === "ok") {
-            alert("🌌 전송 통로 개방! 배송 버스트가 시작되었습니다.");
+            alert("🌌 배송 출발! 영수증 상태가 업데이트되었습니다.");
             location.reload(); 
         } else {
-            alert("🚨 관제탑 승인 실패. 다시 시도해 주세요.");
+            alert("🚨 승인 실패.");
         }
     })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("🛰️ 사령부 서버와 통신이 두절되었습니다.");
-    });
+    .catch(error => console.error("Error:", error));
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 🔥 [하얀 박스 가두리 격파 치트키] 페이지 로드 시 상위 부모 레이아웃의 max-width 강제 해제 및 확장
     var wideContainer = document.querySelector('.admin-wide-container');
     if (wideContainer) {
         var parent = wideContainer.parentElement;
@@ -207,10 +216,9 @@ document.addEventListener("DOMContentLoaded", function() {
             parent.style.maxWidth = '100%';
             parent.style.width = '100%';
             if(parent.classList.contains('form-container') || parent.className.includes('container')) {
-                // 💥 [격파 포인트] 기존 1400px ➔ 1650px 로 대폭 확장! (모니터에 꽉 차게 하려면 '95%' 로 입력해도 된다)
                 parent.style.maxWidth = '1650px'; 
                 parent.style.margin = '0 auto';
-                parent.style.padding = '0 20px'; /* 너무 벽에 붙지 않도록 양옆 안전 여백 추가 */
+                parent.style.padding = '0 20px'; 
             }
             parent = parent.parentElement;
         }

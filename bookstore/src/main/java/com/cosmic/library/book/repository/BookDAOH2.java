@@ -126,12 +126,11 @@ public class BookDAOH2 implements BookDAO {
 
     @Override
     public BookVO selectBookBySaleId(int saleId) {
-        // 💡 [수리 완료] PRODUCT_SALE -> STOCK_IN -> BOOK 순서로 
-        // 정확한 외래키(FK) 다리를 건너도록 JOIN 쿼리 정밀 수리!
-        String sql = "SELECT b.*, p.PRICE " +
-                     "FROM PRODUCT_SALE p " +
-                     "JOIN STOCK_IN s ON p.STOCK_ID = s.stock_id " +
-                     "JOIN BOOK b ON s.book_id = b.id " +
+        // 💡 JOIN 경로를 올바르게 수정
+        String sql = "SELECT b.id, b.title, b.writer, b.image, b.publisher, b.genre, b.isbn, p.PRICE " +
+                     "FROM BOOK b " +
+                     "JOIN STOCK_IN si ON b.id = si.book_id " +      // 1. 책을 입고 내역과 연결
+                     "JOIN PRODUCT_SALE p ON si.stock_id = p.STOCK_ID " + // 2. 입고 내역을 판매 상품과 연결
                      "WHERE p.SALE_ID = ?"; 
         
         try {
@@ -141,15 +140,18 @@ public class BookDAOH2 implements BookDAO {
                 book.setTitle(rs.getString("title"));
                 book.setWriter(rs.getString("writer"));
                 book.setImage(rs.getString("image"));
-                
+                book.setPublisher(rs.getString("publisher"));
+                book.setGenre(rs.getString("genre"));
                 book.setIsbn(rs.getString("isbn"));
-                
-                book.setPrice(rs.getInt("PRICE")); // PRODUCT_SALE 테이블의 가격
+                book.setPrice(rs.getInt("PRICE"));
                 book.setSaleId(saleId);
                 return book;
             }, saleId);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            System.out.println("⚠️ 해당 saleId에 맞는 도서가 없습니다: " + saleId);
+            return null;
         } catch (Exception e) {
-            System.out.println("❌ 데이터 조회 실패: " + e.getMessage());
+            System.out.println("❌ 데이터 조회 중 오류 발생: " + e.getMessage());
             return null;
         }
     }

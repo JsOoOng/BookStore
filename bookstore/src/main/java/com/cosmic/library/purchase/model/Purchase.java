@@ -28,4 +28,5 @@ public class Purchase {
     private String email;
     private String userName;
     private String phone;
+    private int purchaseId;  // 💥 마스터 영수증 고유 번호
 }

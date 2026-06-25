@@ -11,7 +11,7 @@
         <p class="cosmic-subtitle-text">🚀 ${loginMember.name} 대원의 장바구니 보관소입니다.</p>
     </div>
 
-    <%-- ⚙️ 상단 제어 바 (전체선택 및 일괄 조치) --%>
+    <%-- ⚙️ 상단 제어 바 --%>
     <div class="cosmic-basket-top-bar">
         <div class="cosmic-check-group">
             <input type="checkbox" id="selectAll" class="cosmic-checkbox">
@@ -19,9 +19,7 @@
         </div>
         
         <div class="cosmic-basket-btn-group">
-            <button type="submit" form="deleteForm" class="btn-cancel-cosmic btn-sm">선택 삭제</button>
-            <button type="button" class="btn-confirm-cosmic btn-sm" id="buyBtn">🛒 선택 구매</button>
-            <a href="${pageContext.request.contextPath}/" class="btn-cancel-cosmic btn-sm">🪐 홈</a>
+            <button type="button" class="btn-cancel-cosmic btn-sm" onclick="confirmDelete()">선택 삭제</button>
         </div>
     </div>
 
@@ -32,9 +30,9 @@
                 <c:when test="${not empty basketList}">
                     <c:forEach var="vo" items="${basketList}">
                         <div class="cosmic-basket-card book-item">
-                            
                             <div class="basket-checkbox-wrap">
-                                <input type="checkbox" name="ids" value="${vo.basketId}" class="selectItem cosmic-checkbox">
+                                <%-- 모든 항목 기본 체크 --%>
+                                <input type="checkbox" name="ids" value="${vo.basketId}" class="selectItem cosmic-checkbox" checked>
                             </div>
 
                             <img src="${vo.image}" class="basket-item-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/100x150?text=No+Img';">
@@ -49,7 +47,7 @@
                                         <input type="number" value="${vo.quantity}" min="1" class="quantity cosmic-qty-input" data-price="${vo.price}">
                                     </div>
                                     <div class="book-price totalPrice">
-                                        💫 <fmt:formatNumber value="${vo.quantity * vo.price}" pattern="#,###"/> 원
+                                        💫 0 원
                                     </div>
                                 </div>
 
@@ -76,7 +74,6 @@
             <span class="total-label">💳 총 결제 예정 금액:</span>
             <span class="total-amount"><span id="totalPrice">0</span> 원</span>
             
-            <%-- 💥 새로 추가된 결제 마스터 버튼 (상단 '선택 구매'와 동일한 로직 호출) --%>
             <button type="button" class="btn-checkout-cosmic" onclick="checkAddressBeforeOrder('multiple', null)">
                 결제하기 ➔
             </button>
@@ -84,7 +81,7 @@
     </form>
 </div>
 
-<%-- 🌌 물류 보급지 배송 주소 설정 모달 (검푸른 라이트 테마 재사용) --%>
+<%-- 🌌 물류 보급지 배송 주소 설정 모달 --%>
 <div class="modal fade" id="addressModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content cosmic-admin-modal">
@@ -110,119 +107,101 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+    // 🗑 [삭제 엔진] 선택 삭제 확인
+    function confirmDelete() {
+        let selected = [];
+        document.querySelectorAll(".selectItem:checked").forEach(cb => { selected.push(cb.value); });
+        if (selected.length === 0) { alert("삭제할 항목을 선택해 주세요."); return; }
+        if (confirm("선택하신 " + selected.length + "개의 항목을 삭제하시겠습니까?")) {
+            document.getElementById("deleteForm").submit();
+        }
+    }
+
+    // 🗑 [단일 삭제]
+    function deleteOne(basketId) {
+        if (confirm("해당 도서를 장바구니에서 삭제하시겠습니까?")) {
+            const form = document.getElementById("deleteForm");
+            const input = document.createElement("input");
+            input.type = "hidden"; input.name = "basketId"; input.value = basketId;
+            form.appendChild(input);
+            form.submit();
+        }
+    }
+
+    // ⚙️ [체크박스 제어]
     const selectAll = document.getElementById("selectAll");
-    const itemCheckboxes = document.querySelectorAll(".selectItem");
     
     selectAll.addEventListener("change", function() {
-        itemCheckboxes.forEach(cb => {
-            cb.checked = selectAll.checked;
-        });
+        document.querySelectorAll(".selectItem").forEach(cb => { cb.checked = selectAll.checked; });
         updateTotal();
     });
     
-    itemCheckboxes.forEach(check => {
-        check.addEventListener("change", function() {
-            const checkedCount = document.querySelectorAll(".selectItem:checked").length;
-            const totalCount = itemCheckboxes.length;
-            selectAll.checked = (checkedCount === totalCount);
+    function updateSelectAllCheckbox() {
+        const items = document.querySelectorAll(".selectItem");
+        const checkedItems = document.querySelectorAll(".selectItem:checked");
+        selectAll.checked = (items.length > 0 && items.length === checkedItems.length);
+    }
+
+    document.querySelectorAll(".selectItem").forEach(cb => {
+        cb.addEventListener("change", function() {
             updateTotal();
+            updateSelectAllCheckbox();
         });
     });
-    
+
+    // 💰 [금액 계산 엔진]
     function updateTotal() {
         let total = 0;
         document.querySelectorAll(".book-item").forEach(item => {
             const checkbox = item.querySelector(".selectItem");
             const quantity = item.querySelector(".quantity");
             const price = parseInt(quantity.dataset.price);
-    
             if (checkbox.checked) {
                 total += price * quantity.value;
+                item.querySelector(".totalPrice").innerText = "💫 " + (price * quantity.value).toLocaleString() + " 원";
+            } else {
+                item.querySelector(".totalPrice").innerText = "💫 0 원";
             }
-            const priceBox = item.querySelector(".totalPrice");
-            priceBox.innerText = "💫 " + (price * quantity.value).toLocaleString() + " 원";
         });
         document.getElementById("totalPrice").innerText = total.toLocaleString();
     }
-    
+
+    // 🔢 [수량 변경]
     document.querySelectorAll(".quantity").forEach(input => {
         input.addEventListener("change", function() {
-            const quantityInput = this;
-            const qty = parseInt(quantityInput.value);
-            
-            if (qty < 1 || isNaN(qty)) {
-                quantityInput.value = 1;
-                updateTotal();
-                return;
-            }
-            
-            const bookItem = quantityInput.closest(".book-item");
-            const basketId = bookItem.querySelector(".selectItem").value;
-            
-            var formData = new URLSearchParams();
-            formData.append("basketId", basketId);
-            formData.append("qty", qty);
+            const qty = parseInt(this.value);
+            if (qty < 1 || isNaN(qty)) { this.value = 1; updateTotal(); return; }
+            const basketId = this.closest(".book-item").querySelector(".selectItem").value;
+            let formData = new URLSearchParams();
+            formData.append("basketId", basketId); formData.append("qty", qty);
             
             fetch("${pageContext.request.contextPath}/basket/updateQty", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                if (data.trim() === "ok") {
-                    updateTotal();
-                } else if (data.trim() === "NOT_LOGIN") {
-                    alert("🔒 세션이 만료되었습니다. 로그인 페이지로 워프합니다.");
-                    location.href = "${pageContext.request.contextPath}/member/login";
-                } else {
-                    alert("🚨 수량 동기화 실패. 다시 시도해 주세요.");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("🛰️ 사령부 서버와 통신이 두절되었습니다.");
+            }).then(res => res.text()).then(data => {
+                if (data.trim() === "ok") updateTotal();
             });
         });
     });
-    
-    document.querySelectorAll(".selectItem").forEach(check => {
-        check.addEventListener("change", updateTotal);
-    });
-    
- // -------------------------------------------------------------
-    // 🪐 [암전 현상 완벽 박멸] 순수 제이쿼리 기반 주소 검문소 엔진
-    // -------------------------------------------------------------
-    let orderMode = ""; 
-    let currentBasketIds = "";
+
+    // 🚀 [주소 및 구매 로직]
+    let orderMode = "", currentBasketIds = "";
 
     function checkAddressBeforeOrder(mode, singleId) {
         orderMode = mode;
-
         if (orderMode === 'single') {
             currentBasketIds = singleId;
         } else {
             let selected = [];
-            document.querySelectorAll(".selectItem:checked").forEach(cb => {
-                selected.push(cb.value);
-            });
-
-            if (selected.length === 0) {
-                alert("구매할 항목을 선택하세요!");
-                return;
-            }
+            document.querySelectorAll(".selectItem:checked").forEach(cb => { selected.push(cb.value); });
+            if (selected.length === 0) { alert("구매할 항목을 선택하세요!"); return; }
             currentBasketIds = selected.join(",");
         }
 
         const currentAddress = "${loginMember.address}";
-
-        // 주소가 없거나 은하계 미지정 구역일 때
         if (!currentAddress || currentAddress.trim() === "" || currentAddress === "은하계 미지정 구역") {
-            // 🚨 라이브러리 충돌을 우회하여 CSS 강제 제어로 모달을 우아하게 개방!
-            $('#addressModal').addClass('show').css({
-                'display': 'block',
-                'background': 'rgba(11, 19, 43, 0.5)' // 부트스트랩 백드롭 대신 코스믹 다크 배경 투사
-            });
+            $('#addressModal').addClass('show').css({'display': 'block', 'background': 'rgba(11, 19, 43, 0.5)'});
             $('body').addClass('modal-open');
         } else {
             proceedToPurchase();
@@ -231,71 +210,31 @@
 
     function submitAddressAjax() {
         const inputAddress = document.getElementById('modalAddressInput').value.trim();
-
-        if (inputAddress === "" || inputAddress === "은하계 미지정 구역") {
-            alert("보급품을 정상 전달받을 유효한 주소를 입력해 주세요!");
-            document.getElementById('modalAddressInput').focus();
-            return;
-        }
-
-        var formData = new URLSearchParams();
+        if (inputAddress === "") { alert("주소를 입력해 주세요!"); return; }
+        let formData = new URLSearchParams();
         formData.append("address", inputAddress);
 
         fetch("${pageContext.request.contextPath}/member/updateAddressAjax", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formData
-        })
-        .then(res => res.text())
-        .then(data => {
-            if (data.trim() === "OK") {
-                alert("🏠 배송지 주소가 은하 네트워크에 성공적으로 등록되었습니다!\n결제서 작성실로 도약합니다.");
-                
-                // 💥 모달을 완벽히 끄고 클렌징
-                closeCosmicModal();
-                proceedToPurchase();
-            } else if (data.trim() === "NOT_LOGIN") {
-                alert("🔒 인증 세션이 만료되었습니다. 다시 로그인해 주세요.");
-                location.href = "${pageContext.request.contextPath}/member/login";
-            } else {
-                alert("🚨 시스템 통신 장애로 주소 등록에 실패했습니다.");
-            }
-        })
-        .catch(err => alert("🛰️ 사령부 메인 서버 인프라 통신 두절"));
+        }).then(res => res.text()).then(data => {
+            if (data.trim() === "OK") { closeCosmicModal(); proceedToPurchase(); }
+        });
     }
 
-    // 🪐 모달 강제 폐쇄 및 바디 락 해제 함수
     function closeCosmicModal() {
         $('#addressModal').removeClass('show').css('display', 'none');
-        $('.modal-backdrop').remove(); // 혹시라도 생겼을 부트스트랩 백드롭 파괴
+        $('.modal-backdrop').remove();
         $('body').removeClass('modal-open');
     }
 
     function proceedToPurchase() {
-        // 결제창 워프 전 완벽 소독
-        closeCosmicModal();
-        
-        // 궤도 진입 실행
         location.href = "${pageContext.request.contextPath}/basket/buy?basketIds=" + currentBasketIds;
     }
 
-    // [🛒 선택 구매] 마스터 버튼 이벤트 리스너 리다이렉션
-    document.getElementById("buyBtn").addEventListener("click", function () {
-        checkAddressBeforeOrder('multiple', null);
-    });
-
-    // 🪐 모달창 우측 상단 X 버튼이나 [정선 회항] 버튼을 눌렀을 때 닫히도록 바인딩
     $(document).ready(function() {
-        $('[data-bs-dismiss="modal"]').on('click', function() {
-            closeCosmicModal();
-        });
-        
-        // 정선 회항 버튼에도 명시적 바인딩 (on click으로 문법 교정)
-        $('.modal-footer .btn-cancel-cosmic').on('click', function() {
-            closeCosmicModal();
-        });
+        updateTotal();
+        updateSelectAllCheckbox();
     });
-    
-    // 최초 합산 기동
-    updateTotal();
 </script>

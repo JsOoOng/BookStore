@@ -15,8 +15,8 @@
                     <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/book/list">도서목록</a>
                 </li>
                 <li class="nav-item">
-                    <%-- 💥 상단 바의 링크를 누르거나 우측 하단 챗 버튼을 누르거나 동일하게 작동하도록 일원화 가능 --%>
-                    <a class="nav-link fw-bold text-dark" href="javascript:void(0);" onclick="toggleCosmicPanel()">
+                    <%-- 💥 [수리 완료] 파괴된 qna/chat 경로 대신 우측 오버레이 패널을 호출하도록 자바스크립트 락온! --%>
+                    <a class="nav-link fw-bold text-dark" href="#" onclick="toggleCosmicPanel(); return false;">
                         실시간 상담 <span id="chatAlarmBadge" class="badge bg-danger ms-1" style="display:none; font-size: 0.65rem;">New</span>
                     </a>
                 </li>
@@ -42,6 +42,7 @@
                 </c:if>
             </ul>
 
+            <%-- 🎯 검색창 래퍼: 부트스트랩 form-control 방해 차단 --%>
             <div class="search-naver-wrapper mx-auto">
                 <form action="${pageContext.request.contextPath}/book/find" method="get" class="search-frame-naver">
                     <input type="text" name="title" class="input-naver shadow-none" placeholder="지식 탐험..." autocomplete="off" aria-label="Search">
@@ -73,7 +74,7 @@
             
                     <c:when test="${not empty sessionScope.loginMember}">
                         <li class="nav-item me-2">
-                            <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/basket">🛒 장바구니</a>
+                            <a class="nav-link fw-bold text-dark" href="${pageContext.request.contextPath}/basket">장바구니</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -104,15 +105,28 @@
                     </c:when>
             
                     <c:otherwise>
+                        <%-- 💥 [수리 완료] 불필요한 내부 로그인 검증(데드코드) 제거 및 비회원 쿠키 장바구니로 다이렉트 연결 --%>
 						<li class="nav-item">
-						    <c:choose>
-						        <c:when test="${not empty sessionScope.loginMember}">
-						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/basket">장바구니</a>
-						        </c:when>
-						        <c:otherwise>
-						            <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/basket/list">장바구니</a>
-						        </c:otherwise>
-						    </c:choose>
+						    <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/cookie/basket/list">장바구니</a>
+						</li>
+						<li class="nav-item dropdown">
+						    <a class="nav-link dropdown-toggle fw-bold text-dark px-3" href="#" id="guestTrackDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						        비회원 주문조회
+						    </a>
+						    
+						    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="guestTrackDropdown">
+						        <li>
+						            <a class="dropdown-item" href="${pageContext.request.contextPath}/cookie/purchase/track">
+						                비회원 주문조회
+						            </a>
+						        </li>
+						        <li><hr class="dropdown-divider"></li>
+						        <li>
+						            <a class="dropdown-item" href="${pageContext.request.contextPath}/cookie/purchase/find">
+						                비회원 주문조회 찾기
+						            </a>
+						        </li>
+						    </ul>
 						</li>
                         <li class="nav-item">
                             <a class="nav-link fw-bold text-dark px-3" href="${pageContext.request.contextPath}/member/login">로그인</a>
@@ -132,6 +146,45 @@
     </div>
 </nav>
 
+<%-- 💥 드롭다운 작동을 위한 부트스트랩 JS 엔진 강제 주입 --%>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<%-- 웹소켓 스크립트 무결성 유지 --%>
+<script>
+    var globalWs; var loginId = ""; var role = "GUEST";
+    <c:choose>
+        <c:when test="${not empty sessionScope.loginAdmin}">loginId = "${sessionScope.loginAdmin.adminId}"; role = "${sessionScope.loginAdmin.role}";</c:when>
+        <c:when test="${not empty sessionScope.loginMember}">loginId = "${sessionScope.loginMember.id}"; role = "MEMBER";</c:when>
+        <c:when test="${not empty sessionScope.loginVendor}">loginId = "${sessionScope.loginVendor.vendorId}"; role = "VENDOR";</c:when>
+    </c:choose>
+    
+    document.addEventListener("DOMContentLoaded", function() { if (loginId !== "") { connectGlobalWs(); } });
+    
+    function connectGlobalWs() {
+        var path = window.location.host + "${pageContext.request.contextPath}";
+        globalWs = new WebSocket("ws://" + path + "/chat-ws");
+        globalWs.onopen = function() {
+            var enterType = "ENTER_GLOBAL";
+            var initMsg = { senderId: loginId, senderRole: role, message: enterType, receiverId: "SERVER" };
+            globalWs.send(JSON.stringify(initMsg));
+        };
+        globalWs.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            if (typeof window.receiveMessageFromGlobal === "function") { window.receiveMessageFromGlobal(data); } 
+            else { 
+                // 통신 패널이 닫혀있을 때 알림 배지 켜기
+                if (data.senderId !== "SERVER" && data.senderId !== loginId && data.message.indexOf("ENTER_") === -1) { 
+                    var badge = document.getElementById("chatAlarmBadge"); 
+                    if (badge) badge.style.display = "inline-block"; 
+                } 
+            }
+        };
+    }
+</script>
+
+<%-- ==========================================================================
+     🚀 [드롭다운 강제 개방 엔진] 부트스트랩 충돌을 무시하고 해치를 엽니다.
+     ========================================================================== --%>
 <style>
     .dropdown-menu.cosmic-force-show { display: block !important; animation: cosmicDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes cosmicDrop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
