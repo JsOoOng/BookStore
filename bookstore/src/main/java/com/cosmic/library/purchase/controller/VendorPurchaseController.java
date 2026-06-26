@@ -72,16 +72,22 @@ public class VendorPurchaseController {
         VendorVO loginVendor = (VendorVO) session.getAttribute("loginVendor");
         if (loginVendor == null) return "redirect:/vendor/login";
 
-        List<GuestOrderVO> guestOrderList = cookieService.getVendorGuestOrders(loginVendor.getVendorRegNum());
+        List<GuestOrderVO> rawCookieList = cookieService.getVendorGuestOrders(loginVendor.getVendorRegNum());
         
-        if (guestOrderList != null) {
-            for (GuestOrderVO order : guestOrderList) {
+        // 💥 [데이터 융합 엔진] 마스터 주문 번호(String 타입)를 기준으로 비회원 품목들을 묶는다!
+        java.util.Map<String, java.util.List<GuestOrderVO>> groupedOrders = new java.util.LinkedHashMap<>();
+        
+        if (rawCookieList != null) {
+            for (GuestOrderVO order : rawCookieList) {
                 String query = order.getTitle() != null ? order.getTitle().replaceAll("\\[.*?\\]", "").split(":")[0].trim() : "";
                 order.setImage(getNaverBookCover(query));
+                
+                // DB 스키마상 비회원 마스터 주문번호(purchase_id)는 문자열이므로 이를 Key로 사용!
+                groupedOrders.computeIfAbsent(order.getPurchaseId(), k -> new java.util.ArrayList<>()).add(order);
             }
         }
         
-        model.addAttribute("orderList", guestOrderList);
+        model.addAttribute("groupedOrders", groupedOrders);
         model.addAttribute("pageName", "pages/vendor/cookie_orderList"); 
         return "common/layout"; 
     }

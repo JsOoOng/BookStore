@@ -273,184 +273,179 @@ public class ProductSaleDAOH2 implements ProductSaleDAO {
 	 // admin / vendor 공용
 	 // =========================================================================
 	
-	 @Override
-	 public SalesSummaryVO selectSalesSummary(String startDate, String endDate, Integer vRegNum) {
-	
-	     StringBuilder sql = new StringBuilder();
-	
-	     sql.append("SELECT ");
-	     sql.append("COALESCE(SUM(pd.quantity * pd.unit_price), 0) AS total_revenue, ");
-	     sql.append("COUNT(DISTINCT pd.purchase_id) AS order_count, ");
-	     sql.append("COALESCE(SUM(pd.quantity), 0) AS total_book_qty, ");
-	     sql.append("COUNT(DISTINCT pd.v_reg_num) AS vendor_count, ");
-	     sql.append("COUNT(DISTINCT pd.sale_id) AS product_type_count ");
-	     sql.append("FROM PURCHASE_DETAIL pd ");
-	     sql.append("JOIN purchase p ON pd.purchase_id = p.purchase_id ");
-	     sql.append("WHERE p.purchase_date >= CAST(? AS TIMESTAMP) ");
-	     sql.append("AND p.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) ");
-	
-	     List<Object> params = new ArrayList<>();
-	     params.add(startDate);
-	     params.add(endDate);
-	
-	     if (vRegNum != null && vRegNum > 0) {
-	         sql.append("AND pd.v_reg_num = ? ");
-	         params.add(vRegNum);
-	     }
-	
-	     return jdbcTemplate.queryForObject(sql.toString(), (rs, rowNum) -> {
-	         SalesSummaryVO vo = new SalesSummaryVO();
-	
-	         long totalRevenue = rs.getLong("total_revenue");
-	         int orderCount = rs.getInt("order_count");
-	
-	         vo.setTotalRevenue(totalRevenue);
-	         vo.setOrderCount(orderCount);
-	         vo.setTotalBookQty(rs.getInt("total_book_qty"));
-	         vo.setVendorCount(rs.getInt("vendor_count"));
-	         vo.setProductTypeCount(rs.getInt("product_type_count"));
-	
-	         if (orderCount > 0) {
-	             vo.setAvgOrderPrice(totalRevenue / orderCount);
-	         } else {
-	             vo.setAvgOrderPrice(0);
-	         }
-	
-	         return vo;
-	     }, params.toArray());
-	 }
-	
-	
-	 @Override
-	 public List<SalesTrendVO> selectSalesTrend(String period, String startDate, String endDate, Integer vRegNum) {
-	
-	     String dateColumn = "p.purchase_date";
-	     String keyExpr;
-	     String labelExpr;
-	
-	     switch (period) {
-	     case "week":
-	         // 예: 2026년 8월 1주차
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-W')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월 W주차')";
-	         break;
+    @Override
+    public SalesSummaryVO selectSalesSummary(String startDate, String endDate, Integer vRegNum) {
 
-	     case "month":
-	         // 예: 2026년 8월
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월')";
-	         break;
+        StringBuilder sql = new StringBuilder();
 
-	     case "year":
-	         // 예: 2026년
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년')";
-	         break;
+        sql.append("SELECT ");
+        sql.append("COALESCE(SUM(s.quantity * s.unit_price), 0) AS total_revenue, ");
+        sql.append("COUNT(DISTINCT s.purchase_key) AS order_count, ");
+        sql.append("COALESCE(SUM(s.quantity), 0) AS total_book_qty, ");
+        sql.append("COUNT(DISTINCT s.v_reg_num) AS vendor_count, ");
+        sql.append("COUNT(DISTINCT s.sale_id) AS product_type_count ");
+        sql.append("FROM ").append(getSalesBaseSql());
+        sql.append("WHERE s.purchase_date >= CAST(? AS TIMESTAMP) ");
+        sql.append("AND s.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) ");
 
-	     case "day":
-	     default:
-	         // 예: 8월 10일
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'M월 d일')";
-	         break;
-	 }
-	
-	     StringBuilder sql = new StringBuilder();
-	
-	     sql.append("SELECT ");
-	     sql.append(keyExpr).append(" AS sort_key, ");
-	     sql.append(labelExpr).append(" AS label, ");
-	     sql.append("COALESCE(SUM(pd.quantity * pd.unit_price), 0) AS total_revenue, ");
-	     sql.append("COUNT(DISTINCT pd.purchase_id) AS order_count, ");
-	     sql.append("COALESCE(SUM(pd.quantity), 0) AS total_book_qty, ");
-	     sql.append("COUNT(DISTINCT pd.v_reg_num) AS vendor_count ");
-	     sql.append("FROM PURCHASE_DETAIL pd ");
-	     sql.append("JOIN purchase p ON pd.purchase_id = p.purchase_id ");
-	     sql.append("WHERE p.purchase_date >= CAST(? AS TIMESTAMP) ");
-	     sql.append("AND p.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) ");
-	
-	     List<Object> params = new ArrayList<>();
-	     params.add(startDate);
-	     params.add(endDate);
-	
-	     if (vRegNum != null && vRegNum > 0) {
-	         sql.append("AND pd.v_reg_num = ? ");
-	         params.add(vRegNum);
-	     }
-	
-	     sql.append("GROUP BY ").append(keyExpr).append(", ").append(labelExpr).append(" ");
-	     sql.append("ORDER BY sort_key");
-	
-	     return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
-	         SalesTrendVO vo = new SalesTrendVO();
-	
-	         vo.setLabel(rs.getString("label"));
-	         vo.setTotalRevenue(rs.getLong("total_revenue"));
-	         vo.setOrderCount(rs.getInt("order_count"));
-	         vo.setTotalBookQty(rs.getInt("total_book_qty"));
-	         vo.setVendorCount(rs.getInt("vendor_count"));
-	
-	         return vo;
-	     }, params.toArray());
-	 }
+        List<Object> params = new ArrayList<>();
+        params.add(startDate);
+        params.add(endDate);
+
+        if (vRegNum != null && vRegNum > 0) {
+            sql.append("AND s.v_reg_num = ? ");
+            params.add(vRegNum);
+        }
+
+        return jdbcTemplate.queryForObject(sql.toString(), (rs, rowNum) -> {
+            SalesSummaryVO vo = new SalesSummaryVO();
+
+            long totalRevenue = rs.getLong("total_revenue");
+            int orderCount = rs.getInt("order_count");
+
+            vo.setTotalRevenue(totalRevenue);
+            vo.setOrderCount(orderCount);
+            vo.setTotalBookQty(rs.getInt("total_book_qty"));
+            vo.setVendorCount(rs.getInt("vendor_count"));
+            vo.setProductTypeCount(rs.getInt("product_type_count"));
+
+            if (orderCount > 0) {
+                vo.setAvgOrderPrice(totalRevenue / orderCount);
+            } else {
+                vo.setAvgOrderPrice(0);
+            }
+
+            return vo;
+        }, params.toArray());
+    }
 	
 	
-	 @Override
-	 public List<SoldProductVO> selectSoldProducts(String startDate, String endDate, Integer vRegNum) {
+    @Override
+    public List<SalesTrendVO> selectSalesTrend(String period, String startDate, String endDate, Integer vRegNum) {
 
-	     StringBuilder sql = new StringBuilder();
+        String dateColumn = "s.purchase_date";
+        String keyExpr;
+        String labelExpr;
 
-	     sql.append("SELECT ");
-	     sql.append("FORMATDATETIME(p.purchase_date, 'yyyy-MM-dd') AS sale_date, ");
-	     sql.append("ps.sale_id AS sale_id, ");
-	     sql.append("si.book_id AS book_id, ");
-	     sql.append("b.title AS book_title, ");
-	     sql.append("pd.v_reg_num AS v_reg_num, ");
-	     sql.append("v.biz_name AS vendor_name, ");
-	     sql.append("COALESCE(SUM(pd.quantity), 0) AS total_qty, ");
-	     sql.append("COALESCE(SUM(pd.quantity * pd.unit_price), 0) AS total_revenue, ");
-	     sql.append("COUNT(DISTINCT pd.purchase_id) AS order_count ");
-	     sql.append("FROM PURCHASE_DETAIL pd ");
-	     sql.append("JOIN purchase p ON pd.purchase_id = p.purchase_id ");
-	     sql.append("JOIN PRODUCT_SALE ps ON pd.sale_id = ps.sale_id ");
-	     sql.append("JOIN STOCK_IN si ON ps.stock_id = si.stock_id ");
-	     sql.append("JOIN BOOK b ON si.book_id = b.id ");
-	     sql.append("JOIN VENDOR_REGISTRATION vr ON pd.v_reg_num = vr.vendor_reg_num ");
-	     sql.append("JOIN VENDOR v ON vr.vendor_id = v.vendor_id ");
-	     sql.append("WHERE p.purchase_date >= CAST(? AS TIMESTAMP) ");
-	     sql.append("AND p.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) ");
+        switch (period) {
+            case "week":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-W')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월 W주차')";
+                break;
 
-	     List<Object> params = new ArrayList<>();
-	     params.add(startDate);
-	     params.add(endDate);
+            case "month":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월')";
+                break;
 
-	     if (vRegNum != null && vRegNum > 0) {
-	         sql.append("AND pd.v_reg_num = ? ");
-	         params.add(vRegNum);
-	     }
+            case "year":
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년')";
+                break;
 
-	     sql.append("GROUP BY ");
-	     sql.append("FORMATDATETIME(p.purchase_date, 'yyyy-MM-dd'), ");
-	     sql.append("ps.sale_id, si.book_id, b.title, pd.v_reg_num, v.biz_name ");
+            case "day":
+            default:
+                keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+                labelExpr = "FORMATDATETIME(" + dateColumn + ", 'M월 d일')";
+                break;
+        }
 
-	     sql.append("ORDER BY sale_date DESC, total_revenue DESC");
+        StringBuilder sql = new StringBuilder();
 
-	     return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
-	         SoldProductVO vo = new SoldProductVO();
+        sql.append("SELECT ");
+        sql.append(keyExpr).append(" AS sort_key, ");
+        sql.append(labelExpr).append(" AS label, ");
+        sql.append("COALESCE(SUM(s.quantity * s.unit_price), 0) AS total_revenue, ");
+        sql.append("COUNT(DISTINCT s.purchase_key) AS order_count, ");
+        sql.append("COALESCE(SUM(s.quantity), 0) AS total_book_qty, ");
+        sql.append("COUNT(DISTINCT s.v_reg_num) AS vendor_count, ");
+        sql.append("COUNT(DISTINCT s.sale_id) AS product_type_count ");
+        sql.append("FROM ").append(getSalesBaseSql());
+        sql.append("WHERE s.purchase_date >= CAST(? AS TIMESTAMP) ");
+        sql.append("AND s.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) ");
 
-	         vo.setSaleDate(rs.getString("sale_date"));
-	         vo.setSaleId(rs.getInt("sale_id"));
-	         vo.setBookId(rs.getInt("book_id"));
-	         vo.setBookTitle(rs.getString("book_title"));
-	         vo.setVRegNum(rs.getInt("v_reg_num"));
-	         vo.setVendorName(rs.getString("vendor_name"));
-	         vo.setTotalQty(rs.getInt("total_qty"));
-	         vo.setTotalRevenue(rs.getLong("total_revenue"));
-	         vo.setOrderCount(rs.getInt("order_count"));
+        List<Object> params = new ArrayList<>();
+        params.add(startDate);
+        params.add(endDate);
 
-	         return vo;
-	     }, params.toArray());
-	 }
+        if (vRegNum != null && vRegNum > 0) {
+            sql.append("AND s.v_reg_num = ? ");
+            params.add(vRegNum);
+        }
+
+        sql.append("GROUP BY ").append(keyExpr).append(", ").append(labelExpr).append(" ");
+        sql.append("ORDER BY sort_key ");
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            SalesTrendVO vo = new SalesTrendVO();
+
+            vo.setLabel(rs.getString("label"));
+            vo.setTotalRevenue(rs.getLong("total_revenue"));
+            vo.setOrderCount(rs.getInt("order_count"));
+            vo.setTotalBookQty(rs.getInt("total_book_qty"));
+            vo.setVendorCount(rs.getInt("vendor_count"));
+            vo.setProductTypeCount(rs.getInt("product_type_count"));
+
+            return vo;
+        }, params.toArray());
+    }
+	
+	
+    @Override
+    public List<SoldProductVO> selectSoldProducts(String startDate, String endDate, Integer vRegNum) {
+
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT ");
+        sql.append("FORMATDATETIME(s.purchase_date, 'yyyy-MM-dd') AS sale_date, ");
+        sql.append("ps.sale_id AS sale_id, ");
+        sql.append("si.book_id AS book_id, ");
+        sql.append("b.title AS book_title, ");
+        sql.append("s.v_reg_num AS v_reg_num, ");
+        sql.append("v.biz_name AS vendor_name, ");
+        sql.append("COALESCE(SUM(s.quantity), 0) AS total_qty, ");
+        sql.append("COALESCE(SUM(s.quantity * s.unit_price), 0) AS total_revenue, ");
+        sql.append("COUNT(DISTINCT s.purchase_key) AS order_count ");
+        sql.append("FROM ").append(getSalesBaseSql());
+        sql.append("JOIN PRODUCT_SALE ps ON s.sale_id = ps.sale_id ");
+        sql.append("JOIN STOCK_IN si ON ps.stock_id = si.stock_id ");
+        sql.append("JOIN BOOK b ON si.book_id = b.id ");
+        sql.append("JOIN VENDOR_REGISTRATION vr ON s.v_reg_num = vr.vendor_reg_num ");
+        sql.append("JOIN VENDOR v ON vr.vendor_id = v.vendor_id ");
+        sql.append("WHERE s.purchase_date >= CAST(? AS TIMESTAMP) ");
+        sql.append("AND s.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) ");
+
+        List<Object> params = new ArrayList<>();
+        params.add(startDate);
+        params.add(endDate);
+
+        if (vRegNum != null && vRegNum > 0) {
+            sql.append("AND s.v_reg_num = ? ");
+            params.add(vRegNum);
+        }
+
+        sql.append("GROUP BY ");
+        sql.append("FORMATDATETIME(s.purchase_date, 'yyyy-MM-dd'), ");
+        sql.append("ps.sale_id, si.book_id, b.title, s.v_reg_num, v.biz_name ");
+
+        sql.append("ORDER BY sale_date DESC, total_revenue DESC ");
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            SoldProductVO vo = new SoldProductVO();
+
+            vo.setSaleDate(rs.getString("sale_date"));
+            vo.setSaleId(rs.getInt("sale_id"));
+            vo.setBookId(rs.getInt("book_id"));
+            vo.setBookTitle(rs.getString("book_title"));
+            vo.setVRegNum(rs.getInt("v_reg_num"));
+            vo.setVendorName(rs.getString("vendor_name"));
+            vo.setTotalQty(rs.getInt("total_qty"));
+            vo.setTotalRevenue(rs.getLong("total_revenue"));
+            vo.setOrderCount(rs.getInt("order_count"));
+
+            return vo;
+        }, params.toArray());
+    }
 	
 	
 	 @Override
@@ -484,68 +479,85 @@ public class ProductSaleDAOH2 implements ProductSaleDAO {
 	         String metric,
 	         int vendorA,
 	         int vendorB) {
-	
-	     String dateColumn = "p.purchase_date";
+
+	     String dateColumn = "s.purchase_date";
 	     String keyExpr;
 	     String labelExpr;
-	
+
 	     switch (period) {
-	     case "week":
-	         // 예: 2026년 8월 1주차
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-W')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월 W주차')";
-	         break;
+	         case "week":
+	             keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-W')";
+	             labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월 W주차')";
+	             break;
 
-	     case "month":
-	         // 예: 2026년 8월
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월')";
-	         break;
+	         case "month":
+	             keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM')";
+	             labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년 M월')";
+	             break;
 
-	     case "year":
-	         // 예: 2026년
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년')";
-	         break;
+	         case "year":
+	             keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy')";
+	             labelExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy년')";
+	             break;
 
-	     case "day":
-	     default:
-	         // 예: 8월 10일
-	         keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
-	         labelExpr = "FORMATDATETIME(" + dateColumn + ", 'M월 d일')";
-	         break;
-	 }
-	
-	     String vendorAExpr = getCompareMetricExpression(metric);
-	     String vendorBExpr = getCompareMetricExpression(metric);
-	
-	     String sql =
-	         "SELECT " +
-	         keyExpr + " AS sort_key, " +
-	         labelExpr + " AS label, " +
-	         vendorAExpr + " AS vendor_a_value, " +
-	         vendorBExpr + " AS vendor_b_value " +
-	         "FROM PURCHASE_DETAIL pd " +
-	         "JOIN purchase p ON pd.purchase_id = p.purchase_id " +
-	         "WHERE p.purchase_date >= CAST(? AS TIMESTAMP) " +
-	         "AND p.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) " +
-	         "AND pd.v_reg_num IN (?, ?) " +
-	         "GROUP BY " + keyExpr + ", " + labelExpr + " " +
-	         "ORDER BY sort_key";
-	
-	     return jdbcTemplate.query(sql, (rs, rowNum) -> {
+	         case "day":
+	         default:
+	             keyExpr = "FORMATDATETIME(" + dateColumn + ", 'yyyy-MM-dd')";
+	             labelExpr = "FORMATDATETIME(" + dateColumn + ", 'M월 d일')";
+	             break;
+	     }
+
+	     String vendorAExpr = getCompareMetricExpressionForSalesBase(metric);
+	     String vendorBExpr = getCompareMetricExpressionForSalesBase(metric);
+
+	     StringBuilder sql = new StringBuilder();
+
+	     sql.append("SELECT ");
+	     sql.append(keyExpr).append(" AS sort_key, ");
+	     sql.append(labelExpr).append(" AS label, ");
+	     sql.append(vendorAExpr).append(" AS vendor_a_value, ");
+	     sql.append(vendorBExpr).append(" AS vendor_b_value ");
+	     sql.append("FROM ").append(getSalesBaseSql());
+	     sql.append("WHERE s.purchase_date >= CAST(? AS TIMESTAMP) ");
+	     sql.append("AND s.purchase_date < DATEADD('DAY', 1, CAST(? AS DATE)) ");
+	     sql.append("AND s.v_reg_num IN (?, ?) ");
+	     sql.append("GROUP BY ").append(keyExpr).append(", ").append(labelExpr).append(" ");
+	     sql.append("ORDER BY sort_key ");
+
+	     return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
 	         SalesCompareTrendVO vo = new SalesCompareTrendVO();
-	
+
 	         vo.setLabel(rs.getString("label"));
 	         vo.setVendorAValue(rs.getLong("vendor_a_value"));
 	         vo.setVendorBValue(rs.getLong("vendor_b_value"));
-	
+
 	         return vo;
 	     }, vendorA, vendorB, startDate, endDate, vendorA, vendorB);
 	 }
 	
 	
 	 /**
+		 * 두 회사 비교 그래프 metric 집계식.
+		 * getSalesBaseSql()의 별칭 s 기준으로 계산한다.
+		 */
+		private String getCompareMetricExpressionForSalesBase(String metric) {
+		
+		    if ("orderCount".equals(metric)) {
+		        return "COUNT(DISTINCT CASE WHEN s.v_reg_num = ? THEN s.purchase_key ELSE NULL END)";
+		    }
+		
+		    if ("totalBookQty".equals(metric)) {
+		        return "COALESCE(SUM(CASE WHEN s.v_reg_num = ? THEN s.quantity ELSE 0 END), 0)";
+		    }
+		
+		    if ("productTypeCount".equals(metric)) {
+		        return "COUNT(DISTINCT CASE WHEN s.v_reg_num = ? THEN s.sale_id ELSE NULL END)";
+		    }
+		
+		    return "COALESCE(SUM(CASE WHEN s.v_reg_num = ? THEN s.quantity * s.unit_price ELSE 0 END), 0)";
+		}
+
+	/**
 	  * 두 회사 비교 그래프에서 선택한 metric에 따라 집계식을 결정한다.
 	  * SQL Injection 방지를 위해 metric 문자열을 SQL에 직접 넣지 않고 switch로 제한한다.
 	  */
@@ -591,5 +603,44 @@ public class ProductSaleDAOH2 implements ProductSaleDAO {
 	     }
 
 	     return result.get(0);
+	 }
+	 
+	 /**
+	  * 회원 주문 + 비회원 주문을 하나의 판매 데이터로 합친 공통 서브쿼리.
+	  *
+	  * 통계 기준:
+	  * - 판매일자: purchase_date
+	  * - 판매상품: sale_id
+	  * - 협력업체: v_reg_num
+	  * - 판매수량: quantity
+	  * - 판매단가: unit_price
+	  *
+	  * purchase_key는 회원 주문과 비회원 주문의 purchase_id 충돌을 막기 위해 구분자를 붙인다.
+	  */
+	 private String getSalesBaseSql() {
+	     return
+	         " ( " +
+	         "   SELECT " +
+	         "       'M-' || CAST(p.purchase_id AS VARCHAR) AS purchase_key, " +
+	         "       p.purchase_date AS purchase_date, " +
+	         "       pd.sale_id AS sale_id, " +
+	         "       pd.v_reg_num AS v_reg_num, " +
+	         "       pd.quantity AS quantity, " +
+	         "       pd.unit_price AS unit_price " +
+	         "   FROM PURCHASE_DETAIL pd " +
+	         "   JOIN PURCHASE p ON pd.purchase_id = p.purchase_id " +
+
+	         "   UNION ALL " +
+
+	         "   SELECT " +
+	         "       'G-' || CAST(gp.purchase_id AS VARCHAR) AS purchase_key, " +
+	         "       gp.purchase_date AS purchase_date, " +
+	         "       gpd.sale_id AS sale_id, " +
+	         "       gpd.v_reg_num AS v_reg_num, " +
+	         "       gpd.quantity AS quantity, " +
+	         "       gpd.unit_price AS unit_price " +
+	         "   FROM GUEST_PURCHASE_DETAIL gpd " +
+	         "   JOIN GUEST_PURCHASE gp ON gpd.purchase_id = gp.purchase_id " +
+	         " ) s ";
 	 }
 }
