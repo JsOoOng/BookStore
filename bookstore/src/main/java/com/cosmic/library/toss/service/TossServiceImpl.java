@@ -34,6 +34,25 @@ public class TossServiceImpl implements TossService {
 	}
 
 	@Override
+	public String createOrder(String guestPurchaseId, String member_id, int amount) {
+		TossVo purchase = tossDAO.findGuestPurchaseById(guestPurchaseId);
+		
+		String orderId = UUID.randomUUID().toString();
+		
+		TossVo order = new TossVo();
+		order.setOrderId(orderId);
+		order.setGuestPurchaseId(guestPurchaseId);
+	    order.setMember_id(member_id); // 🔥 핵심 추가
+	    order.setOrderStatus("READY");
+	    order.setTotalPrice(amount);
+
+	    tossDAO.insertOrder2(order);
+
+	    return orderId;
+		
+	}
+	
+	@Override
 	public void confirmPayment(String orderId, String paymentKey, int amount) {
 
 	    // 1. DB 조회
@@ -57,4 +76,6 @@ public class TossServiceImpl implements TossService {
 	public void approveOrder(String orderId, String paymentKey) {
 	    tossDAO.updatePaymentSuccess(orderId, paymentKey);
 	}
+
+	
 }

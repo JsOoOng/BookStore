@@ -50,6 +50,7 @@
 	        <mvc:exclude-mapping path="/basket/addMarketProduct"/>        
 	        <mvc:exclude-mapping path="/emailauth/**"/>           
 	        <mvc:exclude-mapping path="/cookie/**"/>     
+	        <mvc:exclude-mapping path="/order/**"/>     
 	        
 	        <mvc:exclude-mapping path="/cookie/purchase/track"/>
 	        <mvc:exclude-mapping path="/cookie/purchase/trackDetail"/>

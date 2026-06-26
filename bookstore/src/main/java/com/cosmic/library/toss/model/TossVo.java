@@ -12,6 +12,7 @@ public class TossVo {
 
 	private String orderId;          // 토스 orderId
     private int purchaseId;          // purchase.id (연결 핵심)
+    private String guestPurchaseId;          // purchase.id (연결 핵심)
     private int totalPrice;          // 결제 금액
     private String member_id;		//유저명
 

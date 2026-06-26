@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -54,7 +55,7 @@ window.onload = async function() {
     </div>
 
     <div class="p-grid typography--p" style="margin-top: 10px">
-        <div class="p-grid-col text--left"><b>주문번호</b></div>
+        <div class="p-grid-col text--left"><b>토스 주문번호</b></div>
         <div class="p-grid-col text--right">${orderId}</div>
     </div>
 
@@ -77,12 +78,30 @@ window.onload = async function() {
             실시간 문의
         </button>
     </div>
-    <div class="p-grid" style="margin-top: 15px">
-    <button class="button"
-            style="width: 100%;"
-            onclick="location.href='http://localhost:8888/'">
-        메인으로 돌아가기
-    </button>
+    
+    
+<div class="p-grid" style="margin-top: 15px">
+
+    <c:choose>
+
+    <c:when test="${not empty sessionScope.loginMember}">
+        <button class="button"
+                style="width: 100%;"
+                onclick="location.href=window.location.origin">
+            메인으로 돌아가기
+        </button>
+    </c:when>
+
+    <c:otherwise>
+        <button class="button"
+                style="width: 100%;"
+                onclick="location.href=window.location.origin + '/cookie/purchase/success'">
+            주문번호 보기
+        </button>
+    </c:otherwise>
+
+	</c:choose>
+
 </div>
     
 </div>

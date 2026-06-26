@@ -35,20 +35,35 @@
 <script>
     // 페이지 로드 확인 후 함수 실행
     function copyOrderNumber() {
-        const orderNumElement = document.getElementById("orderNumber");
-        if (!orderNumElement) {
-            console.error("주문번호 요소를 찾을 수 없습니다.");
-            return;
+    const text = document.getElementById("orderNumber").innerText;
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+            .then(() => alert("복사 완료"))
+            .catch(err => {
+                console.error(err);
+                fallbackCopy(text);
+            });
+    } else {
+        fallbackCopy(text);
+    }
+}
+    
+    function fallbackCopy(text) {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+
+        try {
+            document.execCommand("copy");
+            alert("주문번호가 복사되었습니다.");
+        } catch (err) {
+            alert("복사 실패. 직접 복사해주세요.");
+            console.error(err);
         }
-        
-        const textToCopy = orderNumElement.innerText;
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            alert("주문번호가 복사되었습니다!!");
-        }).catch(err => {
-            alert("복사에 실패했습니다. 직접 드래그해서 복사해주세요.");
-            console.error("복사 실패:", err);
-        });
+
+        document.body.removeChild(temp);
     }
 </script>
 </body>
