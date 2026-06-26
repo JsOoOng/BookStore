@@ -281,7 +281,7 @@ ALTER TABLE review_user
 ADD CONSTRAINT uk_review_user UNIQUE (bookid, userid);
 
 
---17. email_auth : 이메일 인증 DB
+--20. email_auth : 이메일 인증 DB
 CREATE TABLE TB_EMAIL_AUTH
 (
     AUTH_NO BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -297,7 +297,7 @@ CREATE TABLE TB_EMAIL_AUTH
     REG_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
---18. test order : toss
+--21. order : toss 
 CREATE TABLE ORDERS (
     ORDER_ID VARCHAR(100) PRIMARY KEY,
     PURCHASE_ID BIGINT NOT NULL,
