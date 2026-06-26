@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.cosmic.library.book.model.BookVO;
 import com.cosmic.library.book.service.BookService;
 
+// 💥 [주의] 사령부의 BookVO 실제 패키지 경로에 맞게 이 Import 구문은 수정해서 써라!
+import com.cosmic.library.book.model.BookVO; 
+
 @Controller
 public class MainController {
 
@@ -76,8 +79,8 @@ public class MainController {
         
         try {
             // 💥 [핵심 방어막] 네이버 API 초당 호출 제한(Rate Limit) 우회!
-            // 1건 조회 후 0.12초(120ms) 대기하여 네이버 서버가 차단하지 않도록 속도 조절
-            Thread.sleep(120); 
+            // 1건 조회 후 0.065초(65ms) 대기하여 네이버 서버가 차단하지 않도록 속도 조절
+            Thread.sleep(65); 
 
             String encodedKeyword = URLEncoder.encode(keyword.trim(), "UTF-8");
             String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";

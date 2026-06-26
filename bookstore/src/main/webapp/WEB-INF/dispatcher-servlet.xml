@@ -5,11 +5,13 @@
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xmlns:websocket="http://www.springframework.org/schema/websocket"
 	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
 	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd
 		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
 		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
 
     <context:component-scan base-package="com.cosmic.library" />
     
@@ -45,9 +47,15 @@
 	        
 	        <mvc:exclude-mapping path="/basket"/>              
 	        <mvc:exclude-mapping path="/basket/add"/>          
-	        <mvc:exclude-mapping path="/basket/addMarketProduct"/> 
-	        <mvc:exclude-mapping path="/cookie/**"/>           
+	        <mvc:exclude-mapping path="/basket/addMarketProduct"/>        
 	        <mvc:exclude-mapping path="/emailauth/**"/>           
+	        <mvc:exclude-mapping path="/cookie/**"/>     
+	        
+	        <mvc:exclude-mapping path="/cookie/purchase/track"/>
+	        <mvc:exclude-mapping path="/cookie/purchase/trackDetail"/>
+	        <mvc:exclude-mapping path="/cookie/purchase/guest/track/check"/>
+	        
+	        <mvc:exclude-mapping path="/cookie/purchase/**"/>      
 	        
 	        <bean class="com.cosmic.library.common.filter.LoginInterceptor" />
 	    </mvc:interceptor>
@@ -72,6 +80,7 @@
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="dataSource" />
     </bean>
+    
     
     <bean id="qnaChatHandler" class="com.cosmic.library.qnachat.handler.QnaChatHandler" />
     <websocket:handlers>
@@ -118,5 +127,9 @@
 </bean>
 
 
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource" />
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager" />
 </beans>
 

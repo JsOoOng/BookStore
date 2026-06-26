@@ -2,25 +2,32 @@
 -- [대지 정화] 외래키 참조 무결성 역순 완전 DROP 파이프라인 (안전핀 장착)
 -- =========================================================================
 
+-- 🚀 0단계: 과거의 유령 테이블 완벽 소독 (PRODUCT_SALE 삭제 방해의 원흉들!)
+DROP TABLE IF EXISTS COOKIE_ORDER_DETAIL;
+DROP TABLE IF EXISTS GUEST_ORDER_DETAIL;
+DROP TABLE IF EXISTS COOKIE_ORDER;
+DROP TABLE IF EXISTS GUEST_ORDER;
+
 -- 1단계: 가장 하위에서 다른 테이블을 참조하기만 하는 실시간 통신 및 배송 데이터 소거
 DROP TABLE IF EXISTS QNA_CHAT;
 DROP TABLE IF EXISTS QNA_MAIL;
 DROP TABLE IF EXISTS PURCHASE_DETAIL;
-DROP TABLE IF EXISTS REVIEW_USER;        -- 📡 하위 리뷰 유저 테이블 먼저 소독
+DROP TABLE IF EXISTS GUEST_PURCHASE_DETAIL; -- 📡 [신규] 비회원 결제 상세
+DROP TABLE IF EXISTS REVIEW_USER;
 
 DROP TABLE IF EXISTS TB_EMAIL_AUTH;
+DROP TABLE IF EXISTS ORDERS;
 
 -- 2단계: 통신 허브 및 주문/장바구니 파트 소거
 DROP TABLE IF EXISTS PARTICIPANT;
 DROP TABLE IF EXISTS PURCHASE;
+DROP TABLE IF EXISTS GUEST_PURCHASE;        -- 📡 [신규] 비회원 결제 마스터
 DROP TABLE IF EXISTS BASKET;
-DROP TABLE IF EXISTS REVIEW_BOOK;        -- 📡 리뷰 도서 연결 테이블 소독
-DROP TABLE IF EXISTS COOKIE_ORDER_DETAIL;-- 📡 비회원 주문 상세 소독
+DROP TABLE IF EXISTS REVIEW_BOOK;
 
--- 3단계: 상품 판매, 입고 및 비회원 마스터 궤도 소거
+-- 3단계: 상품 판매, 입고 궤도 소거 (이제 방해물 없이 정상 폭파됨!)
 DROP TABLE IF EXISTS PRODUCT_SALE;
 DROP TABLE IF EXISTS STOCK_IN;
-DROP TABLE IF EXISTS COOKIE_ORDER;       -- 📡 비회원 주문 마스터 소독
 
 -- 4단계: 활동 등록부 및 도서 원천 데이터 소거
 DROP TABLE IF EXISTS VENDOR_REGISTRATION;
@@ -30,6 +37,7 @@ DROP TABLE IF EXISTS BOOK;
 -- 5단계: 최상위 마스터 원천 데이터 행성 최종 소거
 DROP TABLE IF EXISTS VENDOR;
 DROP TABLE IF EXISTS COSMIC_USER;
+DROP TABLE IF EXISTS GUEST_USER;            -- 📡 [신규] 비회원 원천 정보
 DROP TABLE IF EXISTS BASE_ADMIN;
 
 -- =========================================================================
@@ -232,32 +240,48 @@ CREATE TABLE review_user (
         ON DELETE CASCADE
 );
 
---17. 쿠키 테이블
-CREATE TABLE COOKIE_ORDER (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50),
-    phone VARCHAR(20),
-    address VARCHAR(200),
-    totalPrice INT,
-    orderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- 17. GUEST_USER: 비회원 원천 정보 행성 (Source of Truth)
+CREATE TABLE GUEST_USER (
+    guest_id VARCHAR(100) PRIMARY KEY,         -- 세션 ID 또는 비회원 임시 발급 식별자
+    guest_name VARCHAR(50) NOT NULL,           -- 수령인 이름
+    guest_phone VARCHAR(20) NOT NULL,          -- 연락처
+    guest_nickname VARCHAR(50) NOT NULL,		-- 별명
+    address VARCHAR(500) NOT NULL,             -- 배송지
+    reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 18. COOKIE_ORDER_DETAIL : 비회원 주문 상세 내역
-CREATE TABLE COOKIE_ORDER_DETAIL (
-    detail_id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT NOT NULL,                     -- COOKIE_ORDER의 고유 ID (FK)
-    sale_id INT NOT NULL,                      -- 오픈마켓 상품 일련번호 (FK)
+-- 18. GUEST_PURCHASE: 비회원 결제 마스터 (영수증 헤더)
+CREATE TABLE GUEST_PURCHASE (
+    purchase_id VARCHAR(50) PRIMARY KEY,       -- 주문 번호 (ex: ORD-2026...)
+    guest_id VARCHAR(100) NOT NULL,            -- 비회원 원천 정보 식별자 (FK)
+    total_price INT DEFAULT 0 NOT NULL,        -- 총 결제 금액
+    payment_key VARCHAR(100),                  -- PG사 결제 연동 키
+    status VARCHAR(50) DEFAULT 'ORDERED' NOT NULL, 
+    purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (guest_id) REFERENCES GUEST_USER(guest_id) ON DELETE CASCADE
+);
+
+-- 19. GUEST_PURCHASE_DETAIL: 비회원 품목별 결제 상세
+CREATE TABLE GUEST_PURCHASE_DETAIL (
+    detail_id INT AUTO_INCREMENT PRIMARY KEY,  -- 상세 내역 고유 번호
+    purchase_id VARCHAR(50) NOT NULL,          -- [FK 1] 비회원 영수증 번호
+    sale_id INT NOT NULL,                      -- [FK 2] 오픈마켓 상품 일련번호
+    v_reg_num INT NOT NULL,                    -- [FK 3] 판매 업체 등록 번호
     quantity INT NOT NULL,                     -- 구매 수량
-    unit_price INT NOT NULL,                   -- 단가
-    FOREIGN KEY (order_id) REFERENCES COOKIE_ORDER(id) ON DELETE CASCADE,
-    FOREIGN KEY (sale_id) REFERENCES PRODUCT_SALE(sale_id)
+    unit_price INT NOT NULL,                   -- 단가 (구매 당시 가격)
+    delivery_status VARCHAR(20) DEFAULT 'READY', -- 배송 상태 (준비, 출발, 완료 등)
+    
+    -- 🔗 외래키(FK) 제약 조건 (안전핀)
+    FOREIGN KEY (purchase_id) REFERENCES GUEST_PURCHASE(purchase_id) ON DELETE CASCADE,
+    FOREIGN KEY (sale_id) REFERENCES PRODUCT_SALE(sale_id),
+    FOREIGN KEY (v_reg_num) REFERENCES VENDOR_REGISTRATION(vendor_reg_num)
 );
 
 ALTER TABLE review_user
 ADD CONSTRAINT uk_review_user UNIQUE (bookid, userid);
 
 
---19. test email_auth : 이메일 인증 DB
+--20. email_auth : 이메일 인증 DB
 CREATE TABLE TB_EMAIL_AUTH
 (
     AUTH_NO BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -271,6 +295,26 @@ CREATE TABLE TB_EMAIL_AUTH
     EXPIRE_TIME TIMESTAMP NOT NULL,
 
     REG_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--21. order : toss 
+CREATE TABLE ORDERS (
+    ORDER_ID VARCHAR(100) PRIMARY KEY,
+    PURCHASE_ID BIGINT NOT NULL,
+    MEMBER_ID VARCHAR(50) NOT NULL,
+    TOTAL_PRICE INT NOT NULL,
+    ORDER_STATUS VARCHAR(20) DEFAULT 'READY',
+    PAYMENT_KEY VARCHAR(200),
+    ORDER_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PAID_AT TIMESTAMP,
+
+    CONSTRAINT FK_ORDERS_PURCHASE
+        FOREIGN KEY (PURCHASE_ID)
+        REFERENCES PURCHASE(PURCHASE_ID),
+
+    CONSTRAINT FK_ORDERS_MEMBER
+        FOREIGN KEY (MEMBER_ID)
+        REFERENCES cosmic_user(user_id)
 );
 
 
