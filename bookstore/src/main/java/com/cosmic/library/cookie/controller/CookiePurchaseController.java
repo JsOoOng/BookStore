@@ -129,7 +129,9 @@ public class CookiePurchaseController {
         
         model.addAttribute("orderId", orderId);
         session.removeAttribute("guestOrderId"); 
-        return "pages/purchase/cookie_purchase_success";
+        
+        model.addAttribute("pageName", "pages/purchase/cookie_purchase_success");
+        return "common/layout";
     }
     
  // 🪐 [추적 레이더 전용] 네이버 발급 토큰 장착
@@ -214,8 +216,10 @@ public class CookiePurchaseController {
     }
     
     @GetMapping("/find")
-    public String findForm() {
-        return "pages/purchase/guest_find"; // /WEB-INF/views/pages/purchase/guest_find.jsp
+    public String findForm(Model model) {
+        // 💥 [타격 지점] 알맹이 JSP를 pageName에 담고 공통 레이아웃으로 발사!
+        model.addAttribute("pageName", "pages/purchase/guest_find"); 
+        return "common/layout";
     }
     
     @PostMapping("/find_check")

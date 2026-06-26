@@ -5784,3 +5784,539 @@ body.modal-open .modal-backdrop {
     pointer-events: none
 }
 }
+
+/* ==========================================================================
+   🍪 비회원 주문서 (cookie_order_form.jsp) - View.jsp 화이트/미니멀 동기화
+   ========================================================================== */
+
+#cosmic-guest-order-container {
+    width: 100%;
+    max-width: 1300px !important; /* 폼 규격에 맞게 깔끔하게 제한 */
+    margin: 50px auto 80px auto !important;
+    padding: 0 20px !important;
+    color: #2f3542;
+}
+
+/* 메인 타이틀 (view.jsp의 .view-title 적용) */
+#cosmic-guest-order-container .form-main-title {
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    letter-spacing: -1px;
+    margin-bottom: 20px !important;
+}
+
+/* 상단 안내 알림창 (view.jsp의 .view-price-box 스타일 적용) */
+#cosmic-guest-order-container .cosmic-alert {
+    background: #f8fafc !important;
+    border: 1px solid #e1e4e8 !important;
+    border-left: 4px solid #5d5fef !important; /* 좌측 코스믹 퍼플 포인트 */
+    color: #2f3542 !important;
+    padding: 20px 25px !important;
+    border-radius: 4px !important;
+    font-size: 15px !important;
+}
+
+#cosmic-guest-order-container .cosmic-alert strong {
+    color: #0b132b !important;
+    font-weight: 700 !important;
+}
+
+/* 구분선 (view.jsp의 .view-content-specs 상단선 적용) */
+#cosmic-guest-order-container .cosmic-hr {
+    border-top: 2px solid #0b132b !important;
+    margin: 30px 0 !important;
+    opacity: 1;
+}
+
+/* 💥 카드 디자인 (view.jsp의 .cosmic-card-detail 완벽 적용!) */
+#cosmic-guest-order-container .cosmic-card {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 40px rgba(11, 19, 43, 0.04) !important;
+    border: 1px solid #f1f3f5 !important;
+    overflow: hidden;
+    margin-bottom: 30px !important;
+}
+
+#cosmic-guest-order-container .cosmic-card .card-header {
+    background: #ffffff !important;
+    color: #0b132b !important;
+    font-size: 1.1rem;
+    font-weight: 800 !important;
+    border-bottom: 1px solid #f1f3f5 !important;
+    padding: 20px 25px !important;
+}
+
+#cosmic-guest-order-container .cosmic-card .card-body {
+    padding: 30px 25px !important;
+}
+
+/* 입력 필드 제어 (view.jsp의 .spec-row 라벨 스타일 적용) */
+#cosmic-guest-order-container label {
+    color: #7f8c8d !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    font-size: 14px !important;
+}
+
+/* 인풋 박스 미니멀 디자인 */
+#cosmic-guest-order-container .form-control {
+    background-color: #ffffff !important;
+    border: 1px solid #dfe4ea !important;
+    color: #2f3542 !important;
+    border-radius: 8px !important;
+    padding: 12px 15px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease;
+}
+
+#cosmic-guest-order-container .form-control::placeholder {
+    color: #a4b0be !important;
+}
+
+#cosmic-guest-order-container .form-control:focus {
+    border-color: #5d5fef !important;
+    box-shadow: 0 0 0 3px rgba(93, 95, 239, 0.1) !important;
+    outline: none !important;
+}
+
+/* 주문 상품 테이블 제어 */
+#cosmic-guest-order-container .cosmic-order-table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+#cosmic-guest-order-container .cosmic-order-table thead th {
+    background-color: #f8fafc !important;
+    border-bottom: 2px solid #e1e4e8 !important;
+    border-top: none !important;
+    color: #7f8c8d !important;
+    font-weight: 600 !important;
+    padding: 15px !important;
+    font-size: 14px !important;
+}
+
+#cosmic-guest-order-container .cosmic-order-table tbody td {
+    border-bottom: 1px solid #f1f3f5 !important;
+    vertical-align: middle;
+    padding: 15px !important;
+    color: #2f3542 !important;
+}
+
+/* 주문 상품 썸네일 (view.jsp 표지 스타일 적용) */
+#cosmic-guest-order-container .cosmic-order-table img {
+    background: #fafbfc !important;
+    border: 1px solid #edeff2 !important;
+    padding: 5px !important;
+    box-shadow: 0 5px 15px rgba(11, 19, 43, 0.05) !important;
+    border-radius: 4px !important;
+}
+
+/* 하단 결제 영역 제어 */
+#cosmic-guest-order-container .total-price-box {
+    margin-top: 20px;
+}
+
+#cosmic-guest-order-container .total-price-box h3 {
+    color: #0b132b !important;
+    font-weight: 800 !important;
+    font-size: 1.8rem !important;
+}
+
+#cosmic-guest-order-container .text-primary-glow {
+    color: #5d5fef !important; /* 총액 코스믹 퍼플 강조 */
+}
+
+/* 결제하기 버튼 (view.jsp의 btn-instant-buy 스타일 적용) */
+#cosmic-guest-order-container .btn-cosmic-submit {
+    background: #5d5fef !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 16px !important;
+    padding: 18px 40px !important;
+    border-radius: 8px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#cosmic-guest-order-container .btn-cosmic-submit:hover {
+    background: #4f46e5 !important;
+    box-shadow: 0 5px 15px rgba(93, 95, 239, 0.3) !important;
+    transform: translateY(-3px);
+}
+
+/* 주문 상품 테이블 제어 보강 */
+#cosmic-guest-order-container .cosmic-order-table thead th {
+    background-color: #f8fafc !important;
+    border-bottom: 2px solid #e1e4e8 !important;
+    border-top: none !important;
+    color: #7f8c8d !important;
+    font-weight: 600 !important;
+    padding: 15px !important;
+    font-size: 14px !important;
+    /* 💥 글자가 절대 밑으로 꺾여서 세로로 나오지 않도록 가로 한 줄 고정! */
+    white-space: nowrap !important; 
+    text-align: center !important; /* 헤더 중앙 정렬 */
+}
+
+#cosmic-guest-order-container .cosmic-order-table tbody td {
+    border-bottom: 1px solid #f1f3f5 !important;
+    vertical-align: middle !important;
+    padding: 15px !important;
+    color: #2f3542 !important;
+    text-align: center !important; /* 본문 내용도 깔끔하게 중앙 정렬 */
+}
+
+/* 도서명이나 상품명 정보가 들어가는 칸은 왼쪽 정렬을 유지하여 가독성 확보 */
+#cosmic-guest-order-container .cosmic-order-table tbody td.product-info {
+    text-align: left !important;
+}
+
+/* ==========================================================================
+   💳 토스 결제 관제탑 (checkout.jsp) 전용 화이트/미니멀 스타일
+   ========================================================================== */
+
+#cosmic-toss-checkout-container {
+    max-width: 750px !important; /* 결제창은 시선 집중을 위해 폭을 좁게 제어 */
+    margin: 40px auto 80px auto !important;
+    color: #2f3542;
+}
+
+#cosmic-toss-checkout-container .form-main-title {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    letter-spacing: -1px;
+}
+
+#cosmic-toss-checkout-container .cosmic-card {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(11, 19, 43, 0.05) !important;
+    border: 1px solid #f1f3f5 !important;
+    overflow: hidden;
+}
+
+/* 쿠폰 섹션 커스텀 */
+#cosmic-toss-checkout-container .coupon-section {
+    background: #f8fafc !important;
+    border: 1px solid #e1e4e8 !important;
+    border-radius: 8px !important;
+    padding: 15px 20px !important;
+    margin: 20px 24px 10px 24px; /* 토스 위젯 패딩과 라인을 맞춤 */
+}
+
+#cosmic-toss-checkout-container .coupon-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin: 0;
+}
+
+#cosmic-toss-checkout-container .cosmic-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #5d5fef; /* 체크박스 코스믹 퍼플 튜닝 */
+}
+
+#cosmic-toss-checkout-container .coupon-text {
+    margin-left: 10px;
+    font-weight: 700;
+    color: #5d5fef;
+    font-size: 1.1rem;
+}
+
+/* 결제 버튼 (우주선 발사 버튼 스타일 공유) */
+#cosmic-toss-checkout-container .btn-cosmic-submit {
+    background: #5d5fef !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.2rem !important;
+    padding: 18px 0 !important;
+    border-radius: 8px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#cosmic-toss-checkout-container .btn-cosmic-submit:hover {
+    background: #4f46e5 !important;
+    box-shadow: 0 5px 15px rgba(93, 95, 239, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   🎉 토스 결제 성공 관제탑 (success.jsp) - 초광각 영수증 가로 폭 확장 패치
+   ========================================================================== */
+
+#cosmic-toss-success-container {
+    /* 💥 [광폭 엔진 가동] 550px -> 800px로 대폭 확장하여 긴 주문번호 수용 공간 창출! */
+    max-width: 800px !important; 
+    margin: 60px auto 80px auto !important;
+    color: #2f3542;
+}
+
+#cosmic-toss-success-container .success-card {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 40px rgba(11, 19, 43, 0.05) !important;
+    border: 1px solid #f1f3f5 !important;
+    padding: 50px 50px !important; /* 내부 좌우 여백도 살짝 더 넓혀 안정감 부여 */
+}
+
+#cosmic-toss-success-container .form-main-title {
+    font-size: 2.2rem !important; /* 타이틀 크기도 카드 폭에 맞게 시원하게 조정 */
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+}
+
+/* 🧾 영수증 박스 광폭 레이아웃 */
+#cosmic-toss-success-container .receipt-box {
+    background: #f8fafc !important;
+    border: 1px solid #e1e4e8 !important;
+    border-radius: 8px !important;
+    padding: 20px 30px !important;
+    margin-top: 30px;
+}
+
+#cosmic-toss-success-container .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0; /* 위아래 간격을 살짝 늘려 가독성 극대화 */
+    border-bottom: 1px dashed #cbd5e1;
+}
+
+#cosmic-toss-success-container .receipt-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#cosmic-toss-success-container .receipt-label {
+    font-weight: 600;
+    color: #7f8c8d;
+    font-size: 1.05rem;
+    white-space: nowrap; /* 라벨 줄바꿈 절대 방지 */
+    flex-shrink: 0;      /* 공간이 좁아져도 라벨이 찌그러지지 않게 방어 */
+    margin-right: 20px;
+}
+
+#cosmic-toss-success-container .receipt-value {
+    font-weight: 700;
+    color: #2f3542;
+    text-align: right;
+    /* 💥 [핵심 타격] 주문번호가 줄바꿈되지 않고 가로로 길게 쭉 뻗도록 세팅! */
+    white-space: nowrap !important; 
+    font-size: 1.05rem;
+}
+
+/* 금액 하이라이트 */
+#cosmic-toss-success-container .text-primary-glow {
+    color: #5d5fef !important;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+/* 💥 paymentKey 및 긴 식별자 폰트 밸런스 패치 */
+#cosmic-toss-success-container .small-key {
+    font-size: 0.95rem; /* 카드 폭이 넓어졌으므로 글자 크기도 시원하게 상향 */
+    color: #64748b;
+    font-family: 'Courier New', Courier, monospace; /* 키 값 식별이 잘 되도록 고정폭 폰트 적용 */
+}
+
+/* 하단 액션 버튼 영역 가로 매칭 */
+#cosmic-toss-success-container .action-buttons-group {
+    max-width: 100% !important;
+}
+
+#cosmic-toss-success-container .btn-cosmic-submit {
+    background: #5d5fef !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.2rem !important;
+    padding: 16px 0 !important;
+    border-radius: 8px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#cosmic-toss-success-container .btn-cosmic-submit:hover {
+    background: #4f46e5 !important;
+    box-shadow: 0 5px 15px rgba(93, 95, 239, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   🎉 비회원 주문 완료 관제탑 (cookie_purchase_success.jsp) 전용 스타일
+   ========================================================================== */
+
+#cosmic-guest-success-container {
+    max-width: 650px !important; /* 영수증 카드 비율 확보 */
+    margin: 60px auto 80px auto !important;
+    color: #2f3542;
+}
+
+#cosmic-guest-success-container .success-card {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 40px rgba(11, 19, 43, 0.05) !important;
+    border: 1px solid #f1f3f5 !important;
+    padding: 50px 40px !important;
+}
+
+#cosmic-guest-success-container .form-main-title {
+    font-size: 1.8rem !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+    letter-spacing: -0.5px;
+}
+
+/* 🧾 주문번호 하이라이트 박스 */
+#cosmic-guest-success-container .order-number-box {
+    background: #f8fafc !important;
+    border: 1px solid #e1e4e8 !important;
+    border-radius: 12px !important;
+}
+
+#cosmic-guest-success-container .tracking-wide {
+    letter-spacing: 2px; /* 주문번호가 잘 보이도록 자간 확보 */
+    color: #5d5fef !important; /* 코스믹 퍼플로 강렬하게 표시 */
+}
+
+/* ⚠️ 경고 텍스트 강조 효과 */
+#cosmic-guest-success-container .warning-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+#cosmic-guest-success-container .text-danger-glow {
+    color: #ef4444;
+    font-weight: 700;
+    background: rgba(239, 68, 68, 0.1); /* 붉은색 형광펜 효과 */
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* 🎛️ 버튼 스타일 통일화 */
+#cosmic-guest-success-container .btn-cosmic-ghost {
+    background: transparent !important;
+    border: 1px solid #5d5fef !important;
+    color: #5d5fef !important;
+    font-weight: 700 !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+}
+
+#cosmic-guest-success-container .btn-cosmic-ghost:hover {
+    background: rgba(93, 95, 239, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+#cosmic-guest-success-container .btn-cosmic-secondary {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none;
+}
+
+#cosmic-guest-success-container .btn-cosmic-secondary:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    transform: translateY(-2px);
+}
+
+#cosmic-guest-success-container .btn-cosmic-submit {
+    background: #5d5fef !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    border-radius: 8px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    text-decoration: none;
+}
+
+#cosmic-guest-success-container .btn-cosmic-submit:hover {
+    background: #4f46e5 !important;
+    box-shadow: 0 5px 15px rgba(93, 95, 239, 0.3) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   🔍 비회원 주문번호 찾기 결과 관제탑 (guest_find_check.jsp) 전용 스타일
+   ========================================================================== */
+
+#cosmic-guest-find-check-container {
+    max-width: 500px !important;
+    margin: 60px auto 80px auto !important;
+}
+
+#cosmic-guest-find-check-container .success-card {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 40px rgba(11, 19, 43, 0.05) !important;
+    border: 1px solid #f1f3f5 !important;
+    padding: 50px 40px !important;
+}
+
+#cosmic-guest-find-check-container .form-main-title {
+    font-size: 1.8rem !important;
+    font-weight: 800 !important;
+    color: #0b132b !important;
+}
+
+/* 주문번호 리스트 아이템 스타일 */
+#cosmic-guest-find-check-container .purchase-id-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#cosmic-guest-find-check-container .purchase-id-item {
+    background: #f8fafc !important;
+    border: 1px solid #e1e4e8 !important;
+    border-radius: 8px !important;
+    padding: 15px !important;
+}
+
+#cosmic-guest-find-check-container .id-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #5d5fef; /* 코스믹 퍼플 강조 */
+    letter-spacing: 1px;
+}
+
+/* 버튼 재활용 */
+#cosmic-guest-find-check-container .btn-cosmic-submit {
+    background: #5d5fef !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    display: block !important;
+    width: 100% !important; 
+    padding: 16px 0 !important;
+    margin-top: 15px !important;
+    transition: all 0.2s ease !important;
+    text-align: center !important;
+    text-decoration: none;
+}
+
+#cosmic-guest-find-check-container .btn-cosmic-secondary {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    text-decoration: none;
+}

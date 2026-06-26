@@ -135,7 +135,8 @@ public class CookieBasketController {
         }
         model.addAttribute("purchaseList", purchaseList);
         model.addAttribute("isGuest", true);
-        return "pages/purchase/cookie_order_form"; 
+        model.addAttribute("pageName", "pages/purchase/cookie_order_form"); // 실제 경로에 맞게 수정할 것
+        return "common/layout";
     }
 
     @PostMapping("/add")

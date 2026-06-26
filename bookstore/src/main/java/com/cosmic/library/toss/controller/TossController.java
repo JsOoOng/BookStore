@@ -119,8 +119,10 @@ public class TossController {
         model.addAttribute("paymentKey", paymentKey);
         model.addAttribute("orderId", orderId);
         model.addAttribute("amount", amount);
-
-        return "success";
+        
+        // 💥 [궤도 수정] 알맹이 jsp 경로를 pageName에 담고 공통 레이아웃으로 쏜다!
+        model.addAttribute("pageName", "pages/toss/success"); // ⚠️ 실제 폴더 경로에 맞게 조정할 것 (예: pages/toss/success)
+        return "common/layout";
     }
 
     // =========================
@@ -132,8 +134,11 @@ public class TossController {
                            Model model) {
         model.addAttribute("orderId", orderId);
         model.addAttribute("amount", amount);
-        return "checkout";
-    }	
+        
+        // 💥 [궤도 수정]
+        model.addAttribute("pageName", "pages/toss/checkout"); 
+        return "common/layout";
+    }
 
     // =========================
     // 4. 결제 실패 페이지
@@ -149,7 +154,9 @@ public class TossController {
 
         model.addAttribute("code", code);
         model.addAttribute("message", message);
-
-        return "fail";
+        
+        // 💥 [궤도 수정]
+        model.addAttribute("pageName", "pages/toss/fail"); 
+        return "common/layout";
     }
 }
