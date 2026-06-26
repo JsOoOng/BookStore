@@ -12,10 +12,19 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cosmic.library.statistics.model.SalesSummaryVO;
+import com.cosmic.library.statistics.model.SalesTrendVO;
+import com.cosmic.library.statistics.model.SoldProductVO;
+import com.cosmic.library.statistics.model.VendorOptionVO;
+import com.cosmic.library.statistics.model.SalesCompareTrendVO;
+import com.cosmic.library.vendor.service.ProductSaleService;
 
 import com.cosmic.library.admin.model.AdminVO;
 import com.cosmic.library.admin.service.AdminService;
 import com.cosmic.library.member.model.MemberVO;
+import com.cosmic.library.vendor.model.SalesVolumeVO;
 
 @Controller
 @RequestMapping("/admin")
@@ -23,6 +32,9 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService; // 🌟 인터페이스 타입 주입으로 구조적 무결성 확보!
+
+    @Autowired
+    private ProductSaleService productSaleService;
 
     /**
      * 🔒 1. 관리자 전용 로그인 페이지 요청 ➔ 3단 통합 로그인 창으로 리다이렉트 워프
@@ -38,26 +50,35 @@ public class AdminController {
      * 🔑 2. 관리자 로그인 처리 (POST)
      */
     @PostMapping("/login")
-    public String adminLoginProcess(@RequestParam("adminId") String adminId, 
-                                    @RequestParam("adminPw") String adminPw, 
+    public String adminLoginProcess(@RequestParam("adminId") String adminId,
+                                    @RequestParam("adminPw") String adminPw,
                                     HttpSession session) {
-        
+
         AdminVO loginAdmin = adminService.login(adminId, adminPw);
-        
+
         if (loginAdmin != null) {
-            // 🌟 중요: 일반 회원(loginMember)과 완벽히 격리된 'loginAdmin' 독자적 세션 키 사용!
+
             session.setAttribute("loginAdmin", loginAdmin);
-            
-            // 최고 관리자(SUPER) 권한 파악 시 총괄 대원 통제실로 즉시 워프
-            if ("SUPER".equals(loginAdmin.getRole())) {
+
+            // 다른 로그인 세션과 충돌 방지
+            session.removeAttribute("loginMember");
+            session.removeAttribute("loginUser");
+            session.removeAttribute("loginVendor");
+            session.removeAttribute("vRegNum");
+
+            String role = loginAdmin.getRole();
+
+            if ("SUPER".equals(role)) {
                 return "redirect:/admin/userControl";
             }
-            
-            // 향후 등급별(BOOK_ADMIN, VENDOR_ADMIN 등) 대시보드로 분기할 우회로 확보
-            return "redirect:/"; 
+
+            if ("VENDOR_ADMIN".equals(role)) {
+                return "redirect:/admin/purchase/salesvolume";
+            }
+
+            return "redirect:/";
         }
-        
-        // 로그인 실패 시 에러 파라미터를 들고 통합 로그인 창으로 리다이렉트
+
         return "redirect:/member/login?error=true";
     }
 
@@ -193,5 +214,182 @@ public class AdminController {
         adminService.registerAdmin(admin);
         
         return "redirect:/admin/adminControl?regSuccess=true";
+    }
+    
+    private boolean canViewSalesStats(AdminVO loginAdmin) {
+        return loginAdmin != null &&
+                ("SUPER".equals(loginAdmin.getRole())
+                || "VENDOR_ADMIN".equals(loginAdmin.getRole()));
+    }
+
+    /**
+     * 10. 📊 [SUPER / VENDOR_ADMIN 전용] 전체 협력업체 판매 통계 페이지
+     */
+    @GetMapping("/purchase/salesvolume")
+    public String adminSalesVolumePage(HttpSession session, Model model) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (loginAdmin == null) {
+            return "redirect:/member/login";
+        }
+
+        if (!canViewSalesVolume(loginAdmin)) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("loginAdmin", loginAdmin);
+        model.addAttribute("pageName", "pages/admin/salesvolume");
+
+        return "common/layout";
+    }
+
+    /**
+     * 📊 11. [SUPER / VENDOR_ADMIN 전용] 전체 도서 판매량 통계 데이터 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/data")
+    public List<SalesVolumeVO> adminSalesVolumeData(
+            @RequestParam(value = "period", defaultValue = "hour") String period,
+            HttpSession session) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (loginAdmin == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        boolean canViewSalesVolume =
+                "SUPER".equals(loginAdmin.getRole())
+                || "VENDOR_ADMIN".equals(loginAdmin.getRole());
+
+        if (!canViewSalesVolume) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getAdminSalesVolume(period);
+    }
+    
+    /**
+     * 📊 판매 통계 접근 권한 체크
+     * SUPER / VENDOR_ADMIN만 접근 가능
+     */
+    private boolean canViewSalesVolume(AdminVO loginAdmin) {
+        return loginAdmin != null &&
+                ("SUPER".equals(loginAdmin.getRole())
+                || "VENDOR_ADMIN".equals(loginAdmin.getRole()));
+    }
+    
+    /**
+     * 🏢 관리자용 협력업체 선택 목록
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/vendors")
+    public List<VendorOptionVO> adminVendorOptions(HttpSession session) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (!canViewSalesStats(loginAdmin)) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getVendorOptions();
+    }
+    
+    /**
+     * 📊 관리자 판매 요약 카드 API
+     * vRegNum = 0이면 전체 회사
+     * vRegNum > 0이면 특정 회사
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/summary")
+    public SalesSummaryVO adminSalesSummary(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam(value = "vRegNum", defaultValue = "0") Integer vRegNum,
+            HttpSession session) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (!canViewSalesVolume(loginAdmin)) {
+            return new SalesSummaryVO();
+        }
+
+        return productSaleService.getSalesSummary(startDate, endDate, vRegNum);
+    }
+    
+    /**
+     * 📈 관리자 기간별 판매 통계 그래프 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/trend")
+    public List<SalesTrendVO> adminSalesTrend(
+            @RequestParam(value = "period", defaultValue = "day") String period,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam(value = "vRegNum", defaultValue = "0") Integer vRegNum,
+            HttpSession session) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (!canViewSalesStats(loginAdmin)) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getSalesTrend(period, startDate, endDate, vRegNum);
+    }
+    
+    /**
+     * 📚 관리자 특정 기간 판매 상품 목록 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/products")
+    public List<SoldProductVO> adminSoldProducts(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam(value = "vRegNum", defaultValue = "0") Integer vRegNum,
+            HttpSession session) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (!canViewSalesStats(loginAdmin)) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getSoldProducts(startDate, endDate, vRegNum);
+    }
+    
+    /**
+     * ⚖️ 관리자 두 협력업체 비교 그래프 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/compare")
+    public List<SalesCompareTrendVO> adminSalesCompareTrend(
+            @RequestParam(value = "period", defaultValue = "day") String period,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam(value = "metric", defaultValue = "totalRevenue") String metric,
+            @RequestParam("vendorA") int vendorA,
+            @RequestParam("vendorB") int vendorB,
+            HttpSession session) {
+
+        AdminVO loginAdmin = (AdminVO) session.getAttribute("loginAdmin");
+
+        if (!canViewSalesStats(loginAdmin)) {
+            return java.util.Collections.emptyList();
+        }
+
+        if (vendorA <= 0 || vendorB <= 0 || vendorA == vendorB) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getSalesCompareTrend(
+                period,
+                startDate,
+                endDate,
+                metric,
+                vendorA,
+                vendorB
+        );
     }
 }

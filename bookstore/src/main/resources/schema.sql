@@ -326,7 +326,6 @@ INSERT INTO VENDOR_REGISTRATION (vendor_id, admin_id, is_active, regDate) VALUES
 INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('ADMIN', NULL, NULL, 'admin');
 INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('USER', 1, NULL, NULL);
 INSERT INTO PARTICIPANT (p_type, u_reg_num, v_reg_num, admin_id) VALUES ('VENDOR', NULL, 1, NULL);
-
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('작별하지 않는다 :한강 장편소설', '한강 지음', '문학동네', '2021-01-01', '소설/시', 'Korean', '9788954682152', 'https://covers.openlibrary.org/b/isbn/9788954682152-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('달리기를 말할 때 내가 하고 싶은 이야기 :세계적 작가 하루키의 달리기를 축으로 한 문학과 인생의 회고록 =What I talk about when I talk about running', '무라카미 하루키 지음', '문학사상', '2009-01-01', '소설/시', 'Korean', '9788970128337', 'https://covers.openlibrary.org/b/isbn/9788970128337-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('모순 :양귀자 장편소설', '양귀자 지음', '쓰다', '2013-01-01', '소설/시', 'Korean', '9788998441012', 'https://covers.openlibrary.org/b/isbn/9788998441012-M.jpg');
@@ -399,6 +398,35 @@ INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, re
 
 -- sale_id = 9 (stock_id 9번 서빙)
 INSERT INTO PRODUCT_SALE (stock_id, v_reg_num, price, stock_qty, sale_status, regDate) VALUES (9, 1, 16500, 120, 'ON', NOW());
+
+-- =========================================================================
+-- [결제 파이프라인] 일반 대원(박대원, user_reg_num=1)의 도서 구매 시뮬레이션
+-- =========================================================================
+
+-- 📦 [주문 1] 과거에 주문하여 '배송 완료(DELIVERED)'된 영수증 (총 39,500원)
+-- 구매 내역: '작별하지 않는다' 1권(13,500원) + '바깥은 여름' 2권(13,000*2=26,000원)
+INSERT INTO PURCHASE (user_reg_num, total_price, status, purchase_date) 
+VALUES (1, 39500, 'DELIVERED', '2026-06-20 14:30:00');
+
+-- [주문 1의 상세 품목] AUTO_INCREMENT로 purchase_id = 1 부여됨
+-- 1-1. 작별하지 않는다 (sale_id=1)
+INSERT INTO PURCHASE_DETAIL (purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status) 
+VALUES (1, 1, 1, 1, 13500, 'COS-TRK-998877', 'DELIVERED');
+
+-- 1-2. 바깥은 여름 (sale_id=7)
+INSERT INTO PURCHASE_DETAIL (purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status) 
+VALUES (1, 7, 1, 2, 13000, 'COS-TRK-998877', 'DELIVERED');
+
+
+-- 🚀 [주문 2] 방금 막 결제되어 파트너사 관제탑에 '배송 대기(READY)'로 뜨는 영수증 (총 16,500원)
+-- 구매 내역: '단 한 번의 삶' 1권(16,500원)
+INSERT INTO PURCHASE (user_reg_num, total_price, status, purchase_date) 
+VALUES (1, 16500, 'ORDERED', NOW());
+
+-- [주문 2의 상세 품목] AUTO_INCREMENT로 purchase_id = 2 부여됨
+-- 2-1. 단 한 번의 삶 (sale_id=9)
+INSERT INTO PURCHASE_DETAIL (purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status) 
+VALUES (2, 9, 1, 1, 16500, NULL, 'READY');
 
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('참을 수 없는 존재의 가벼움', '밀란 쿤데라 지음', '민음사', '2018-01-01', '소설/시', 'Korean', '9788937437564', 'https://covers.openlibrary.org/b/isbn/9788937437564-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('나는 소망한다 내게 금지된 것을 :양귀자 장편소설', '양귀자 지음', '쓰다', '2019-01-01', '소설/시', 'Korean', '9788998441074', 'https://covers.openlibrary.org/b/isbn/9788998441074-M.jpg');
@@ -3326,3 +3354,179 @@ INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, imag
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('내가 사랑한 파리의 작은 미술관 :아주 특별하고 멋진 파리 탐방기', '신정아 지음', 'Hu:ine : 한국외국어대학교 지식출판콘텐츠원', '2024-01-01', '소설/시', 'Korean', '9791171992706', 'https://covers.openlibrary.org/b/isbn/9791171992706-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('내가 알고 있는 걸 당신도 알게 된다면 :전 세계가 주목한 코넬대학교의 인류 유산 프로젝트', '칼 필레머 지음', '토네이도: 토네이도미디어그룹', '2024-01-01', '소설/시', 'Korean', '9791158511432', 'https://covers.openlibrary.org/b/isbn/9791158511432-M.jpg');
 INSERT INTO BOOK (title, writer, publisher, pubDate, genre, language, isbn, image) VALUES ('내가 죽은 뒤에 네가 해야 할 일들 :엄마가 딸에게 남기는 삶의 처방전', '수지 홉킨스 글', 'F(에프) : 푸른책들', '2024-01-01', '소설/시', 'Korean', '9788961707480', 'https://covers.openlibrary.org/b/isbn/9788961707480-M.jpg');
+
+/* ==========================================================================
+   📊 추가 판매 통계 테스트 데이터
+   기존 기본 데이터는 손대지 않음
+   - 기존 SUPER 관리자: admin / 1234
+   - 추가 VENDOR_ADMIN: vadmin / 1234
+   - 기존 협력업체: vendor / 1234, v_reg_num = 1
+   - 추가 협력업체: vendor2 / 1234, vendor3 / 1234
+   - 테스트 기간: 2026-07-01 ~ 2026-07-31
+   ========================================================================== */
+
+
+/* ==========================================================================
+   0. 이전 추가 테스트 데이터만 정리
+   기존 데이터는 삭제하지 않음
+   ========================================================================== */
+
+DELETE FROM PURCHASE_DETAIL
+WHERE detail_id BETWEEN 991001 AND 991999;
+
+DELETE FROM purchase
+WHERE purchase_id BETWEEN 991001 AND 991999;
+
+DELETE FROM PRODUCT_SALE
+WHERE sale_id BETWEEN 991001 AND 991999;
+
+DELETE FROM STOCK_IN
+WHERE stock_id BETWEEN 991001 AND 991999;
+
+DELETE FROM PARTICIPANT
+WHERE p_id BETWEEN 991001 AND 991999;
+
+
+/* ==========================================================================
+   1. 추가 관리자 계정
+   기존 admin은 이미 있으므로 다시 INSERT 하지 않음
+   ========================================================================== */
+
+MERGE INTO BASE_ADMIN (admin_id, admin_pw, admin_name, role, regDate)
+KEY(admin_id)
+VALUES ('vadmin', '1234', '협력업체관리자', 'VENDOR_ADMIN', NOW());
+
+
+/* ==========================================================================
+   2. 추가 협력업체 계정
+   기존 vendor는 이미 있으므로 다시 INSERT 하지 않음
+   ========================================================================== */
+
+MERGE INTO VENDOR (vendor_id, vendor_pw, biz_name, biz_no, contact, regDate)
+KEY(vendor_id)
+VALUES ('vendor2', '1234', '오리온문고', '991-11-00002', '02-991-0002', NOW());
+
+MERGE INTO VENDOR (vendor_id, vendor_pw, biz_name, biz_no, contact, regDate)
+KEY(vendor_id)
+VALUES ('vendor3', '1234', '코스믹북스', '991-11-00003', '02-991-0003', NOW());
+
+
+/* ==========================================================================
+   3. 추가 협력업체 등록 정보
+   기존 vendor는 v_reg_num = 1 사용
+   vendor2 = 2
+   vendor3 = 3
+   ========================================================================== */
+
+MERGE INTO VENDOR_REGISTRATION (vendor_reg_num, vendor_id, admin_id, is_active, regDate)
+KEY(vendor_reg_num)
+VALUES (2, 'vendor2', 'vadmin', 1, NOW());
+
+MERGE INTO VENDOR_REGISTRATION (vendor_reg_num, vendor_id, admin_id, is_active, regDate)
+KEY(vendor_reg_num)
+VALUES (3, 'vendor3', 'vadmin', 1, NOW());
+
+
+/* ==========================================================================
+   4. PARTICIPANT 추가
+   기존 admin/user/vendor 참가자는 이미 있으므로 중복 추가하지 않음
+   ========================================================================== */
+
+MERGE INTO PARTICIPANT (p_id, p_type, u_reg_num, v_reg_num, admin_id)
+KEY(p_id)
+VALUES (991002, 'ADMIN', NULL, NULL, 'vadmin');
+
+MERGE INTO PARTICIPANT (p_id, p_type, u_reg_num, v_reg_num, admin_id)
+KEY(p_id)
+VALUES (991005, 'VENDOR', NULL, 2, NULL);
+
+MERGE INTO PARTICIPANT (p_id, p_type, u_reg_num, v_reg_num, admin_id)
+KEY(p_id)
+VALUES (991006, 'VENDOR', NULL, 3, NULL);
+
+
+/* ==========================================================================
+   5. 추가 입고 데이터
+   BOOK id 1~6이 존재한다는 전제
+   기존 stock_id 1~9는 건드리지 않음
+   ========================================================================== */
+
+INSERT INTO STOCK_IN (stock_id, v_reg_num, book_id, qty, cost, regDate)
+VALUES
+(991001, 1, 1, 300, 10000, TIMESTAMP '2026-06-25 09:00:00'),
+(991002, 1, 2, 200, 12000, TIMESTAMP '2026-06-25 09:10:00'),
+
+(991003, 2, 3, 250,  9000, TIMESTAMP '2026-06-25 09:20:00'),
+(991004, 2, 4, 180, 15000, TIMESTAMP '2026-06-25 09:30:00'),
+
+(991005, 3, 5, 220, 11000, TIMESTAMP '2026-06-25 09:40:00'),
+(991006, 3, 6, 160, 17000, TIMESTAMP '2026-06-25 09:50:00');
+
+
+/* ==========================================================================
+   6. 추가 판매 상품 데이터
+   ========================================================================== */
+
+INSERT INTO PRODUCT_SALE (sale_id, stock_id, v_reg_num, price, stock_qty, sale_status, regDate)
+VALUES
+(991001, 991001, 1, 15000, 245, 'ON', TIMESTAMP '2026-06-26 10:00:00'),
+(991002, 991002, 1, 18000, 145, 'ON', TIMESTAMP '2026-06-26 10:10:00'),
+
+(991003, 991003, 2, 13000, 208, 'ON', TIMESTAMP '2026-06-26 10:20:00'),
+(991004, 991004, 2, 22000, 138, 'ON', TIMESTAMP '2026-06-26 10:30:00'),
+
+(991005, 991005, 3, 16000, 184, 'ON', TIMESTAMP '2026-06-26 10:40:00'),
+(991006, 991006, 3, 24000, 124, 'ON', TIMESTAMP '2026-06-26 10:50:00');
+
+
+/* ==========================================================================
+   7. 추가 주문 마스터 데이터
+   기존 user_reg_num = 1 사용
+   ========================================================================== */
+
+INSERT INTO purchase (purchase_id, user_reg_num, total_price, status, purchase_date)
+VALUES
+(991001, 1, 150000, 'ORDERED', TIMESTAMP '2026-07-01 09:10:00'),
+(991002, 1, 104000, 'ORDERED', TIMESTAMP '2026-07-02 11:20:00'),
+(991003, 1, 156000, 'ORDERED', TIMESTAMP '2026-07-03 14:30:00'),
+
+(991004, 1, 192000, 'ORDERED', TIMESTAMP '2026-07-08 10:00:00'),
+(991005, 1, 300000, 'ORDERED', TIMESTAMP '2026-07-09 16:10:00'),
+(991006, 1, 242000, 'ORDERED', TIMESTAMP '2026-07-10 13:40:00'),
+
+(991007, 1, 216000, 'ORDERED', TIMESTAMP '2026-07-15 12:00:00'),
+(991008, 1, 126000, 'ORDERED', TIMESTAMP '2026-07-16 15:00:00'),
+(991009, 1, 262000, 'ORDERED', TIMESTAMP '2026-07-20 18:20:00'),
+
+(991010, 1, 195000, 'ORDERED', TIMESTAMP '2026-07-23 09:30:00'),
+(991011, 1, 132000, 'ORDERED', TIMESTAMP '2026-07-27 17:45:00'),
+(991012, 1, 240000, 'ORDERED', TIMESTAMP '2026-07-31 20:00:00');
+
+
+/* ==========================================================================
+   8. 추가 주문 상세 데이터
+   quantity = 실제 판매 권 수
+   quantity * unit_price = 실제 매출액
+   ========================================================================== */
+
+INSERT INTO PURCHASE_DETAIL (detail_id, purchase_id, sale_id, v_reg_num, quantity, unit_price, tracking_no, delivery_status)
+VALUES
+(991001, 991001, 991001, 1, 10, 15000, 'STAT-991001', 'DONE'),
+(991002, 991002, 991003, 2, 8,  13000, 'STAT-991002', 'DONE'),
+
+(991003, 991003, 991002, 1, 5,  18000, 'STAT-991003-A', 'DONE'),
+(991004, 991003, 991004, 2, 3,  22000, 'STAT-991003-B', 'DONE'),
+
+(991005, 991004, 991005, 3, 12, 16000, 'STAT-991004', 'DONE'),
+(991006, 991005, 991001, 1, 20, 15000, 'STAT-991005', 'DONE'),
+(991007, 991006, 991004, 2, 11, 22000, 'STAT-991006', 'DONE'),
+
+(991008, 991007, 991006, 3, 9,  24000, 'STAT-991007', 'DONE'),
+(991009, 991008, 991002, 1, 7,  18000, 'STAT-991008', 'DONE'),
+
+(991010, 991009, 991003, 2, 14, 13000, 'STAT-991009-A', 'DONE'),
+(991011, 991009, 991005, 3, 5,  16000, 'STAT-991009-B', 'DONE'),
+
+(991012, 991010, 991001, 1, 13, 15000, 'STAT-991010', 'DONE'),
+(991013, 991011, 991004, 2, 6,  22000, 'STAT-991011', 'DONE'),
+(991014, 991012, 991006, 3, 10, 24000, 'STAT-991012', 'DONE');
