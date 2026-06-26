@@ -33,10 +33,19 @@
                                 <li><hr class="dropdown-divider"></li>
                             </c:if>
                             <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/inquiries">📨 문의 사항 확인</a></li>
-                            <c:if test="${sessionScope.loginAdmin.role eq 'SUPER' or sessionScope.loginAdmin.role eq 'BOOK_ADMIN'}">
+                            <c:if test="${sessionScope.loginAdmin.role eq 'SUPER' or sessionScope.loginAdmin.role eq 'VENDOR_ADMIN'}">
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item fw-bold text-primary" href="${pageContext.request.contextPath}/book/insert">➕ 신규 도서 추가</a></li>
                             </c:if>
+                            <c:if test="${not empty sessionScope.loginAdmin 
+							    and (sessionScope.loginAdmin.role eq 'SUPER' 
+							    or sessionScope.loginAdmin.role eq 'VENDOR_ADMIN')}">
+							
+							    <li>
+							        <a class="dropdown-item cosmic-admin-menu-item"
+							           href="${pageContext.request.contextPath}/admin/purchase/salesvolume">📊 전체 판매 매출 통계</a>
+							    </li>							
+							</c:if>
                         </ul>
                     </li>
                 </c:if>
@@ -58,19 +67,96 @@
             <ul class="navbar-nav ms-auto align-items-center">
                 <c:choose>
                     <c:when test="${not empty sessionScope.loginAdmin}">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle fw-bold" href="#" id="adminProfileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #ff4757;">
-                                🛡️ ${sessionScope.loginAdmin.adminName} [${sessionScope.loginAdmin.role}]
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="adminProfileDropdown">
-                                <c:if test="${sessionScope.loginAdmin.role eq 'SUPER'}">
-                                    <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/userControl">통제 패널</a></li>
-                                </c:if>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger fw-bold" href="${pageContext.request.contextPath}/member/logout">사령부 로그아웃</a></li>
-                            </ul>
-                        </li>
-                    </c:when>
+					    <li class="nav-item dropdown cosmic-admin-profile-dropdown">
+					
+					        <a class="nav-link dropdown-toggle fw-bold cosmic-admin-profile-toggle"
+					           href="#"
+					           id="adminProfileDropdown"
+					           role="button"
+					           data-bs-toggle="dropdown"
+					           aria-expanded="false">
+					
+					            <span class="admin-profile-shield">🛡️</span>
+					            <span class="admin-profile-name">${sessionScope.loginAdmin.adminName}</span>
+					            <span class="admin-profile-role">[${sessionScope.loginAdmin.role}]</span>
+					        </a>
+					
+					        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 cosmic-admin-profile-menu"
+					            aria-labelledby="adminProfileDropdown">
+					
+					            <li class="admin-profile-summary">
+					                <div class="admin-profile-summary-name">
+					                    ${sessionScope.loginAdmin.adminName}
+					                </div>
+					                <div class="admin-profile-summary-role">
+					                    ${sessionScope.loginAdmin.role}
+					                </div>
+					            </li>
+					
+					            <li><hr class="dropdown-divider"></li>
+					
+					            <%-- SUPER 전용 메뉴 --%>
+					            <c:if test="${sessionScope.loginAdmin.role eq 'SUPER'}">
+					                <li>
+					                    <a class="dropdown-item cosmic-profile-item"
+					                       href="${pageContext.request.contextPath}/admin/userControl">
+					                        👥 대원 통제 센터
+					                    </a>
+					                </li>
+					
+					                <li>
+					                    <a class="dropdown-item cosmic-profile-item"
+					                       href="${pageContext.request.contextPath}/admin/adminControl">
+					                        👑 사령부 관리 패널
+					                    </a>
+					                </li>
+					            </c:if>
+					
+					            <%-- SUPER / VENDOR_ADMIN 공통 메뉴 --%>
+					            <c:if test="${sessionScope.loginAdmin.role eq 'SUPER' 
+					                or sessionScope.loginAdmin.role eq 'VENDOR_ADMIN'}">
+					
+					                <li>
+					                    <a class="dropdown-item cosmic-profile-item cosmic-profile-sales"
+					                       href="${pageContext.request.contextPath}/admin/purchase/salesvolume">
+					                        📊 전체 판매 매출 통계
+					                    </a>
+					                </li>
+					
+					            </c:if>
+					
+					            <%-- 관리자 공통 문의 확인 --%>
+					            <li>
+					                <a class="dropdown-item cosmic-profile-item"
+					                   href="${pageContext.request.contextPath}/admin/inquiries">
+					                    📨 문의 사항 확인
+					                </a>
+					            </li>
+					
+					            <%-- 기존 정책 유지: SUPER / VENDOR_ADMIN 도서 추가 가능 --%>
+					            <c:if test="${sessionScope.loginAdmin.role eq 'SUPER' 
+					                or sessionScope.loginAdmin.role eq 'VENDOR_ADMIN'}">
+					
+					                <li>
+					                    <a class="dropdown-item cosmic-profile-item"
+					                       href="${pageContext.request.contextPath}/book/insert">
+					                        ➕ 신규 도서 추가
+					                    </a>
+					                </li>
+					
+					            </c:if>
+					
+					            <li><hr class="dropdown-divider"></li>
+					
+					            <li>
+					                <a class="dropdown-item cosmic-profile-item cosmic-profile-logout"
+					                   href="${pageContext.request.contextPath}/member/logout">
+					                    🚪 사령부 로그아웃
+					                </a>
+					            </li>
+					        </ul>
+					    </li>
+					</c:when>
             
                     <c:when test="${not empty sessionScope.loginMember}">
                         <li class="nav-item me-2">

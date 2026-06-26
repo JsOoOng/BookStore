@@ -137,17 +137,49 @@
         <div class="admin-sales-table-wrap">
             <table class="admin-sales-table">
                 <thead>
-                    <tr>
-					    <th>판매날짜</th>
-					    <th>판매상품번호</th>
-					    <th>도서번호</th>
-					    <th>도서명</th>
-					    <th>협력업체</th>
-					    <th>판매 수량</th>
-					    <th>매출액</th>
-					    <th>주문 건 수</th>
-					</tr>
-                </thead>
+				    <tr>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('saleDate')">
+				                판매날짜 <span id="sort-saleDate" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('saleId')">
+				                판매상품번호 <span id="sort-saleId" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('bookId')">
+				                도서번호 <span id="sort-bookId" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('bookTitle')">
+				                도서명 <span id="sort-bookTitle" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('vendorName')">
+				                협력업체 <span id="sort-vendorName" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('totalQty')">
+				                판매 수량 <span id="sort-totalQty" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('totalRevenue')">
+				                매출액 <span id="sort-totalRevenue" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				        <th>
+				            <button type="button" class="table-sort-btn" onclick="sortSoldProducts('orderCount')">
+				                주문 건 수 <span id="sort-orderCount" class="sort-mark">↕</span>
+				            </button>
+				        </th>
+				    </tr>
+				</thead>
                 <tbody id="soldProductBody">
                     <tr>
                         <td colspan="8" class="admin-sales-empty-cell">
@@ -167,6 +199,9 @@
     const contextPath = '${pageContext.request.contextPath}';
     let adminSalesChart = null;
     let allSoldProducts = [];
+
+    let soldProductSortKey = "saleDate";
+    let soldProductSortDirection = "desc";
 
     const moneyFormatter = new Intl.NumberFormat('ko-KR');
     const numberFormatter = new Intl.NumberFormat('ko-KR');
@@ -626,6 +661,85 @@
 
         renderSoldProducts(allSoldProducts);
     }
+    
+    function sortSoldProducts(key) {
+        if (soldProductSortKey === key) {
+            soldProductSortDirection = soldProductSortDirection === "asc" ? "desc" : "asc";
+        } else {
+            soldProductSortKey = key;
+
+            if (key === "bookTitle" || key === "vendorName") {
+                soldProductSortDirection = "asc";
+            } else {
+                soldProductSortDirection = "desc";
+            }
+        }
+
+        renderSoldProducts(allSoldProducts);
+    }
+
+    function updateSortMarks() {
+        const keys = [
+            "saleDate",
+            "saleId",
+            "bookId",
+            "bookTitle",
+            "vendorName",
+            "totalQty",
+            "totalRevenue",
+            "orderCount"
+        ];
+
+        keys.forEach(key => {
+            const el = document.getElementById("sort-" + key);
+            if (!el) return;
+
+            if (key !== soldProductSortKey) {
+                el.textContent = "↕";
+                el.classList.remove("active");
+                return;
+            }
+
+            el.textContent = soldProductSortDirection === "asc" ? "▲" : "▼";
+            el.classList.add("active");
+        });
+    }
+
+    function getSortedSoldProducts(data) {
+        const copied = [...data];
+
+        copied.sort((a, b) => {
+            let av = a[soldProductSortKey];
+            let bv = b[soldProductSortKey];
+
+            if (soldProductSortKey === "bookTitle" || soldProductSortKey === "vendorName") {
+                av = av || "";
+                bv = bv || "";
+
+                const result = av.localeCompare(bv, "ko-KR");
+
+                return soldProductSortDirection === "asc" ? result : -result;
+            }
+
+            if (soldProductSortKey === "saleDate") {
+                av = av || "";
+                bv = bv || "";
+
+                const result = av.localeCompare(bv);
+
+                return soldProductSortDirection === "asc" ? result : -result;
+            }
+
+            av = Number(av || 0);
+            bv = Number(bv || 0);
+
+            const result = av - bv;
+
+            return soldProductSortDirection === "asc" ? result : -result;
+        });
+
+        return copied;
+    }
 
     function renderSoldProducts(data) {
         const tbody = document.getElementById("soldProductBody");
@@ -653,10 +767,14 @@
         if (filteredData.length === 0) {
             tbody.innerHTML =
                 '<tr><td colspan="8" class="admin-sales-empty-cell">선택한 협력업체의 판매 상품이 없습니다.</td></tr>';
+            updateSortMarks();
             return;
         }
 
-        filteredData.forEach(item => {
+        const sortedData = getSortedSoldProducts(filteredData);
+        updateSortMarks();
+
+        sortedData.forEach(item => {
             const tr = document.createElement("tr");
 
             tr.innerHTML =

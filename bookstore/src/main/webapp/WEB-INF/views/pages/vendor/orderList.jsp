@@ -17,6 +17,7 @@
     </div>
 
     <div class="row g-4 vendor-grid-row">
+        <%-- 🏢 좌측: 파트너 기지 정보 마스터 카드 --%>
         <div class="col-xl-3 col-lg-4">
             <div class="card cosmic-vendor-info-card h-100">
                 <div class="card-header info-card-header">🏢 파트너십 가입 정보</div>
@@ -30,15 +31,32 @@
             </div>
         </div>
 
+        <%-- 📦 우측: 주문 관제탑 상황판 (대시보드 액션 버튼 탑재) --%>
         <div class="col-xl-9 col-lg-8">
             <div class="card cosmic-vendor-main-card h-100">
+                
+                <%-- 🔥 [수정 완료] dashboard.jsp와 완전히 동일한 규격의 헤더 액션 컨트롤 바 이식 --%>
                 <div class="card-header main-card-header">
                     <span class="main-card-title">🚚 입점 파트너 정규 회원 주문 관제탑</span>
+                    <div class="main-card-actions">                    
+                        <a href="${pageContext.request.contextPath}/vendor/purchase/salesvolume" class="btn-vendor-salesvolume">
+                            📊 도서 판매량
+                        </a>                
+                        <a href="${pageContext.request.contextPath}/vendor/purchase/cookielist" class="btn-vendor-sub">
+                            🚚 비회원 주문·배송 관제탑 ➔
+                        </a>
+                        <a href="${pageContext.request.contextPath}/vendor/purchase/list" class="btn-vendor-sub">
+                            🚚 회원 주문·배송 관제탑 ➔
+                        </a>
+                        <a href="${pageContext.request.contextPath}/vendor/product/register" class="btn-vendor-primary">
+                            ➕ 신규 판매 상품 등록
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="card-body p-0 main-card-body">
                     <div class="table-responsive vendor-table-wrap">
-                        <%-- 💥 [1단계] 메인 테이블 구역: 오직 <tr>과 <td>만 존재해야 한다! --%>
+                        <%-- 💥 메인 테이블 구역 --%>
                         <table class="cosmic-table vendor-order-table text-center mb-0">
                             <thead>
                                 <tr>
@@ -110,7 +128,7 @@
     </div>
 </div>
 
-<%-- 💥 [2단계] 모달 창 구역: 테이블 바깥(안전 지대)으로 완전 격리! --%>
+<%-- 💥 [2단계] 모달 창 구역: 테이블 바깥 격리망 --%>
 <c:if test="${not empty groupedOrders}">
     <c:forEach var="entry" items="${groupedOrders}">
         <c:set var="purchaseId" value="${entry.key}" />
@@ -138,11 +156,11 @@
                             <thead class="table-light" style="white-space: nowrap; word-break: keep-all;">
                                 <tr>
                                     <th style="width: 10%; min-width: 80px;">상세번호</th>
-							        <th style="width: auto; min-width: 300px;">도서 정보</th>
-							        <th style="width: 8%; min-width: 60px;">수량</th>
-							        <th style="width: 12%; min-width: 100px;">결제액</th>
-							        <th style="width: 10%; min-width: 80px;">상태</th>
-							        <th style="width: 10%; min-width: 90px;">제어</th>
+                                    <th style="width: auto; min-width: 300px;">도서 정보</th>
+                                    <th style="width: 8%; min-width: 60px;">수량</th>
+                                    <th style="width: 12%; min-width: 100px;">결제액</th>
+                                    <th style="width: 10%; min-width: 80px;">상태</th>
+                                    <th style="width: 10%; min-width: 90px;">제어</th>
                                 </tr>
                             </thead>
                             <tbody>
