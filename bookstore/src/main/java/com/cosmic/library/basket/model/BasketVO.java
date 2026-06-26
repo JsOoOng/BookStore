@@ -2,25 +2,24 @@ package com.cosmic.library.basket.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor; 
 
 @Getter
 @Setter
+@NoArgsConstructor // 💡 필수: Spring 데이터 바인딩을 위한 기본 생성자
 public class BasketVO {
-
-    private int basketId;   // 장바구니 고유 ID (PK)
-    private String memberId;
+    private int basketId;
+    private int userRegNum;
     private int bookId;
-    private int quantity;
+    private int quantity; // 값이 없으면 0으로 처리됨
     private String regDate;
-
-    // 화면용 (JOIN)
     private String title;
     private String writer;
     private int price;
     private String image;
-    
-    // 500 에러 방지를 위해 반드시 추가해야 할 필드들
-    private String genre;      
-    private String publisher;  
+    private String genre;
+    private String publisher;
     private String isbn;
+    private Integer saleId;
+    private String bizName;
 }

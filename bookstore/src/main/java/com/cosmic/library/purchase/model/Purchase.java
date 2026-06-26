@@ -8,18 +8,25 @@ import lombok.Setter;
 @Setter
 public class Purchase {
 
-    private int id;            // 구매 고유 ID (DB의 purchase_id와 매칭)
-    private String memberId;   // 회원 ID
-    private int bookId;        // 책 ID
-    private int price;         // 단가
-    private int quantity;      // 수량
-    private int totalPrice;    // 총 금액
-    
-    // 🔥 [추가] 마이페이지 출력을 위한 핵심 필드
-    private String status;         // 주문 상태 (ORDERED, CANCEL 등)
-    private Timestamp purchaseDate; // 구매 시간 (탐사 기록 일시)
+    // 🧾 --- 마스터(영수증) 공통 정보 ---
+    private int id;                 // 마스터 영수증 번호 (purchase_id)
+    private int userRegNum;         // 대원 활동 기준 고유 번호 (user_reg_num)
+    private Timestamp purchaseDate; // 결제 승인 및 탐사 기록 일시
 
-    // 🔥 [추가] JOIN용 필드 (도서관 본부 DB에서 가져올 정보)
-    private String title;  // 도서 제목
-    private String image;  // 도서 이미지 경로
+    // 📦 --- 디테일(세부 품목) 개별 정보 ---
+    private int bookId;             // 도서 원천 ID (book_id)
+    private int saleId;             // 💥 [추가] 마켓 판매 상품 고유 식별자 (sale_id - 배송/재고 관제 핵심 키!)
+    private int price;              // 개별 품목 구매 당시 단가 (unit_price)
+    private int quantity;           // 구매 수량
+    private int totalPrice;         // 해당 품목의 총 금액 (단가 * 수량)
+    private String status;          // 💥 [수정] 마스터의 상태가 아닌, 개별 품목의 배송 상태 (READY, SHIPPING 등)
+
+    // 🖼️ --- 화면 출력을 위한 JOIN 확장 필드 ---
+    private String title;           // 도서 제목
+    private String image;           // 도서 이미지 (네이버 실시간 표지용)
+    
+    private String email;
+    private String userName;
+    private String phone;
+    private int purchaseId;  // 💥 마스터 영수증 고유 번호
 }

@@ -1,8 +1,8 @@
 package com.cosmic.library.member.service;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.cosmic.library.member.model.MemberVO;
 import com.cosmic.library.member.repository.MemberDAO;
 
@@ -11,6 +11,16 @@ public class MemberServiceImple implements MemberService {
 
     @Autowired
     private MemberDAO memberDAO;
+
+    @Override
+    @Transactional // 🌟 중요: 듀얼 인서트 중 하나라도 터지면 전부 가입 전으로 롤백(Rollback)시킵니다.
+    public int join(MemberVO member) {
+        // 중복 가입 방지 로직
+        if (memberDAO.selectMemberById(member.getId()) != null) {
+            return 0; // 이미 존재하는 ID
+        }
+        return memberDAO.insertMember(member);
+    }
 
     @Override
     public MemberVO login(String id, String pw) {
@@ -31,17 +41,7 @@ public class MemberServiceImple implements MemberService {
         int count = memberDAO.countMemberById(id);
         
         // 2. 결과가 0이면 사용 가능한 아이디(true), 아니면 중복(false)입니다.
-        // 🛰️ "기지에 동일한 신호가 감지되지 않음 -> 입성 허가"
         return count == 0;
-    }
-
-    @Override
-    public int join(MemberVO member) {
-        // 중복 가입 방지 로직을 여기에 추가할 수 있습니다.
-        if (memberDAO.selectMemberById(member.getId()) != null) {
-            return 0; // 이미 존재하는 ID
-        }
-        return memberDAO.insertMember(member);
     }
 
     @Override
@@ -56,17 +56,6 @@ public class MemberServiceImple implements MemberService {
         return memberDAO.deleteMember(id);
     }
 
-    // --- 👑 최고 관리자(SUPER) 전용 기능 구현 ---
-
-    @Override
-    public List<MemberVO> getAllMembers() {
-        // 모든 대원의 명단을 호출합니다.
-        return memberDAO.selectAllMembers();
-    }
-
-    @Override
-    public int changeRole(String id, String role) {
-        // 특정 대원의 계급(USER < ADMIN < SUPER)을 조정합니다.
-        return memberDAO.updateRole(id, role);
-    }
+    // ❌ [도려냄] getAllMembers() 및 changeRole() 관련 최고 관리자 기능은 
+    // 새롭게 창설되는 com.cosmic.library.admin.service.AdminService 로 안전하게 이주되었습니다.
 }

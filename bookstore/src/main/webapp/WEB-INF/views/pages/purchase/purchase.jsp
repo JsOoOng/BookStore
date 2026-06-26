@@ -20,13 +20,15 @@
                 <c:forEach var="book" items="${purchaseList}">
                     <div class="purchase-item-card">
                         <div class="purchase-cover-wrap">
-                            <img src="${pageContext.request.contextPath}${book.image}" alt="${book.title}" class="purchase-img">
+                            <img src="${book.image}" alt="${book.title}" class="purchase-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/150x220?text=No+Img';">
                         </div>
 
                         <div class="purchase-info">
                             <div class="purchase-badge-row">
                                 <span class="purchase-badge">🚀 전송 대기 중</span>
-                                <span class="purchase-badge">${book.genre}</span>
+                                <c:if test="${not empty book.genre}">
+                                    <span class="purchase-badge">${book.genre}</span>
+                                </c:if>
                             </div>
 
                             <h3 class="item-title">${book.title}</h3>
@@ -41,7 +43,7 @@
                             <div class="purchase-price-row">
                                 <span class="price-label">데이터 가치</span>
                                 <span class="item-price">
-                                    <fmt:formatNumber value="${book.price}" pattern="#,###"/> 원
+                                    <fmt:formatNumber value="${book.price * book.quantity}" pattern="#,###"/> 원
                                 </span>
                             </div>
                         </div>
@@ -53,22 +55,31 @@
                 <div class="summary-inner">
                     <h3 class="purchase-summary-title">결제 요약</h3>
 
+                    <%-- 💥 [수리 완료] 쓸데없는 비회원 탈선 로직 완전 소독, 정규 회원 궤도 고정! --%>
                     <form action="${pageContext.request.contextPath}/purchase/buy" method="post">
+                        
                         <c:choose>
-						    <%-- 장바구니에서 넘어온 경우 --%>
-						    <c:when test="${not empty basketIds}">
-						        <input type="hidden" name="basketIds" value="${basketIds}">
-						    </c:when>
-						    <%-- 상세페이지에서 바로구매로 넘어온 경우 --%>
-						    <c:otherwise>
-						        <input type="hidden" name="bookId" value="${purchaseList[0].bookId}">
-						    </c:otherwise>
-						</c:choose>
+                            <c:when test="${not empty basketIds}">
+                                <input type="hidden" name="basketIds" value="${basketIds}">
+                            </c:when>
+                            <c:otherwise>
+                                <%-- 💥 [버그 수정] 단일 구매 시 bookId, saleId, price가 정확히 날아가도록 파이프라인 수리! --%>
+                                <input type="hidden" name="bookId" value="${purchaseList[0].bookId}">
+                                <input type="hidden" name="saleId" value="${purchaseList[0].saleId}">
+                                <input type="hidden" name="price" value="${purchaseList[0].price}">
+                            </c:otherwise>
+                        </c:choose>
 
                         <div class="purchase-summary-details">
                             <div class="summary-row">
                                 <span>선택된 지식 수</span>
-                                <span>${purchaseList.size()} 권</span>
+                                <span>
+                                    <c:set var="totalQuantity" value="0" />
+                                    <c:forEach var="b" items="${purchaseList}">
+                                        <c:set var="totalQuantity" value="${totalQuantity + b.quantity}" />
+                                    </c:forEach>
+                                    ${totalQuantity} 권
+                                </span>
                             </div>
 
                             <div class="summary-row">
@@ -83,6 +94,7 @@
                                 <strong class="total-amount">
                                     <fmt:formatNumber value="${totalPrice}" pattern="#,###"/> 원
                                 </strong>
+                                <input type="hidden" name="totalPrice" value="${totalPrice}">
                             </div>
                         </div>
 
@@ -98,6 +110,5 @@
                 </div>
             </aside>
         </div>
-
     </div>
 </div>

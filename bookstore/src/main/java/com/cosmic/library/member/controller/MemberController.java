@@ -11,11 +11,24 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.cosmic.library.basket.service.BasketService;
 import com.cosmic.library.member.model.MemberVO;
 import com.cosmic.library.member.service.MemberService;
 import com.cosmic.library.purchase.service.PurchaseService;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.cosmic.library.basket.model.BasketVO;
+import com.cosmic.library.purchase.model.Purchase;
 
 @Controller
 @RequestMapping("/member")
@@ -33,7 +46,6 @@ public class MemberController {
     // 1. 로그인 페이지로 이동
     @GetMapping("/login")
     public String loginForm(Model model) {
-        // 🚀 경로 수정: pages/member/login
         model.addAttribute("pageName", "pages/member/login");
         return "common/layout";
     }
@@ -43,6 +55,8 @@ public class MemberController {
     public String loginProcess(@RequestParam("id") String id, @RequestParam("pw") String pw, HttpSession session) {
         MemberVO loginMember = memberService.login(id, pw);
         if (loginMember != null) {
+            // 성공 시 세션에 담기는 loginMember 안에는 조인 쿼리 덕분에
+            // 새 테이블 구조의 user_reg_num, reg_status, email, points, 그리고 [address]까지 완벽 장착됩니다!
             session.setAttribute("loginMember", loginMember);
             return "redirect:/";
         }
@@ -59,19 +73,26 @@ public class MemberController {
     // 4. 회원가입 페이지 이동
     @GetMapping("/join")
     public String joinForm(Model model) {
-        // 🚀 경로 수정: pages/member/join
         model.addAttribute("pageName", "pages/member/join");
         return "common/layout";
     }
 
     // 5. 회원가입 처리 (POST)
     @PostMapping("/join")
-    public String joinProcess(@ModelAttribute MemberVO member) {
+    public String joinProcess(@ModelAttribute MemberVO member, RedirectAttributes rttr) {
+
+        if (member.getAddress() == null || member.getAddress().trim().isEmpty()) {
+            member.setAddress("은하계 미지정 구역");
+        }
+
         int result = memberService.join(member);
+
         if (result > 0) {
-            return "redirect:/member/login?joinSuccess=true";
+            rttr.addFlashAttribute("joinSuccess", true);
+            return "redirect:/member/login";
         } else {
-            return "redirect:/member/join?error=id_exists";
+            rttr.addFlashAttribute("joinError", true);
+            return "redirect:/member/join";
         }
     }
 
@@ -80,84 +101,171 @@ public class MemberController {
     public String editForm(Model model, HttpSession session) {
         if (session.getAttribute("loginMember") == null) return "redirect:/member/login";
         
-        // 🚀 경로 수정: pages/member/edit
         model.addAttribute("pageName", "pages/member/edit");
         return "common/layout";
     }
     
 
-    // 정보 수정 처리 (POST) - 비밀번호 선택 변경 및 보안 강화 버전
+    // 정보 수정 처리 (POST)
     @PostMapping("/edit")
     public String editProcess(
             @ModelAttribute MemberVO member, 
-            @RequestParam("currentPw") String currentPw, // 현재 비번 (본인 확인용)
-            @RequestParam(value = "newPw", required = false) String newPw, // 새 비번 (변경용)
+            @RequestParam("currentPw") String currentPw, 
+            @RequestParam(value = "newPw", required = false) String newPw, 
             HttpSession session) {
         
         // 1. [보안 검문] 현재 세션에 로그인된 대원 정보를 가져옵니다.
         MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
         
-        // 2. [신원 확인] 입력한 '현재 보안 코드'가 DB(세션)의 정보와 일치하는지 검사합니다.
+        // 2. [신원 확인]
         if (loginMember == null || !loginMember.getPw().equals(currentPw)) {
-            // 일치하지 않으면 'pw_mismatch' 에러 코드를 들고 다시 수정 페이지로 보냅니다.
             return "redirect:/member/edit?error=pw_mismatch";
         }
         
-        // 3. [비밀번호 갱신 결정] 
-        // 새 보안 코드가 입력되었다면 그 값으로, 비어있다면 기존 값을 그대로 유지합니다.
+        // 3. [비밀번호 및 이메일 갱신 결정] 
         if (newPw != null && !newPw.trim().isEmpty()) {
-            member.setPw(newPw); // 새로운 코드로 교체
+            member.setPw(newPw); 
         } else {
-            member.setPw(loginMember.getPw()); // 기존 코드를 그대로 주입 (5번 문제 해결!)
+            member.setPw(loginMember.getPw()); 
         }
         
-        // 4. [기지 데이터 업데이트] DB에 수정된 정보를 동기화합니다.
+        // 만약 JSP 폼에서 이메일 수정란을 안 만들었거나 비어있다면 기존 이메일을 유지하도록 방어 코드 보강
+        if (member.getEmail() == null || member.getEmail().trim().isEmpty()) {
+            member.setEmail(loginMember.getEmail());
+        }
+        
+        // 🪐 [💥 신규 배송지 주소 방어 코드] 
+        // 수정 폼에서 배송지 주소가 비어있거나 누락되어 오면 기존 주소를 유지시킵니다.
+        if (member.getAddress() == null || member.getAddress().trim().isEmpty()) {
+            member.setAddress(loginMember.getAddress());
+        }
+        
+        // 4. [기지 데이터 업데이트] DB에 수정된 정보(pw, name, email, address)를 동기화합니다.
         int result = memberService.updateProfile(member);
         
         if (result > 0) {
-            // 5. [세션 동기화] DB가 바뀌었으니 세션의 탑승권(loginMember)도 최신 정보로 갱신합니다.
-            // 수정된 ID와 PW를 사용하여 다시 조회합니다.
+            // 5. [세션 최신화] 변경된 ID와 PW를 사용하여 다시 조회(Address 포함)하여 세션을 교체합니다.
             MemberVO updatedMember = memberService.login(member.getId(), member.getPw());
             session.setAttribute("loginMember", updatedMember);
             
-            return "redirect:/?editSuccess=true"; // 성공 신호와 함께 메인 본부로!
-
+            return "redirect:/?editSuccess=true"; 
         }
         
         return "redirect:/member/edit?error=true";
     }
     
-    // 아이디 중복 확인 (AJAX 통신 전용)
-    @ResponseBody // 🚀 중요: JSP 뷰를 찾지 않고, 리턴하는 문자열을 브라우저에 바로 전달합니다.
+    // 아이디 중복 확인 (AJAX)
+    @ResponseBody 
     @GetMapping("/checkId")
     public String checkId(@RequestParam("id") String id) {
-        // 1. 서비스에게 해당 아이디의 가용 여부를 묻습니다.
         boolean isAvailable = memberService.isIdAvailable(id);
-        
-        // 2. 결과에 따라 브라우저에 신호를 보냅니다.
-        // "Y" : 사용 가능 (Yellow Light? 아니, Green Light!)
-        // "N" : 중복됨 (No Go)
         return isAvailable ? "Y" : "N";
     }
     
+    // 7. 마이페이지 관제소
     @GetMapping("/mypage")
-    public String myPage(HttpSession session, Model model) {
-        // 1. 세션 신호 확인 (로그인 여부)
+    public String myPage(
+            @RequestParam(value = "msg", required = false) String msg, 
+            HttpSession session, 
+            Model model) {
+        
         MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
         if (loginMember == null) {
             return "redirect:/member/login";
         }
 
-        String memberId = loginMember.getId();
+        if (msg != null && !msg.trim().isEmpty()) {
+            model.addAttribute("addressAlert", msg);
+        }
 
-        // 2. 장바구니 리스트 호출 (보급 예약 현황)
-        model.addAttribute("basketList", basketService.getList(memberId));
+        int userRegNum = loginMember.getUser_reg_num();
+        
+        // 1. 장바구니 데이터 수집 및 표지 레이더 가동
+        List<BasketVO> basketList = basketService.getList(userRegNum);
+        for(BasketVO basket : basketList) {
+            basket.setImage(getNaverBookCover(basket.getTitle()));
+        }
 
-        // 3. 구매 내역 리스트 호출 (탐사 완료 기록)
-        model.addAttribute("purchaseList", purchaseService.getMyPurchases(memberId));
+        // 2. 구매 기록 데이터 수집 및 표지 레이더 가동 (⚠️ Purchase 객체에 setTitle이 있다고 가정)
+        List<Purchase> purchaseList = purchaseService.getMyPurchases(userRegNum);
+        for(Purchase pur : purchaseList) {
+            pur.setImage(getNaverBookCover(pur.getTitle()));
+        }
 
-        // 4. 뷰 좌표 설정
+        model.addAttribute("basketList", basketList);
+        model.addAttribute("purchaseList", purchaseList);
+
         model.addAttribute("pageName", "pages/member/mypage");
         return "common/layout";
+    }
+    
+    // 🪐 [신규 개착] 결제 직전 주소를 즉시 업데이트하고 세션을 갱신하는 비동기 관제 밸런서
+    @ResponseBody
+    @PostMapping("/updateAddressAjax")
+    public String updateAddressAjax(@RequestParam("address") String address, HttpSession session) {
+        MemberVO loginMember = (MemberVO) session.getAttribute("loginMember");
+        if (loginMember == null) return "NOT_LOGIN";
+
+        if (address == null || address.trim().isEmpty() || address.equals("은하계 미지정 구역")) {
+            return "INVALID_ADDRESS";
+        }
+
+        // 1. 객체에 신규 주소 세팅 및 DB 원천 행성 업데이트
+        loginMember.setAddress(address);
+        int result = memberService.updateProfile(loginMember);
+
+        if (result > 0) {
+            // 2. 💥 핵심: 세션 정보도 즉시 새 주소로 치환하여 프리패스 자격 부여!
+            session.setAttribute("loginMember", loginMember);
+            return "OK";
+        }
+        return "FAIL";
+    }
+    
+ // ==============================================================
+    // 🛰️ [마이페이지 전용 레이더] 네이버 실시간 도서 표지 수집 통신 파이프라인
+    // ==============================================================
+    private static final String NAVER_CLIENT_ID = "0KouZkh6WK0a8kEp0TwY"; 
+    private static final String NAVER_CLIENT_SECRET = "z9aV9S6rPW";
+
+    private String getNaverBookCover(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "https://via.placeholder.com/50x75?text=No+Img";
+        }
+        try {
+            // 한글 제목 검색 시 통신 에러 방지를 위한 URL 정밀 인코딩!
+            String pureTitle = keyword.split(":")[0].trim();
+            String encodedKeyword = URLEncoder.encode(pureTitle, "UTF-8");
+            
+            String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
+            URL url = new URL(apiURL);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", NAVER_CLIENT_ID);
+            con.setRequestProperty("X-Naver-Client-Secret", NAVER_CLIENT_SECRET);
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200) { 
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = br.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                br.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONArray items = jsonObject.getJSONArray("items");
+                
+                if (items.length() > 0) {
+                    JSONObject bookItem = items.getJSONObject(0);
+                    return bookItem.getString("image");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("🚨 마이페이지 네이버 표지 통신 장애: " + e.getMessage());
+        }
+        return "https://via.placeholder.com/50x75?text=No+Img";
     }
 }
