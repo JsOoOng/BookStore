@@ -211,7 +211,7 @@ function shipOrder(detailId) {
     var formData = new URLSearchParams();
     formData.append("purchaseId", detailId); 
 
-    fetch("${pageContext.request.contextPath}/vendor/purchase/ship", {
+    fetch("${pageContext.request.contextPath}/cookie/purchase/ship", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData

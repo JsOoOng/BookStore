@@ -142,5 +142,9 @@ public class CookieService {
         return cookiePurchaseRepository.findIdsByGuestInfo(name, phone, nickname);
     }
 
+	public boolean startShipping(int purchaseId) {
+        return cookiePurchaseRepository.updateStatus(purchaseId, "SHIPPING") > 0;
+    }
+
 
 }

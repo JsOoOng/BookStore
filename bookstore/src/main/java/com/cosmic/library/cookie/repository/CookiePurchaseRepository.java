@@ -140,4 +140,10 @@ public class CookiePurchaseRepository {
 
         return jdbcTemplate.queryForList(sql, String.class, name, phone, nickname);
     }
+
+	public int updateStatus(int detailId, String status) { // 매개변수 이름을 detailId로 논리적 변경
+        // 💥 [핵심 수술] purchase_id가 아니라 detail_id로 개별 품목만 상태를 바꾼다!
+        String sql = "UPDATE GUEST_PURCHASE_DETAIL SET delivery_status = ? WHERE detail_id = ?";
+        return jdbcTemplate.update(sql, status, detailId);
+    }
 }

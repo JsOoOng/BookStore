@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.cosmic.library.basket.model.BasketVO;
@@ -242,5 +243,13 @@ public class CookiePurchaseController {
         model.addAttribute("foundPurchaseIds", foundPurchaseIds);
         model.addAttribute("pageName", "pages/purchase/guest_find_check");
         return "common/layout";
+    }
+    
+    @PostMapping("/ship")
+    @ResponseBody
+    public String shipProduct(@RequestParam("purchaseId") int purchaseId) {
+        // 💥 Service 레이어에서 PurchaseRepository.updateStatus(purchaseId, "SHIPPING")을 호출하는지 확인할 것!
+        boolean isSuccess = cookieService.startShipping(purchaseId);
+        return isSuccess ? "ok" : "fail";
     }
 }
