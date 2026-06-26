@@ -3,6 +3,11 @@ package com.cosmic.library.vendor.repository;
 import java.util.List;
 import com.cosmic.library.vendor.model.ProductSaleVO;
 import com.cosmic.library.vendor.model.SalesVolumeVO;
+import com.cosmic.library.statistics.model.SalesSummaryVO;
+import com.cosmic.library.statistics.model.SalesTrendVO;
+import com.cosmic.library.statistics.model.SoldProductVO;
+import com.cosmic.library.statistics.model.VendorOptionVO;
+import com.cosmic.library.statistics.model.SalesCompareTrendVO;
 
 public interface ProductSaleDAO {
 
@@ -38,4 +43,35 @@ public interface ProductSaleDAO {
 
     // 📊 관리자용 전체 도서 판매량 통계 조회
     List<SalesVolumeVO> selectAdminSalesVolume(String period);
+    
+    Integer selectVRegNumByVendorId(String vendorId);
+    
+	// =========================================================================
+	// 📊 공통 판매 통계 메서드
+	// admin / vendor 공용
+	// vRegNum == null 또는 0 → 전체 업체
+	// vRegNum > 0 → 특정 업체
+	// =========================================================================
+	
+    // 상단 카드 요약 통계
+	SalesSummaryVO selectSalesSummary(String startDate, String endDate, Integer vRegNum);
+	
+	// 기간별 그래프 통계
+	List<SalesTrendVO> selectSalesTrend(String period, String startDate, String endDate, Integer vRegNum);
+	
+	// 특정 기간에 판매된 상품 목록
+	List<SoldProductVO> selectSoldProducts(String startDate, String endDate, Integer vRegNum);
+	
+	// 관리자 회사 선택 박스용 협력업체 목록
+	List<VendorOptionVO> selectVendorOptions();
+	
+	// 관리자용 두 회사 비교 그래프
+	List<SalesCompareTrendVO> selectSalesCompareTrend(
+	         String period,
+	         String startDate,
+	         String endDate,
+	         String metric,
+	         int vendorA,
+	         int vendorB
+	);
 }

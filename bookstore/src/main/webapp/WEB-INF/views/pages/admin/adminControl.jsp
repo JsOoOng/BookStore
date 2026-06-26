@@ -6,15 +6,26 @@
     
     <%-- 🚀 레이아웃 상단 통제 헤더 구역 --%>
     <div class="admin-control-header">
-        <div class="header-text-group">
-            <h2 class="cosmic-admin-title">👑 사령부 고위 관리자 제어 패널</h2>
-            <p class="cosmic-admin-desc">테이블 헤더의 직무 필터로 분류하고, 관리자 배지를 클릭하여 권한을 즉시 제어합니다.</p>
-        </div>
+    <div class="header-text-group">
+        <h2 class="cosmic-admin-title">👑 사령부 고위 관리자 제어 패널</h2>
+        <p class="cosmic-admin-desc">테이블 헤더의 직무 필터로 분류하고, 관리자 배지를 클릭하여 권한을 즉시 제어합니다.</p>
+    </div>
+    
+    <div class="admin-header-actions">
         
-        <button class="btn-cosmic-danger btn-add-admin" data-bs-toggle="modal" data-bs-target="#adminRegisterModal">
+        <a href="${pageContext.request.contextPath}/admin/purchase/salesvolume"
+           class="btn-cosmic-sales">
+            📊 판매 통계
+        </a>
+
+        <button class="btn-cosmic-danger btn-add-admin"
+                data-bs-toggle="modal"
+                data-bs-target="#adminRegisterModal">
             ➕ 신규 관리자 임명
         </button>
+
     </div>
+</div>
 
     <%-- 🎉 사령부 액션 피드백 알림 배너 --%>
     <c:if test="${param.regSuccess eq 'true'}">

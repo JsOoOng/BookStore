@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.cosmic.library.statistics.model.SalesSummaryVO;
+import com.cosmic.library.statistics.model.SalesTrendVO;
+import com.cosmic.library.statistics.model.SoldProductVO;
 import com.cosmic.library.vendor.model.VendorVO;
 import com.cosmic.library.vendor.model.ProductSaleVO;
 import com.cosmic.library.vendor.model.SalesVolumeVO;
@@ -16,6 +20,7 @@ import com.cosmic.library.vendor.service.ProductSaleService;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,16 +57,30 @@ public class VendorController {
             @RequestParam("vendorPw") String vendorPw, 
             HttpSession session) {
         
-        VendorVO loginVendor = vendorService.login(vendorId, vendorPw);
-        
-        if (loginVendor != null) {
-            session.setAttribute("loginVendor", loginVendor);
-            
-            // 🚀 [가상 스펙 유지]: 관리자 승인 기능 완공 전까지 테스트 흐름용 1번 강제 부여
-            session.setAttribute("vRegNum", 1); 
-            
-            return "redirect:/vendor/dashboard";
-        }
+    	VendorVO loginVendor = vendorService.login(vendorId, vendorPw);
+
+    	if (loginVendor != null) {
+
+    	    session.setAttribute("loginVendor", loginVendor);
+
+    	    Integer vRegNum = productSaleService.getVRegNumByVendorId(loginVendor.getVendorId());
+
+    	    System.out.println("✅ 로그인 vendorId = " + loginVendor.getVendorId());
+    	    System.out.println("✅ 로그인 vRegNum = " + vRegNum);
+
+    	    if (vRegNum == null) {
+    	        System.out.println("🚨 활성화된 업체 등록 번호가 없습니다. vendorId = " + loginVendor.getVendorId());
+    	        return "redirect:/member/login?error=true";
+    	    }
+
+    	    session.setAttribute("vRegNum", vRegNum);
+
+    	    session.removeAttribute("loginAdmin");
+    	    session.removeAttribute("loginMember");
+    	    session.removeAttribute("loginUser");
+
+    	    return "redirect:/vendor/dashboard";
+    	}
         
         // 🌟 정화: 로그인 실패 시 통합 로그인 창으로 에러 파라미터를 들고 리다이렉트
         return "redirect:/member/login?error=true";
@@ -277,7 +296,7 @@ public class VendorController {
             String encodedKeyword = java.net.URLEncoder.encode(pureTitle, "UTF-8");
             String apiURL = "https://openapi.naver.com/v1/search/book.json?query=" + encodedKeyword + "&display=1";
             
-            URL url = new URL(apiURL);
+            URL url = URI.create(apiURL).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             
             con.setRequestMethod("GET");
@@ -311,25 +330,6 @@ public class VendorController {
     }
 
     /**
-     * 📊 도서 판매량 페이지 이동
-     */
-    @GetMapping("/purchase/salesvolume")
-    public String salesVolumePage(HttpSession session, Model model) {
-
-        VendorVO loginVendor = (VendorVO) session.getAttribute("loginVendor");
-        Integer vRegNum = (Integer) session.getAttribute("vRegNum");
-
-        if (loginVendor == null || vRegNum == null) {
-            return "redirect:/member/login";
-        }
-
-        model.addAttribute("vendorInfo", loginVendor);
-        model.addAttribute("pageName", "pages/vendor/salesvolume");
-
-        return "common/layout";
-    }
-
-    /**
      * 📊 도서 판매량 그래프 데이터 API
      */
     @ResponseBody
@@ -346,4 +346,85 @@ public class VendorController {
 
         return productSaleService.getSalesVolume(vRegNum, period);
     }
+    
+    /**
+     * 📊 협력업체 본인 판매 통계 페이지
+     */
+    @GetMapping("/purchase/salesvolume")
+    public String vendorSalesVolumePage(HttpSession session, Model model) {
+
+        VendorVO loginVendor = (VendorVO) session.getAttribute("loginVendor");
+        Integer vRegNum = (Integer) session.getAttribute("vRegNum");
+
+        if (loginVendor == null || vRegNum == null) {
+            return "redirect:/member/login";
+        }
+
+        model.addAttribute("vendorInfo", loginVendor);
+        model.addAttribute("pageName", "pages/vendor/salesvolume");
+
+        return "common/layout";
+    }
+    
+    /**
+     * 📊 협력업체 본인 판매 요약 카드 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/summary")
+    public SalesSummaryVO vendorSalesSummary(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            HttpSession session) {
+
+        Integer vRegNum = (Integer) session.getAttribute("vRegNum");
+
+        System.out.println("✅ vendor summary session vRegNum = " + vRegNum);
+
+        if (vRegNum == null) {
+            return new SalesSummaryVO();
+        }
+
+        return productSaleService.getSalesSummary(startDate, endDate, vRegNum);
+    }
+    
+    /**
+     * 📈 협력업체 본인 기간별 판매 통계 그래프 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/trend")
+    public List<SalesTrendVO> vendorSalesTrend(
+            @RequestParam(value = "period", defaultValue = "day") String period,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            HttpSession session) {
+
+        Integer vRegNum = (Integer) session.getAttribute("vRegNum");
+
+        if (vRegNum == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getSalesTrend(period, startDate, endDate, vRegNum);
+    }
+    
+    /**
+     * 📚 협력업체 본인 특정 기간 판매 상품 목록 API
+     */
+    @ResponseBody
+    @GetMapping("/purchase/salesvolume/products")
+    public List<SoldProductVO> vendorSoldProducts(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            HttpSession session) {
+
+        Integer vRegNum = (Integer) session.getAttribute("vRegNum");
+
+        if (vRegNum == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        return productSaleService.getSoldProducts(startDate, endDate, vRegNum);
+    }
+    
+    
 }
