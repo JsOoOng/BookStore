@@ -30,6 +30,7 @@ import com.cosmic.library.basket.model.BasketVO;
 import com.cosmic.library.cookie.model.CookieOrderVO;
 import com.cosmic.library.cookie.model.GuestOrderVO;
 import com.cosmic.library.cookie.service.CookieService;
+import com.cosmic.library.toss.service.TossService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
@@ -38,6 +39,9 @@ public class CookiePurchaseController {
 
     @Autowired
     private CookieService cookieService;
+    
+    @Autowired
+    private TossService tossService;
 
     @PostMapping("/buy")
     public String cookiePurchase(@ModelAttribute("cookieOrderVO") CookieOrderVO order, 
@@ -87,7 +91,18 @@ public class CookiePurchaseController {
         cookie.setPath("/");
         response.addCookie(cookie);
         
-        return "redirect:/cookie/purchase/success";
+
+       
+
+        int amount = order.getTotalPrice();
+
+        String orderId = tossService.createOrder(purchaseId, guestId, amount);
+
+        return "redirect:/order/checkout?orderId="
+                + orderId
+                + "&amount="
+                + amount;
+        
     }
 
     private List<BasketVO> getBasketListFromRequest(HttpServletRequest request) {

@@ -41,6 +41,29 @@ public class TossDAOH2 implements TossDAO {
             throw new RuntimeException("insertOrder 실패", e);
         }
     }
+    
+    @Override
+	public void insertOrder2(TossVo order) {
+    	 String sql = "INSERT INTO ORDERS " +
+                 "(ORDER_ID, GUESTPURCHASE_ID, MEMBER_ID, TOTAL_PRICE, ORDER_STATUS, ORDER_DATE) " +
+                 "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+
+         try (Connection conn = dataSource.getConnection();
+              PreparedStatement ps = conn.prepareStatement(sql)) {
+
+             ps.setString(1, order.getOrderId());
+             ps.setString(2, order.getGuestPurchaseId());
+             ps.setString(3, order.getMember_id());
+             ps.setInt(4, order.getTotalPrice());
+             ps.setString(5, "READY");
+
+             ps.executeUpdate();
+
+         } catch (Exception e) {
+             throw new RuntimeException("insertOrder 실패", e);
+         }
+		
+	}
 
     // =========================
     // 2. 주문 조회
@@ -160,4 +183,37 @@ public class TossDAOH2 implements TossDAO {
 
         throw new RuntimeException("purchase 없음: " + purchaseId);
     }
+
+    @Override
+    public TossVo findGuestPurchaseById(String guestPurchaseId) {
+
+        String sql =
+            "SELECT PURCHASE_ID, TOTAL_PRICE " +
+            "FROM GUEST_PURCHASE " +
+            "WHERE PURCHASE_ID = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, guestPurchaseId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                TossVo vo = new TossVo();
+
+                vo.setGuestPurchaseId(rs.getString("PURCHASE_ID")); // 또는 rename 권장
+                vo.setTotalPrice(rs.getInt("TOTAL_PRICE"));
+
+                return vo;
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("purchase 조회 실패", e);
+        }
+
+        throw new RuntimeException("purchase 없음: " + guestPurchaseId);
+    }
+
+	
 }

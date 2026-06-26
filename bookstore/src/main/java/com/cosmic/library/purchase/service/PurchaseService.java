@@ -118,9 +118,6 @@ public class PurchaseService {
         return purchaseList;
     }
     
-    public Purchase findById(int purchaseId) {
-        return purchaseRepository.findById(purchaseId);
-    }
 
 	public String getMemberIdByNum(int userRegNum) {
 		return purchaseRepository.findMemberId(userRegNum);
