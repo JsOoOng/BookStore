@@ -55,7 +55,7 @@ window.onload = async function() {
     </div>
 
     <div class="p-grid typography--p" style="margin-top: 10px">
-        <div class="p-grid-col text--left"><b>주문번호</b></div>
+        <div class="p-grid-col text--left"><b>토스 주문번호</b></div>
         <div class="p-grid-col text--right">${orderId}</div>
     </div>
 
