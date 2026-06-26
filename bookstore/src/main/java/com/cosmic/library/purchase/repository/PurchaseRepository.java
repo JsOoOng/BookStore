@@ -133,45 +133,6 @@ public class PurchaseRepository {
         String sql = "UPDATE PURCHASE_DETAIL SET delivery_status = ? WHERE detail_id = ?";
         return jdbcTemplate.update(sql, status, detailId);
     }
-    
-    public Purchase findById(int purchaseId) {
-
-        String sql =
-            "SELECT p.PURCHASE_ID, p.USER_REG_NUM, p.PURCHASE_DATE, " +
-            "u.EMAIL, u.USER_NAME, u.PHONE " +
-            "FROM PURCHASE p " +
-            "JOIN cosmic_user u ON p.USER_REG_NUM = u.USER_ID " +
-            "WHERE p.PURCHASE_ID = ?";
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, purchaseId);
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-
-                Purchase purchase = new Purchase();
-
-                purchase.setId(rs.getInt("PURCHASE_ID"));
-                purchase.setUserRegNum(rs.getInt("USER_REG_NUM"));
-                purchase.setPurchaseDate(rs.getTimestamp("PURCHASE_DATE"));
-
-                // 👇 JOIN 결과 주입
-                purchase.setEmail(rs.getString("EMAIL"));
-                purchase.setUserName(rs.getString("USER_NAME"));
-                purchase.setPhone(rs.getString("PHONE"));
-
-                return purchase;
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("purchase 조회 실패", e);
-        }
-
-        throw new RuntimeException("purchase 없음: " + purchaseId);
-    }
 
     public String findMemberId(int userRegNum) {
         String sql = "SELECT user_id FROM USER_REGISTRATION WHERE user_reg_num = ?";

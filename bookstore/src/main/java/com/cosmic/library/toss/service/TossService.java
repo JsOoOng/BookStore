@@ -8,6 +8,8 @@ public interface TossService {
     // 주문 생성 (READY 상태)
 	public String createOrder(int purchaseId, String member_id, int amount);
 
+	public String createOrder(String guestPurchaseId, String member_id, int amount);
+	
     // 결제 승인 처리
     void confirmPayment(String orderId, String paymentKey, int amount);
 

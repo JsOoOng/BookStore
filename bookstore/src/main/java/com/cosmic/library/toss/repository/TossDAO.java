@@ -18,4 +18,8 @@ public interface TossDAO {
     void updateOrderStatus(String orderId, String status);
     
     TossVo findPurchaseById(int purchaseId);
+    
+    TossVo findGuestPurchaseById(String guestPurchaseId);
+
+	void insertOrder2(TossVo order);
 }
