@@ -4,17 +4,7 @@
 
 <div class="admin-wide-container vendor-dashboard-container mt-4 mb-5">
     
-    <div class="vendor-dashboard-header">
-        <div class="header-title-group">
-            <h2 class="vendor-main-title">🛰️ Partner Dashboard</h2>
-            <p class="vendor-sub-desc">업체명: <span class="text-white fw-bold">${sessionScope.loginVendor.bizName}</span> | 오픈마켓 물류 관제소</p>
-        </div>
-        <div class="header-action-group">
-            <a href="${pageContext.request.contextPath}/vendor/logout" class="btn-logout-vendor">
-                🔒 안전 로그아웃
-            </a>
-        </div>
-    </div>
+   
 
     <div class="row g-4 vendor-grid-row">
         <%-- 🏢 좌측 기지 카드 --%>
