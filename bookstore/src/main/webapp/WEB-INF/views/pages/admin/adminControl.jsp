@@ -12,19 +12,19 @@
     </div>
     
     <div class="admin-header-actions">
-        
-        <a href="${pageContext.request.contextPath}/admin/purchase/salesvolume"
-           class="btn-cosmic-sales">
-            📊 판매 통계
-        </a>
 
-        <button class="btn-cosmic-danger btn-add-admin"
-                data-bs-toggle="modal"
-                data-bs-target="#adminRegisterModal">
-            ➕ 신규 관리자 임명
-        </button>
-
-    </div>
+	    <a href="${pageContext.request.contextPath}/admin/purchase/salesvolume"
+	       class="btn-cosmic-sales">
+	        📊 전체 판매 매출 통계
+	    </a>
+	
+	    <button class="btn-cosmic-danger btn-add-admin"
+	            data-bs-toggle="modal"
+	            data-bs-target="#adminRegisterModal">
+	        ➕ 신규 관리자 임명
+	    </button>
+	
+	</div>
 </div>
 
     <%-- 🎉 사령부 액션 피드백 알림 배너 --%>
