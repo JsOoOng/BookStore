@@ -84,23 +84,23 @@ window.onload = async function() {
 
     <c:choose>
 
-        <c:when test="${not empty sessionScope.loginMember}">
-            <button class="button"
-                    style="width: 100%;"
-                    onclick="location.href='/'">
-                메인으로 돌아가기
-            </button>
-        </c:when>
+    <c:when test="${not empty sessionScope.loginMember}">
+        <button class="button"
+                style="width: 100%;"
+                onclick="location.href=window.location.origin">
+            메인으로 돌아가기
+        </button>
+    </c:when>
 
-        <c:otherwise>
-            <button class="button"
-                    style="width: 100%;"
-                    onclick="location.href='/cookie/purchase/success'">
-                주문번호 보기
-            </button>
-        </c:otherwise>
+    <c:otherwise>
+        <button class="button"
+                style="width: 100%;"
+                onclick="location.href=window.location.origin + '/cookie/purchase/success'">
+            주문번호 보기
+        </button>
+    </c:otherwise>
 
-    </c:choose>
+	</c:choose>
 
 </div>
     
